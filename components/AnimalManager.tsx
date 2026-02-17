@@ -310,22 +310,8 @@ export const AnimalManager: React.FC = () => {
     return <div className="p-8 flex justify-center"><div className="animate-spin h-8 w-8 border-4 border-green-500 rounded-full border-t-transparent"></div></div>;
   }
 
-  // Filter animals for health alerts
-  const attentionAnimals = animals.filter(a => ['Sick', 'Vet Check Required'].includes(a.status));
-
-  // Find tasks due today (or overdue if we wanted, but sticking to today based on prompt)
-  const tasksDueToday = animals.flatMap(animal => 
-    animal.medicalHistory
-        .filter(record => record.date === today)
-        .map(record => ({ animal, record }))
-  );
-
   // --- Detail View ---
   if (selectedAnimal) {
-    // Split history into Past (including today) and Future
-    // We treat "Today" as history if it's already logged, but for visual separation:
-    // Future: date > today
-    // History: date <= today
     const upcomingEvents = selectedAnimal.medicalHistory
         .filter(r => r.date > today)
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -337,12 +323,14 @@ export const AnimalManager: React.FC = () => {
     const isHistoryLimited = user?.plan === 'free' && selectedAnimal.medicalHistory.length >= FREE_HISTORY_LIMIT;
 
     return (
-        <div className="p-4 md:p-8 pb-24 md:pb-8">
+        <div className="p-4 md:p-8 pb-24 md:pb-8 animate-fade-in">
             <button 
                 onClick={() => setSelectedAnimal(null)}
-                className="mb-6 flex items-center text-gray-500 hover:text-green-600 font-medium transition-colors"
+                className="mb-6 flex items-center text-gray-500 hover:text-green-600 font-medium transition-colors w-fit group"
             >
-                <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                <div className="bg-white p-2 rounded-full shadow-sm mr-2 group-hover:bg-green-50 transition-colors">
+                    <svg className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                </div>
                 Back to Livestock
             </button>
 
@@ -441,6 +429,7 @@ export const AnimalManager: React.FC = () => {
                                 </span>
                             )}
                         </div>
+                        {/* ... Profile Fields ... */}
                         <div className="px-6 pb-6 space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -478,6 +467,7 @@ export const AnimalManager: React.FC = () => {
                                         <p className="text-gray-700 font-medium">{selectedAnimal.type}</p>
                                     )}
                                 </div>
+                                {/* ... Rest of profile fields ... */}
                                 <div>
                                     <span className="text-xs text-gray-400 uppercase font-semibold">Gender</span>
                                     {isEditing ? (
@@ -549,9 +539,6 @@ export const AnimalManager: React.FC = () => {
                                 onClick={openAddRecordModal}
                                 className="text-sm bg-green-50 text-green-700 px-3 py-1.5 rounded-lg hover:bg-green-100 font-medium flex items-center gap-1"
                             >
-                                {isHistoryLimited && (
-                                    <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
-                                )}
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                                 Add Record
                             </button>
@@ -632,23 +619,6 @@ export const AnimalManager: React.FC = () => {
                                                     </span>
                                                     <h4 className="text-base font-bold text-gray-800">{record.title}</h4>
                                                     <p className="text-gray-600 text-sm mt-1">{record.notes}</p>
-                                                    
-                                                    {(record.veterinarian || record.caretaker) && (
-                                                        <div className="mt-2 flex gap-3 text-xs text-gray-500">
-                                                            {record.veterinarian && (
-                                                                <span className="flex items-center gap-1">
-                                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                                                                    Vet: {record.veterinarian}
-                                                                </span>
-                                                            )}
-                                                            {record.caretaker && (
-                                                                <span className="flex items-center gap-1">
-                                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                                                    By: {record.caretaker}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    )}
                                                     {record.treatment && (
                                                         <div className="mt-2 bg-yellow-50 p-2 rounded text-xs text-yellow-800 border border-yellow-100 inline-block">
                                                             <strong>Treatment:</strong> {record.treatment}
@@ -659,24 +629,16 @@ export const AnimalManager: React.FC = () => {
                                                     <span className={`px-2 py-1 rounded text-xs font-semibold border ${getEventTypeColor(record.type)}`}>
                                                         {record.type}
                                                     </span>
-                                                    {record.cost && (
-                                                        <span className="text-sm font-medium text-gray-500">
-                                                            {record.cost}
-                                                        </span>
-                                                    )}
-                                                    {/* Action Buttons */}
                                                     <div className="flex gap-2 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                         <button 
                                                             onClick={() => openEditRecordModal(record)}
                                                             className="p-1 text-gray-400 hover:text-green-600"
-                                                            title="Edit Record"
                                                         >
                                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                                                         </button>
                                                         <button 
                                                             onClick={() => handleDeleteRecord(record.id)}
                                                             className="p-1 text-gray-400 hover:text-red-500"
-                                                            title="Delete Record"
                                                         >
                                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                                         </button>
@@ -692,7 +654,7 @@ export const AnimalManager: React.FC = () => {
                 </div>
             </div>
 
-            {/* Add/Edit Record Modal */}
+            {/* Record Modal */}
             {showRecordModal && (
                 <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
@@ -706,12 +668,12 @@ export const AnimalManager: React.FC = () => {
                             {/* Record Form Fields */}
                              <div className="grid grid-cols-2 gap-4">
                                 <div className="col-span-1">
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">Date (Use future date to schedule)</label>
+                                    <label className="block text-xs font-medium text-gray-700 mb-1">Date</label>
                                     <input 
                                         type="date" 
                                         value={recordForm.date}
                                         onChange={(e) => setRecordForm({...recordForm, date: e.target.value})}
-                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm"
                                     />
                                 </div>
                                 <div className="col-span-1">
@@ -719,7 +681,7 @@ export const AnimalManager: React.FC = () => {
                                     <select 
                                         value={recordForm.type}
                                         onChange={(e) => setRecordForm({...recordForm, type: e.target.value as any})}
-                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm"
                                     >
                                         <option value="Checkup">Checkup</option>
                                         <option value="Vaccination">Vaccination</option>
@@ -731,23 +693,21 @@ export const AnimalManager: React.FC = () => {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-700 mb-1">Title / Diagnosis</label>
+                                <label className="block text-xs font-medium text-gray-700 mb-1">Title</label>
                                 <input 
                                     type="text" 
-                                    placeholder="e.g. Annual Checkup or Respiratory Infection"
                                     value={recordForm.title}
                                     onChange={(e) => setRecordForm({...recordForm, title: e.target.value})}
-                                    className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                    className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm"
                                 />
                             </div>
                             <div>
                                 <label className="block text-xs font-medium text-gray-700 mb-1">Notes</label>
                                 <textarea 
                                     rows={2}
-                                    placeholder="Details about the procedure or condition..."
                                     value={recordForm.notes}
                                     onChange={(e) => setRecordForm({...recordForm, notes: e.target.value})}
-                                    className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                    className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm"
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
@@ -755,31 +715,28 @@ export const AnimalManager: React.FC = () => {
                                     <label className="block text-xs font-medium text-gray-700 mb-1">Vet / Caretaker</label>
                                     <input 
                                         type="text" 
-                                        placeholder="Dr. Smith"
                                         value={recordForm.veterinarian}
                                         onChange={(e) => setRecordForm({...recordForm, veterinarian: e.target.value})}
-                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-xs font-medium text-gray-700 mb-1">Cost</label>
                                     <input 
                                         type="text" 
-                                        placeholder="$0.00"
                                         value={recordForm.cost}
                                         onChange={(e) => setRecordForm({...recordForm, cost: e.target.value})}
-                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm"
                                     />
                                 </div>
                             </div>
                              <div>
-                                <label className="block text-xs font-medium text-gray-700 mb-1">Treatment Applied</label>
+                                <label className="block text-xs font-medium text-gray-700 mb-1">Treatment</label>
                                 <input 
                                     type="text" 
-                                    placeholder="e.g. Antibiotics"
                                     value={recordForm.treatment}
                                     onChange={(e) => setRecordForm({...recordForm, treatment: e.target.value})}
-                                    className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                    className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm"
                                 />
                             </div>
                         </div>
@@ -802,7 +759,102 @@ export const AnimalManager: React.FC = () => {
                 </div>
             )}
             
-       {/* Add Animal Modal */}
+            {showUpgradeModal && <PaymentModal onClose={() => setShowUpgradeModal(false)} />}
+        </div>
+    );
+  }
+
+  // --- List View ---
+  return (
+    <div className="p-4 md:p-8 pb-32 md:pb-8 animate-fade-in">
+       <div className="flex justify-between items-center mb-8">
+        <div>
+            <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">My Livestock</h2>
+            <p className="text-gray-500 font-medium mt-1">Manage your herd and health records.</p>
+        </div>
+        <button 
+          onClick={() => {
+              if (user?.plan === 'free' && animals.length >= FREE_ANIMAL_LIMIT) {
+                  setShowUpgradeModal(true);
+              } else {
+                  setShowAddModal(true);
+              }
+          }}
+          className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+          Add Livestock
+        </button>
+      </div>
+
+       {/* Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {animals.map((animal) => (
+          <div key={animal.id} onClick={() => handleSelectAnimal(animal)} className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:border-green-200 transition-all cursor-pointer relative group duration-300 overflow-hidden">
+            
+            {/* Delete Button */}
+            <button 
+                onClick={(e) => handleDeleteAnimal(e, animal.id, animal.name)}
+                className="absolute top-3 right-3 p-2 bg-white/90 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover:opacity-100 z-10 shadow-sm"
+                title="Delete Animal"
+            >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+
+            <div className="h-32 bg-gray-100 relative">
+                 {animal.coverUrl ? (
+                     <img src={animal.coverUrl} className="w-full h-full object-cover" alt="Cover" />
+                 ) : (
+                     <div className="w-full h-full bg-gradient-to-br from-green-50 to-green-100" />
+                 )}
+                 <div className="absolute -bottom-8 left-6 w-16 h-16 rounded-full border-4 border-white bg-white shadow-md flex items-center justify-center text-2xl overflow-hidden">
+                     {animal.imageUrl ? (
+                         <img src={animal.imageUrl} className="w-full h-full object-cover" alt="Profile" />
+                     ) : (
+                         getAnimalIcon(animal.type)
+                     )}
+                 </div>
+            </div>
+
+            <div className="pt-10 pb-6 px-6">
+               <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-xl font-bold text-gray-900 group-hover:text-green-700 transition-colors">{animal.name}</h3>
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold border shadow-sm ${getStatusColor(animal.status)}`}>
+                        {animal.status}
+                    </span>
+               </div>
+               <p className="text-sm text-gray-500 font-medium mb-4">{animal.breed} {animal.type}</p>
+
+               <div className="grid grid-cols-2 gap-4 text-sm pt-4 border-t border-gray-50">
+                    <div>
+                        <span className="text-gray-400 text-xs uppercase font-bold tracking-wider block mb-0.5">Gender</span>
+                        <span className="font-semibold text-gray-700">{animal.gender}</span>
+                    </div>
+                    <div>
+                        <span className="text-gray-400 text-xs uppercase font-bold tracking-wider block mb-0.5">Age</span>
+                        <span className="font-semibold text-gray-700">{calculateAge(animal.birthDate)}</span>
+                    </div>
+               </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {animals.length === 0 && (
+          <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-200 mt-6">
+              <div className="text-6xl mb-4 grayscale opacity-50">🐄</div>
+              <h3 className="text-xl font-bold text-gray-900">No animals yet</h3>
+              <p className="text-gray-500 mb-6 max-w-sm mx-auto">Add your first animal to start tracking health records and care history.</p>
+              <button 
+                  onClick={() => setShowAddModal(true)}
+                  className="text-green-600 font-bold hover:underline"
+              >
+                  Add Your First Animal
+              </button>
+          </div>
+      )}
+
+      {/* Add Animal Modal */}
        {showAddModal && (
                 <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden max-h-[90vh] overflow-y-auto">
@@ -949,7 +1001,7 @@ export const AnimalManager: React.FC = () => {
                     </div>
                 </div>
             )}
-            
+      
       {showUpgradeModal && <PaymentModal onClose={() => setShowUpgradeModal(false)} />}
     </div>
   );

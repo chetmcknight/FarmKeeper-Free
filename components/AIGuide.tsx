@@ -1,13 +1,51 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getFarmingAdvice } from '../services/geminiService';
 import { ChatMessage } from '../types';
+import { backend } from '../services/mockBackend';
+
+// Shared formatter (ideally moved to a util file, but kept here for stability)
+const FormattedText: React.FC<{ text: string }> = ({ text }) => {
+  if (!text) return null;
+  const paragraphs = text.split('\n');
+
+  return (
+    <div className="space-y-2">
+      {paragraphs.map((line, i) => {
+        const trimmed = line.trim();
+        if (!trimmed) return <div key={i} className="h-1" />;
+
+        const isBullet = trimmed.startsWith('* ') || trimmed.startsWith('- ');
+        const content = isBullet ? trimmed.substring(2) : trimmed;
+
+        const parts = content.split(/(\*\*.*?\*\*)/g).map((part, j) => {
+          if (part.startsWith('**') && part.endsWith('**')) {
+            return <strong key={j} className="font-bold">{part.slice(2, -2)}</strong>;
+          }
+          return part;
+        });
+
+        if (isBullet) {
+          return (
+            <div key={i} className="flex gap-2 items-start pl-1">
+               <span className="text-green-400 mt-1.5 text-[8px]">●</span>
+               <span className="leading-relaxed">{parts}</span>
+            </div>
+          );
+        }
+
+        return <p key={i} className="leading-relaxed">{parts}</p>;
+      })}
+    </div>
+  );
+};
 
 export const AIGuide: React.FC = () => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: '0', role: 'model', text: 'Hello! I am FarmKeeper. How can I help you with your farm today?', timestamp: Date.now() }
+    { id: '0', role: 'model', text: "Hello, I'm your farm keeper. How can I help you today?", timestamp: Date.now() }
   ]);
   const [loading, setLoading] = useState(false);
+  const [farmContext, setFarmContext] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -17,6 +55,39 @@ export const AIGuide: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Load farm data for context
+  useEffect(() => {
+    const loadContext = async () => {
+        try {
+            const crops = await backend.getCrops();
+            const animals = await backend.getAnimals();
+            
+            let contextStr = "";
+            if (crops.length > 0) {
+                contextStr += "CROPS:\n";
+                crops.forEach(c => {
+                    contextStr += `- ${c.name} (${c.variety || 'Unknown Variety'}): Planted ${c.plantedDate}, Status: ${c.status}. ${c.history.length > 0 ? `Latest Activity: ${c.history[c.history.length-1].type}` : ''}\n`;
+                });
+            } else {
+                contextStr += "CROPS: None registered.\n";
+            }
+
+            if (animals.length > 0) {
+                contextStr += "\nLIVESTOCK:\n";
+                animals.forEach(a => {
+                    contextStr += `- ${a.name} (${a.type} - ${a.breed}): Status: ${a.status}, Gender: ${a.gender}, Weight: ${a.weight || 'N/A'}.\n`;
+                });
+            } else {
+                contextStr += "\nLIVESTOCK: None registered.\n";
+            }
+            setFarmContext(contextStr);
+        } catch (e) {
+            console.error("Failed to load farm context", e);
+        }
+    };
+    loadContext();
+  }, []);
 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
@@ -39,7 +110,7 @@ export const AIGuide: React.FC = () => {
         parts: [{ text: m.text }]
       }));
 
-      const response = await getFarmingAdvice(userMsg.text, history);
+      const response = await getFarmingAdvice(userMsg.text, history, farmContext);
       
       const botMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
@@ -84,7 +155,7 @@ export const AIGuide: React.FC = () => {
                 ? 'bg-green-600 text-white rounded-tr-none' 
                 : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none'
             }`}>
-              <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.text}</p>
+              <FormattedText text={msg.text} />
               
               {/* Sources if available */}
               {msg.sources && msg.sources.length > 0 && (

@@ -11,9 +11,9 @@ import { ChatWidget } from './components/ChatWidget';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Page } from './types';
 
-// Separate authenticated content to use the auth hook
-const AuthenticatedApp: React.FC = () => {
-  const { user, isLoading } = useAuth();
+// The Main Layout for authenticated users. 
+// Separating this ensures state (like currentPage) resets when mounting fresh after login.
+const AuthenticatedLayout: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>(Page.DASHBOARD);
   const [location, setLocation] = useState<string>('');
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -41,7 +41,6 @@ const AuthenticatedApp: React.FC = () => {
 
   useEffect(() => {
     // Basic Geolocation for Dashboard
-    // We handle errors gracefully to avoid console warnings if permission is denied
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -57,18 +56,6 @@ const AuthenticatedApp: React.FC = () => {
       setLocation('Sequim, WA');
     }
   }, []);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-green-50 dark:bg-gray-900">
-        <div className="animate-spin h-10 w-10 border-4 border-green-600 rounded-full border-t-transparent"></div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <AuthScreen />;
-  }
 
   const renderPage = () => {
     switch (currentPage) {
@@ -102,10 +89,29 @@ const AuthenticatedApp: React.FC = () => {
   );
 };
 
+// Wrapper to handle Auth state
+const AppContent: React.FC = () => {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-green-50 dark:bg-gray-900">
+        <div className="animate-spin h-10 w-10 border-4 border-green-600 rounded-full border-t-transparent"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthScreen />;
+  }
+
+  return <AuthenticatedLayout />;
+};
+
 function App() {
   return (
     <AuthProvider>
-      <AuthenticatedApp />
+      <AppContent />
     </AuthProvider>
   );
 }

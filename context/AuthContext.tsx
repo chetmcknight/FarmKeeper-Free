@@ -11,6 +11,7 @@ interface AuthContextType {
   deleteAccount: () => Promise<void>;
   upgradeToPro: () => Promise<void>;
   updateProfile: (name: string) => Promise<void>;
+  updatePassword: (password: string) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -98,8 +99,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(updatedUser);
   };
 
+  const updatePassword = async (password: string) => {
+    if (!user) return;
+    await backend.updatePassword(password);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, deleteAccount, upgradeToPro, updateProfile, isLoading }}>
+    <AuthContext.Provider value={{ user, login, signup, logout, deleteAccount, upgradeToPro, updateProfile, updatePassword, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

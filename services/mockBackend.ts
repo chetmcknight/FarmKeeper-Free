@@ -3,6 +3,7 @@ import { supabase } from './supabaseClient';
 
 const KEYS = {
   USER: 'farmhand_user',
+  USERS_DB: 'farmhand_users_db',
   CROPS: 'farmhand_crops',
   ANIMALS: 'farmhand_animals',
   SCOUT_HISTORY: 'farmhand_scout_history',
@@ -11,59 +12,118 @@ const KEYS = {
 // --- Local Storage Implementation (Fallback) ---
 const localBackend = {
   async login(email: string, password?: string): Promise<User> {
-    const stored = localStorage.getItem(KEYS.USER);
-    if (stored) {
-        const existingUser = JSON.parse(stored);
-        if (existingUser.email === email) {
-            return existingUser;
-        }
+    // Check registered users DB
+    const usersDbJson = localStorage.getItem(KEYS.USERS_DB);
+    const usersDb: User[] = usersDbJson ? JSON.parse(usersDbJson) : [];
+    
+    const foundUser = usersDb.find(u => u.email === email);
+    
+    if (foundUser) {
+        // In a real app, check password here.
+        localStorage.setItem(KEYS.USER, JSON.stringify(foundUser));
+        return foundUser;
     }
-    const user: User = {
-      id: 'u_' + Math.random().toString(36).substr(2, 9),
-      email,
-      name: email.split('@')[0],
-      plan: 'free',
-    };
-    localStorage.setItem(KEYS.USER, JSON.stringify(user));
-    return user;
+
+    throw new Error("Invalid email or password. Please sign up if you don't have an account.");
   },
+
   async signup(email: string, password?: string, plan: 'free' | 'pro' = 'free'): Promise<User> {
-    const user: User = {
+    const usersDbJson = localStorage.getItem(KEYS.USERS_DB);
+    const usersDb: User[] = usersDbJson ? JSON.parse(usersDbJson) : [];
+
+    if (usersDb.some(u => u.email === email)) {
+        throw new Error("Account already exists. Please log in.");
+    }
+
+    const newUser: User = {
       id: 'u_' + Math.random().toString(36).substr(2, 9),
       email,
       name: email.split('@')[0],
       plan: plan,
     };
-    localStorage.setItem(KEYS.USER, JSON.stringify(user));
-    return user;
+
+    // Save to DB
+    usersDb.push(newUser);
+    localStorage.setItem(KEYS.USERS_DB, JSON.stringify(usersDb));
+
+    // Set active session
+    localStorage.setItem(KEYS.USER, JSON.stringify(newUser));
+    return newUser;
   },
+
   async updateUser(id: string, updates: Partial<User>): Promise<User> {
+    // Update session
     const stored = localStorage.getItem(KEYS.USER);
     if (!stored) throw new Error("User not found");
     const user = JSON.parse(stored);
     const updatedUser = { ...user, ...updates };
     localStorage.setItem(KEYS.USER, JSON.stringify(updatedUser));
+
+    // Update DB
+    const usersDbJson = localStorage.getItem(KEYS.USERS_DB);
+    if (usersDbJson) {
+        let usersDb: User[] = JSON.parse(usersDbJson);
+        usersDb = usersDb.map(u => u.id === id ? updatedUser : u);
+        localStorage.setItem(KEYS.USERS_DB, JSON.stringify(usersDb));
+    }
+
     return updatedUser;
   },
-  async logout() { localStorage.removeItem(KEYS.USER); },
+
+  async updatePassword(password: string): Promise<void> {
+    // In the local mock, we don't actually store passwords securely, 
+    // but we simulate the success delay.
+    return new Promise(resolve => setTimeout(resolve, 500));
+  },
+
+  async logout() { 
+      localStorage.removeItem(KEYS.USER); 
+  },
+
   async deleteAccount() {
+    const stored = localStorage.getItem(KEYS.USER);
+    if (stored) {
+        const user = JSON.parse(stored);
+        
+        // Remove from DB
+        const usersDbJson = localStorage.getItem(KEYS.USERS_DB);
+        if (usersDbJson) {
+            let usersDb: User[] = JSON.parse(usersDbJson);
+            usersDb = usersDb.filter(u => u.id !== user.id);
+            localStorage.setItem(KEYS.USERS_DB, JSON.stringify(usersDb));
+        }
+    }
+
     localStorage.removeItem(KEYS.USER);
     localStorage.removeItem(KEYS.CROPS);
     localStorage.removeItem(KEYS.ANIMALS);
     localStorage.removeItem(KEYS.SCOUT_HISTORY);
   },
+
   async getCurrentUser(): Promise<User | null> {
     const stored = localStorage.getItem(KEYS.USER);
     return stored ? JSON.parse(stored) : null;
   },
+
   async upgradePlan(userId: string): Promise<User> {
+    // Update session
     const stored = localStorage.getItem(KEYS.USER);
     if (!stored) throw new Error("User not found");
     const user = JSON.parse(stored);
     user.plan = 'pro';
     localStorage.setItem(KEYS.USER, JSON.stringify(user));
+
+    // Update DB
+    const usersDbJson = localStorage.getItem(KEYS.USERS_DB);
+    if (usersDbJson) {
+        let usersDb: User[] = JSON.parse(usersDbJson);
+        usersDb = usersDb.map(u => u.id === userId ? user : u);
+        localStorage.setItem(KEYS.USERS_DB, JSON.stringify(usersDb));
+    }
+    
     return user;
   },
+  
   // Crops
   async getCrops(): Promise<Crop[]> {
     const stored = localStorage.getItem(KEYS.CROPS);
@@ -181,6 +241,11 @@ const supabaseBackend = {
     });
     if (error) throw error;
     return this.mapUser(data.user);
+  },
+
+  async updatePassword(password: string): Promise<void> {
+    const { error } = await supabase!.auth.updateUser({ password: password });
+    if (error) throw error;
   },
 
   async logout() { await supabase!.auth.signOut(); },

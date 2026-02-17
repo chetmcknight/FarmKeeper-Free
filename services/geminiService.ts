@@ -75,14 +75,21 @@ export const diagnoseHealth = async (base64Image: string): Promise<DiagnosisResu
  */
 export const getFarmingAdvice = async (
   prompt: string, 
-  history: { role: string; parts: { text: string }[] }[]
+  history: { role: string; parts: { text: string }[] }[],
+  farmContext?: string
 ) => {
   try {
+    let systemInstruction = "You are FarmKeeper, an expert agricultural and livestock professional. Provide concise, practical, and scientific advice to farmers regarding crops, animal husbandry, veterinary health, and farm management. If looking up weather or market prices, use the Google Search tool.";
+    
+    if (farmContext) {
+        systemInstruction += `\n\nCURRENT FARM DATA:\nThe user has the following crops and livestock on their farm. Use this information to provide personalized advice:\n${farmContext}`;
+    }
+
     const chat = ai.chats.create({
       model: "gemini-3-flash-preview",
       config: {
         tools: [{ googleSearch: {} }],
-        systemInstruction: "You are FarmKeeper, an expert agricultural and livestock professional. Provide concise, practical, and scientific advice to farmers regarding crops, animal husbandry, veterinary health, and farm management. If looking up weather or market prices, use the Google Search tool.",
+        systemInstruction: systemInstruction,
       },
       history: history,
     });
