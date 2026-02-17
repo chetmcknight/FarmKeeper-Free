@@ -37,6 +37,14 @@ const localBackend = {
     localStorage.setItem(KEYS.USER, JSON.stringify(user));
     return user;
   },
+  async updateUser(id: string, updates: Partial<User>): Promise<User> {
+    const stored = localStorage.getItem(KEYS.USER);
+    if (!stored) throw new Error("User not found");
+    const user = JSON.parse(stored);
+    const updatedUser = { ...user, ...updates };
+    localStorage.setItem(KEYS.USER, JSON.stringify(updatedUser));
+    return updatedUser;
+  },
   async logout() { localStorage.removeItem(KEYS.USER); },
   async deleteAccount() {
     localStorage.removeItem(KEYS.USER);
@@ -164,6 +172,14 @@ const supabaseBackend = {
     });
     if (error) throw error;
     if (!data.user) throw new Error("Signup failed. Please check your email for confirmation.");
+    return this.mapUser(data.user);
+  },
+
+  async updateUser(id: string, updates: Partial<User>): Promise<User> {
+    const { data, error } = await supabase!.auth.updateUser({
+        data: updates
+    });
+    if (error) throw error;
     return this.mapUser(data.user);
   },
 

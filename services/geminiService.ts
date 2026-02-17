@@ -5,9 +5,9 @@ import { DiagnosisResult } from "../types";
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 /**
- * Analyzes a plant image for diseases/pests using Gemini Vision.
+ * Analyzes a field image (crop or livestock) using Gemini Vision.
  */
-export const diagnosePlantHealth = async (base64Image: string): Promise<DiagnosisResult> => {
+export const diagnoseHealth = async (base64Image: string): Promise<DiagnosisResult> => {
   try {
     // gemini-3-flash-preview supports multimodal inputs and structured output (JSON mode)
     const modelId = "gemini-3-flash-preview";
@@ -23,11 +23,17 @@ export const diagnosePlantHealth = async (base64Image: string): Promise<Diagnosi
             },
           },
           {
-            text: `You are an expert plant pathologist. Analyze this image of a crop/plant. 
-            Identify the plant. Look for any signs of pests, diseases, or nutrient deficiencies.
+            text: `You are an expert agriculturalist and veterinarian. Analyze this image. 
+            It contains either a crop/plant or a farm animal.
+            1. Identify the subject (e.g., 'Corn', 'Cow', 'Tomato', 'Sheep').
+            2. Diagnose any health issues, diseases, pests, injuries, or nutrient deficiencies. If healthy, state 'Healthy [Subject]'.
+            3. Provide a confidence level.
+            4. Describe the symptoms or visual evidence.
+            5. List recommended treatments or actions.
+
             Return a JSON object with the following structure:
             {
-              "diseaseName": "Name of issue or 'Healthy'",
+              "diseaseName": "Name of issue or 'Healthy [Subject]'",
               "confidence": "High/Medium/Low",
               "description": "Brief description of visual symptoms",
               "treatment": ["Step 1", "Step 2"]
@@ -76,7 +82,7 @@ export const getFarmingAdvice = async (
       model: "gemini-3-flash-preview",
       config: {
         tools: [{ googleSearch: {} }],
-        systemInstruction: "You are FarmKeeper Pro, an expert agricultural and livestock professional. Provide concise, practical, and scientific advice to farmers regarding crops, animal husbandry, veterinary health, and farm management. If looking up weather or market prices, use the Google Search tool.",
+        systemInstruction: "You are FarmKeeper, an expert agricultural and livestock professional. Provide concise, practical, and scientific advice to farmers regarding crops, animal husbandry, veterinary health, and farm management. If looking up weather or market prices, use the Google Search tool.",
       },
       history: history,
     });

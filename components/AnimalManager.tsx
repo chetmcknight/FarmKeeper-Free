@@ -45,7 +45,7 @@ export const AnimalManager: React.FC = () => {
   const addFileInputRefProfile = useRef<HTMLInputElement>(null);
   const addFileInputRefCover = useRef<HTMLInputElement>(null);
 
-  const FREE_ANIMAL_LIMIT = 3;
+  const FREE_ANIMAL_LIMIT = 6;
   const FREE_HISTORY_LIMIT = 5;
 
   const today = new Date().toISOString().split('T')[0];
@@ -711,7 +711,7 @@ export const AnimalManager: React.FC = () => {
                                         type="date" 
                                         value={recordForm.date}
                                         onChange={(e) => setRecordForm({...recordForm, date: e.target.value})}
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-green-500 focus:border-green-500"
+                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                                     />
                                 </div>
                                 <div className="col-span-1">
@@ -719,7 +719,7 @@ export const AnimalManager: React.FC = () => {
                                     <select 
                                         value={recordForm.type}
                                         onChange={(e) => setRecordForm({...recordForm, type: e.target.value as any})}
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-green-500 focus:border-green-500"
+                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                                     >
                                         <option value="Checkup">Checkup</option>
                                         <option value="Vaccination">Vaccination</option>
@@ -737,7 +737,7 @@ export const AnimalManager: React.FC = () => {
                                     placeholder="e.g. Annual Checkup or Respiratory Infection"
                                     value={recordForm.title}
                                     onChange={(e) => setRecordForm({...recordForm, title: e.target.value})}
-                                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-green-500 focus:border-green-500"
+                                    className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                                 />
                             </div>
                             <div>
@@ -747,7 +747,7 @@ export const AnimalManager: React.FC = () => {
                                     placeholder="Details about the procedure or condition..."
                                     value={recordForm.notes}
                                     onChange={(e) => setRecordForm({...recordForm, notes: e.target.value})}
-                                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-green-500 focus:border-green-500"
+                                    className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
@@ -758,7 +758,7 @@ export const AnimalManager: React.FC = () => {
                                         placeholder="Dr. Smith"
                                         value={recordForm.veterinarian}
                                         onChange={(e) => setRecordForm({...recordForm, veterinarian: e.target.value})}
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-green-500 focus:border-green-500"
+                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                                     />
                                 </div>
                                 <div>
@@ -768,7 +768,7 @@ export const AnimalManager: React.FC = () => {
                                         placeholder="$0.00"
                                         value={recordForm.cost}
                                         onChange={(e) => setRecordForm({...recordForm, cost: e.target.value})}
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-green-500 focus:border-green-500"
+                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                                     />
                                 </div>
                             </div>
@@ -779,7 +779,7 @@ export const AnimalManager: React.FC = () => {
                                     placeholder="e.g. Antibiotics"
                                     value={recordForm.treatment}
                                     onChange={(e) => setRecordForm({...recordForm, treatment: e.target.value})}
-                                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-green-500 focus:border-green-500"
+                                    className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                                 />
                             </div>
                         </div>
@@ -801,180 +801,7 @@ export const AnimalManager: React.FC = () => {
                     </div>
                 </div>
             )}
-            {showUpgradeModal && <PaymentModal onClose={() => setShowUpgradeModal(false)} />}
-        </div>
-    );
-  }
-
-  // --- List View ---
-  const isAnimalLimited = user?.plan === 'free' && animals.length >= FREE_ANIMAL_LIMIT;
-  
-  return (
-    <div className="p-4 md:p-8 pb-24 md:pb-8">
-      {/* Alerts Section (Health Alerts + Due Today Notifications) */}
-      {(attentionAnimals.length > 0 || tasksDueToday.length > 0) && (
-        <div className="mb-8 space-y-4">
-            {/* Health Alerts */}
-            {attentionAnimals.length > 0 && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-6 shadow-sm">
-                  <div className="flex items-start gap-4">
-                    <div className="p-2 bg-red-100 rounded-lg text-red-600">
-                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                    </div>
-                    <div className="flex-1">
-                       <h3 className="text-lg font-bold text-red-800 mb-1">Health Alerts</h3>
-                       <p className="text-sm text-red-600 mb-4">The following animals require immediate attention due to health status.</p>
-                       
-                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                         {attentionAnimals.map(animal => (
-                           <button 
-                             key={animal.id}
-                             onClick={() => handleSelectAnimal(animal)}
-                             className="flex items-center justify-between p-3 bg-white rounded-lg border border-red-200 shadow-sm hover:shadow-md hover:border-red-300 transition-all text-left w-full"
-                           >
-                             <div className="flex items-center gap-2">
-                                {animal.imageUrl && (
-                                    <img src={animal.imageUrl} alt="" className="w-10 h-10 rounded-full object-cover" />
-                                )}
-                                <div>
-                                    <span className="font-bold text-gray-800 block">{animal.name}</span>
-                                    <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full inline-block mt-1 border border-red-100">
-                                        {animal.status}
-                                    </span>
-                                </div>
-                             </div>
-                             <div className="text-red-400">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                             </div>
-                           </button>
-                         ))}
-                       </div>
-                    </div>
-                  </div>
-                </div>
-            )}
-
-            {/* Scheduled Tasks Due Today */}
-            {tasksDueToday.length > 0 && (
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 shadow-sm">
-                    <div className="flex items-start gap-4">
-                        <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                        </div>
-                        <div className="flex-1">
-                            <h3 className="text-lg font-bold text-blue-800 mb-1">Scheduled Events Due Today</h3>
-                            <p className="text-sm text-blue-600 mb-4">You have {tasksDueToday.length} event{tasksDueToday.length > 1 ? 's' : ''} scheduled for today.</p>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                 {tasksDueToday.map(({animal, record}) => (
-                                     <button 
-                                        key={record.id} 
-                                        onClick={() => handleSelectAnimal(animal)} 
-                                        className="bg-white p-3 rounded-lg border border-blue-200 shadow-sm flex justify-between items-center cursor-pointer hover:border-blue-300 hover:shadow-md transition-all text-left w-full"
-                                     >
-                                         <div>
-                                             <div className="flex items-center gap-2 mb-1">
-                                                 <span className="font-bold text-gray-800">{animal.name}</span>
-                                                 <span className="text-xs text-gray-400">• {animal.type}</span>
-                                             </div>
-                                             <span className="text-sm text-gray-600 block">{record.title}</span>
-                                         </div>
-                                         <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                                             {record.type}
-                                         </span>
-                                     </button>
-                                 ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
-      )}
-
-      <div className="flex justify-between items-center mb-6">
-        <div>
-            <h2 className="text-2xl font-bold text-gray-800">Livestock</h2>
-            {user?.plan === 'free' && (
-                <p className="text-sm text-gray-500 mt-1">Free Plan: {animals.length} / {FREE_ANIMAL_LIMIT} animals</p>
-            )}
-        </div>
-        <button 
-          onClick={() => {
-              if (user?.plan === 'free' && animals.length >= FREE_ANIMAL_LIMIT) {
-                  setShowUpgradeModal(true);
-              } else {
-                  setShowAddModal(true);
-              }
-          }}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2"
-        >
-           {isAnimalLimited && (
-              <svg className="w-3 h-3 text-white opacity-80" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
-           )}
-           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-           Add Animal
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {animals.map((animal) => (
-          <div key={animal.id} onClick={() => handleSelectAnimal(animal)} className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-green-200 transition-all cursor-pointer relative group">
             
-            {/* Delete Button */}
-            <button 
-                onClick={(e) => handleDeleteAnimal(e, animal.id, animal.name)}
-                className="absolute top-2 right-2 p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors opacity-0 group-hover:opacity-100 z-10"
-                title="Delete Animal"
-            >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-
-            <div className="flex justify-between items-start mb-2">
-              <div className="flex items-center gap-3">
-                {animal.imageUrl ? (
-                    <img src={animal.imageUrl} alt={animal.name} className="w-12 h-12 rounded-full object-cover border border-gray-100" />
-                ) : (
-                    <div className="text-2xl bg-gray-50 rounded-full w-12 h-12 flex items-center justify-center">
-                        {getAnimalIcon(animal.type)}
-                    </div>
-                )}
-                <div>
-                    <h3 className="text-lg font-bold text-gray-800 group-hover:text-green-700 transition-colors">{animal.name}</h3>
-                </div>
-              </div>
-              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(animal.status)}`}>
-                {animal.status}
-              </span>
-            </div>
-            
-            <p className="text-sm text-gray-600 mb-4 mt-2">{animal.breed} • {animal.type}</p>
-
-            <div className="grid grid-cols-2 gap-y-2 text-sm border-t border-gray-50 pt-3">
-              <div>
-                <span className="text-gray-400 text-xs">Age</span>
-                <p className="font-medium text-gray-700">{calculateAge(animal.birthDate)}</p>
-              </div>
-              <div>
-                <span className="text-gray-400 text-xs">Weight</span>
-                <p className="font-medium text-gray-700">{animal.weight}</p>
-              </div>
-              <div className="col-span-2">
-                 <span className="text-gray-400 text-xs">Last Event</span>
-                 <p className="font-medium text-gray-700 truncate">
-                    {animal.medicalHistory.length > 0 
-                        ? animal.medicalHistory[animal.medicalHistory.length - 1].title 
-                        : 'No records'}
-                 </p>
-              </div>
-            </div>
-            
-             <div className="mt-4 pt-2 flex justify-end gap-2">
-               <span className="text-green-600 group-hover:underline text-sm font-medium">View History &rarr;</span>
-            </div>
-          </div>
-        ))}
-      </div>
-      
        {/* Add Animal Modal */}
        {showAddModal && (
                 <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -1026,7 +853,7 @@ export const AnimalManager: React.FC = () => {
                                         placeholder="e.g. Bessie"
                                         value={newAnimal.name}
                                         onChange={(e) => setNewAnimal({...newAnimal, name: e.target.value})}
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-green-500 focus:border-green-500"
+                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                                     />
                                 </div>
                                 <div className="col-span-1">
@@ -1034,7 +861,7 @@ export const AnimalManager: React.FC = () => {
                                     <select 
                                         value={newAnimal.type}
                                         onChange={(e) => setNewAnimal({...newAnimal, type: e.target.value})}
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-green-500 focus:border-green-500"
+                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                                     >
                                         <option value="Cattle">Cattle</option>
                                         <option value="Pig">Pig</option>
@@ -1054,7 +881,7 @@ export const AnimalManager: React.FC = () => {
                                         type="text" 
                                         value={newAnimal.breed}
                                         onChange={(e) => setNewAnimal({...newAnimal, breed: e.target.value})}
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-green-500 focus:border-green-500"
+                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                                     />
                                 </div>
                                 <div className="col-span-1">
@@ -1062,7 +889,7 @@ export const AnimalManager: React.FC = () => {
                                     <select 
                                         value={newAnimal.gender}
                                         onChange={(e) => setNewAnimal({...newAnimal, gender: e.target.value as any})}
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-green-500 focus:border-green-500"
+                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                                     >
                                         <option value="Female">Female</option>
                                         <option value="Male">Male</option>
@@ -1073,7 +900,7 @@ export const AnimalManager: React.FC = () => {
                                     <select 
                                         value={newAnimal.status}
                                         onChange={(e) => setNewAnimal({...newAnimal, status: e.target.value as any})}
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-green-500 focus:border-green-500"
+                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                                     >
                                         <option value="Healthy">Healthy</option>
                                         <option value="Sick">Sick</option>
@@ -1089,7 +916,7 @@ export const AnimalManager: React.FC = () => {
                                         type="date" 
                                         value={newAnimal.birthDate}
                                         onChange={(e) => setNewAnimal({...newAnimal, birthDate: e.target.value})}
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-green-500 focus:border-green-500"
+                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                                     />
                                 </div>
                                 <div className="col-span-1">
@@ -1099,7 +926,7 @@ export const AnimalManager: React.FC = () => {
                                         placeholder="e.g. 150 lbs"
                                         value={newAnimal.weight}
                                         onChange={(e) => setNewAnimal({...newAnimal, weight: e.target.value})}
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-green-500 focus:border-green-500"
+                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                                     />
                                 </div>
                             </div>

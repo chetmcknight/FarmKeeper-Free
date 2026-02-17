@@ -71,8 +71,9 @@ export const ChatWidget: React.FC = () => {
     }
   };
 
+  // Hidden on mobile (hidden), visible on md screens (md:flex)
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none font-sans">
+    <div className="hidden md:flex fixed bottom-6 right-6 z-50 flex-col items-end pointer-events-none font-sans">
       {/* Chat Window */}
       <div 
         className={`pointer-events-auto bg-white w-80 sm:w-96 rounded-2xl shadow-2xl border border-green-100 flex flex-col transition-all duration-300 ease-in-out transform origin-bottom-right mb-6 mr-2
@@ -86,10 +87,10 @@ export const ChatWidget: React.FC = () => {
               🧑‍🌾
             </div>
             <div>
-              <h3 className="text-white font-bold text-base">FarmKeeper Pro</h3>
+              <h3 className="text-white font-bold text-base">FarmKeeper</h3>
               <div className="flex items-center gap-1.5">
                  <span className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></span>
-                 <span className="text-green-50 text-xs font-medium">AI Advisor Online</span>
+                 <span className="text-green-50 text-xs font-medium">Advisor Online</span>
               </div>
             </div>
           </div>
@@ -148,7 +149,7 @@ export const ChatWidget: React.FC = () => {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               placeholder="Ask about crops, pests, or weather..."
-              className="flex-1 border border-gray-200 rounded-full px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all shadow-inner bg-gray-50"
+              className="flex-1 border border-gray-200 bg-gray-50 text-gray-900 rounded-full px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all shadow-inner placeholder-gray-400"
               disabled={loading}
             />
             <button
@@ -169,7 +170,7 @@ export const ChatWidget: React.FC = () => {
            <div className="hidden md:flex absolute right-full mr-4 top-1/2 transform -translate-y-1/2 items-center">
              <div className="bg-white px-4 py-2 rounded-xl shadow-lg border border-green-100 whitespace-nowrap">
                  <p className="text-sm font-bold text-gray-800">Need advice?</p>
-                 <p className="text-xs text-green-600 font-medium">Ask FarmKeeper AI</p>
+                 <p className="text-xs text-green-600 font-medium">Ask FarmKeeper</p>
              </div>
              {/* Arrow pointing right */}
              <div className="w-3 h-3 bg-white transform rotate-45 border-r border-t border-green-100 -ml-1.5 shadow-sm"></div>

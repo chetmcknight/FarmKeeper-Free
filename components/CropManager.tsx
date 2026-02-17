@@ -418,8 +418,8 @@ export const CropManager: React.FC = () => {
        {/* Add Crop Modal */}
        {showAddModal && (
         <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity duration-300">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all scale-100">
-                <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all scale-100 max-h-[90vh] overflow-y-auto">
+                <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 sticky top-0 z-10 backdrop-blur-sm">
                     <h3 className="text-lg font-bold text-gray-800">Add New Field/Crop</h3>
                     <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -434,7 +434,7 @@ export const CropManager: React.FC = () => {
                                 placeholder="e.g. North Pasture"
                                 value={newCrop.name}
                                 onChange={(e) => setNewCrop({...newCrop, name: e.target.value})}
-                                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all placeholder-gray-300"
+                                className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all placeholder-gray-400"
                             />
                         </div>
                         <div className="col-span-1">
@@ -444,7 +444,7 @@ export const CropManager: React.FC = () => {
                                 placeholder="e.g. Corn"
                                 value={newCrop.variety}
                                 onChange={(e) => setNewCrop({...newCrop, variety: e.target.value})}
-                                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all placeholder-gray-300"
+                                className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all placeholder-gray-400"
                             />
                         </div>
                         <div className="col-span-1">
@@ -454,7 +454,7 @@ export const CropManager: React.FC = () => {
                                 placeholder="e.g. 50 Acres"
                                 value={newCrop.area}
                                 onChange={(e) => setNewCrop({...newCrop, area: e.target.value})}
-                                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all placeholder-gray-300"
+                                className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all placeholder-gray-400"
                             />
                         </div>
                         <div className="col-span-1">
@@ -463,7 +463,7 @@ export const CropManager: React.FC = () => {
                                 type="date" 
                                 value={newCrop.plantedDate}
                                 onChange={(e) => setNewCrop({...newCrop, plantedDate: e.target.value})}
-                                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all text-gray-600"
+                                className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-gray-600"
                             />
                         </div>
                         <div className="col-span-1">
@@ -471,7 +471,7 @@ export const CropManager: React.FC = () => {
                             <select 
                                 value={newCrop.status}
                                 onChange={(e) => setNewCrop({...newCrop, status: e.target.value as any})}
-                                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all bg-white"
+                                className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                             >
                                 <option value="Healthy">Healthy</option>
                                 <option value="Needs Attention">Needs Attention</option>
@@ -485,12 +485,12 @@ export const CropManager: React.FC = () => {
                                 type="date" 
                                 value={newCrop.harvestDate}
                                 onChange={(e) => setNewCrop({...newCrop, harvestDate: e.target.value})}
-                                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all text-gray-600"
+                                className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-gray-600"
                             />
                         </div>
                     </div>
                 </div>
-                <div className="px-8 py-6 bg-gray-50 flex justify-end gap-3">
+                <div className="px-8 py-6 bg-gray-50 flex justify-end gap-3 sticky bottom-0 z-10 border-t border-gray-100">
                     <button 
                         onClick={() => setShowAddModal(false)}
                         className="px-6 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-700 hover:bg-white transition-colors"

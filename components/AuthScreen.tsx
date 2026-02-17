@@ -134,7 +134,7 @@ export const AuthScreen: React.FC = () => {
                     {/* Free Plan */}
                     <div 
                         onClick={() => { setSelectedPlan('free'); setView('REGISTER'); }}
-                        className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden hover:shadow-2xl hover:border-green-300 transition-all cursor-pointer group flex flex-col transform hover:-translate-y-1 duration-300 relative"
+                        className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden transform md:-translate-y-4 flex flex-col relative hover:shadow-2xl hover:scale-[1.02] transition-all cursor-pointer group"
                     >
                         <div className="p-10 flex-1">
                             <h3 className="text-2xl font-bold text-gray-900">Hobby Farm</h3>
@@ -147,7 +147,7 @@ export const AuthScreen: React.FC = () => {
                             <ul className="mt-8 space-y-5">
                                 <li className="flex items-center">
                                     <div className="bg-green-100 rounded-full p-1 mr-3"><svg className="h-4 w-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg></div>
-                                    <span className="text-gray-600 font-medium">Up to 3 Animals</span>
+                                    <span className="text-gray-600 font-medium">Up to 6 Animals</span>
                                 </li>
                                 <li className="flex items-center">
                                     <div className="bg-green-100 rounded-full p-1 mr-3"><svg className="h-4 w-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg></div>
@@ -177,9 +177,12 @@ export const AuthScreen: React.FC = () => {
                         <div className="p-10 flex-1">
                             <h3 className="text-2xl font-bold text-white">Commercial Farm</h3>
                             <p className="mt-2 text-gray-400 font-medium">Advanced tools for serious producers.</p>
-                             <div className="mt-8 flex items-baseline">
-                                <span className="text-5xl font-extrabold text-white">$9.99</span>
-                                <span className="ml-2 text-xl text-gray-400 font-medium">/month</span>
+                             <div className="mt-8">
+                                <div className="flex items-baseline">
+                                    <span className="text-5xl font-extrabold text-white">$9.99</span>
+                                    <span className="ml-2 text-xl text-gray-400 font-medium">/month</span>
+                                </div>
+                                <p className="text-sm text-emerald-400 mt-1 font-medium">or $99.99/year</p>
                             </div>
 
                             <ul className="mt-8 space-y-5">
@@ -267,7 +270,7 @@ export const AuthScreen: React.FC = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 sm:text-sm transition-all"
+                  className="appearance-none block w-full px-4 py-3 border border-gray-200 bg-gray-50 text-gray-900 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 sm:text-sm transition-all duration-200"
                 />
               </div>
             </div>
@@ -285,7 +288,7 @@ export const AuthScreen: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 sm:text-sm transition-all"
+                  className="appearance-none block w-full px-4 py-3 border border-gray-200 bg-gray-50 text-gray-900 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 sm:text-sm transition-all duration-200"
                 />
               </div>
             </div>

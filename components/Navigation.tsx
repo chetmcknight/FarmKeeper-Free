@@ -34,7 +34,10 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, setPage }) 
     <>
       <nav className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50 md:relative md:border-t-0 md:border-r md:w-72 md:h-screen md:flex md:flex-col md:justify-between transition-all duration-300">
         <div>
-          <div className="md:p-8 md:mb-2 hidden md:block">
+          <div 
+            className="md:p-8 md:mb-2 hidden md:block cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => setPage(Page.DASHBOARD)}
+          >
             <h1 className="text-2xl font-extrabold text-green-800 dark:text-green-400 flex items-center gap-3 tracking-tight">
               <div className="bg-green-100 dark:bg-green-900 p-2 rounded-xl">
                  <svg className="w-7 h-7" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">

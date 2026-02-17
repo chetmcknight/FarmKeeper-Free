@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { diagnosePlantHealth } from '../services/geminiService';
+import { diagnoseHealth } from '../services/geminiService';
 import { DiagnosisResult, ScoutRecord } from '../types';
 import { backend } from '../services/mockBackend';
 
@@ -36,7 +36,7 @@ export const FieldScout: React.FC = () => {
     setLoading(true);
     try {
       const base64Data = image.split(',')[1];
-      const diagnosis = await diagnosePlantHealth(base64Data);
+      const diagnosis = await diagnoseHealth(base64Data);
       setResult(diagnosis);
       
       const newRecord = await backend.addScoutRecord({
@@ -71,9 +71,9 @@ export const FieldScout: React.FC = () => {
       
       {/* Friendly Header */}
       <div className="text-center mb-10">
-        <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-2">Plant Doctor</h2>
+        <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-2">Farm Scout AI</h2>
         <p className="text-gray-500 max-w-xl mx-auto">
-          Take a photo of your crop. Our AI will identify diseases and suggest treatments instantly.
+          Take a photo of your crop or livestock. Our AI will identify the subject, diagnose issues, and suggest treatments instantly.
         </p>
       </div>
 
@@ -92,7 +92,7 @@ export const FieldScout: React.FC = () => {
                         <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                     </div>
                     <h3 className="text-xl font-bold text-gray-800 mb-2">Tap to Upload Photo</h3>
-                    <p className="text-sm text-gray-500">Supports JPG, PNG</p>
+                    <p className="text-sm text-gray-500">Crops & Livestock Supported</p>
                 </div>
             ) : (
                 <div className="relative w-full h-full min-h-[300px] bg-black group">
@@ -126,12 +126,12 @@ export const FieldScout: React.FC = () => {
                 {!loading && !result && (
                     <div className="text-center space-y-6">
                          <h3 className="text-2xl font-bold text-gray-900">Photo Ready</h3>
-                         <p className="text-gray-500">Click below to start the diagnosis.</p>
+                         <p className="text-gray-500">Click below to identify the subject and diagnose health.</p>
                          <button 
                             onClick={handleDiagnose}
                             className="w-full py-4 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
                         >
-                            Analyze Plant Health
+                            Run Health Check
                          </button>
                     </div>
                 )}
@@ -145,7 +145,7 @@ export const FieldScout: React.FC = () => {
                         </div>
                         <div>
                             <h3 className="text-xl font-bold text-gray-900">Analyzing...</h3>
-                            <p className="text-gray-500 text-sm mt-1">Identifying pests and diseases</p>
+                            <p className="text-gray-500 text-sm mt-1">Detecting species and health markers</p>
                         </div>
                     </div>
                 )}
@@ -157,7 +157,7 @@ export const FieldScout: React.FC = () => {
                             <div>
                                 <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold mb-2 
                                     ${result.diseaseName.toLowerCase().includes('healthy') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                    {result.diseaseName.toLowerCase().includes('healthy') ? 'Healthy Crop' : 'Issue Detected'}
+                                    {result.diseaseName.toLowerCase().includes('healthy') ? 'Healthy' : 'Health Issue Detected'}
                                 </span>
                                 <h3 className="text-3xl font-extrabold text-gray-900 leading-tight">{result.diseaseName}</h3>
                             </div>
@@ -175,7 +175,7 @@ export const FieldScout: React.FC = () => {
                         <div>
                             <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
                                 <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                Recommended Treatment
+                                Recommended Action
                             </h4>
                             <ul className="space-y-3">
                                 {result.treatment.map((step, idx) => (
@@ -195,7 +195,7 @@ export const FieldScout: React.FC = () => {
       {/* History Section (Simplified) */}
       {history.length > 0 && (
           <div className="mt-16">
-            <h3 className="text-xl font-bold text-gray-900 mb-6 px-2">Recent Diagnoses</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-6 px-2">Recent Scans</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {history.map(record => (
                     <div key={record.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-all group relative cursor-pointer" onClick={() => { setImage(record.imageBase64); setResult(record.result); window.scrollTo({top:0, behavior:'smooth'})}}>

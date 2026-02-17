@@ -5,7 +5,7 @@ import { ChatMessage } from '../types';
 export const AIGuide: React.FC = () => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: '0', role: 'model', text: 'Hello! I am your FarmKeeper Pro advisor. How can I help you with your farm today?', timestamp: Date.now() }
+    { id: '0', role: 'model', text: 'Hello! I am FarmKeeper. How can I help you with your farm today?', timestamp: Date.now() }
   ]);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -63,12 +63,15 @@ export const AIGuide: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white md:rounded-xl md:shadow-sm md:border md:border-gray-200 overflow-hidden">
+    // Height calculation: 100vh - (Mobile Nav Height ~80px) on mobile, Full height on Desktop
+    // Mobile Nav is typically 5rem (20 * 0.25rem = 5rem). 
+    // We use calc(100dvh - 5rem) to ensure it fits exactly in the viewport above the nav.
+    <div className="flex flex-col bg-white md:rounded-xl md:shadow-sm md:border md:border-gray-200 overflow-hidden h-[calc(100dvh-5rem)] md:h-full">
       {/* Header */}
-      <div className="p-4 border-b border-gray-100 bg-green-50">
+      <div className="p-4 border-b border-gray-100 bg-green-50 shrink-0">
         <h2 className="text-lg font-bold text-green-900 flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-          FarmKeeper Pro Advisor
+          FarmKeeper
         </h2>
       </div>
 
@@ -118,7 +121,7 @@ export const AIGuide: React.FC = () => {
       </div>
 
       {/* Input Area */}
-      <div className="p-4 border-t border-gray-100 bg-white mb-16 md:mb-0">
+      <div className="p-4 border-t border-gray-100 bg-white shrink-0">
         <div className="flex gap-2">
           <input
             type="text"
@@ -126,7 +129,7 @@ export const AIGuide: React.FC = () => {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             placeholder="Ask about weather, pests, or planting..."
-            className="flex-1 border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+            className="flex-1 border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-4 py-3 focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all placeholder-gray-400"
             disabled={loading}
           />
           <button

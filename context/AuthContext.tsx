@@ -10,6 +10,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   deleteAccount: () => Promise<void>;
   upgradeToPro: () => Promise<void>;
+  updateProfile: (name: string) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -91,8 +92,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(updatedUser);
   };
 
+  const updateProfile = async (name: string) => {
+    if (!user) return;
+    const updatedUser = await backend.updateUser(user.id, { name });
+    setUser(updatedUser);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, deleteAccount, upgradeToPro, isLoading }}>
+    <AuthContext.Provider value={{ user, login, signup, logout, deleteAccount, upgradeToPro, updateProfile, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
