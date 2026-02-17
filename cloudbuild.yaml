@@ -1,0 +1,43 @@
+steps:
+  # Build the Docker image using the Dockerfile
+  # We pass environment variables as build-args so Vite can use them
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--build-arg'
+      - 'API_KEY=${_API_KEY}'
+      - '--build-arg'
+      - 'SUPABASE_URL=${_SUPABASE_URL}'
+      - '--build-arg'
+      - 'SUPABASE_KEY=${_SUPABASE_KEY}'
+      - '--build-arg'
+      - 'PAYPAL_CLIENT_ID=${_PAYPAL_CLIENT_ID}'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/farmkeeper-pro:$COMMIT_SHA'
+      - '.'
+
+  # Push the image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/farmkeeper-pro:$COMMIT_SHA']
+
+  # (Optional) Deploy to Cloud Run automatically
+  # Uncomment if you want CD directly from this file
+  # - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  #   entrypoint: gcloud
+  #   args:
+  #     - 'run'
+  #     - 'deploy'
+  #     - 'farmkeeper-pro'
+  #     - '--image'
+  #     - 'gcr.io/$PROJECT_ID/farmkeeper-pro:$COMMIT_SHA'
+  #     - '--region'
+  #     - 'us-central1'
+  #     - '--platform'
+  #     - 'managed'
+  #     - '--allow-unauthenticated'
+
+images:
+  - 'gcr.io/$PROJECT_ID/farmkeeper-pro:$COMMIT_SHA'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

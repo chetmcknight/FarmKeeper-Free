@@ -102,9 +102,7 @@ export const getFarmingAdvice = async (
 };
 
 /**
- * Get quick weather/market snapshot.
- * We hardcode the source URL to a reliable commodities market aggregator
- * to prevent broken links (Error 4014) from AI generated deep-links.
+ * Get quick weather/market snapshot and a daily tip.
  */
 export const getDashboardInsights = async (location: string, commodities: string[] = ["Corn", "Soybeans"]) => {
   try {
@@ -115,12 +113,14 @@ export const getDashboardInsights = async (location: string, commodities: string
       model: "gemini-3-flash-preview",
       contents: `Get the current weather and a brief 3-day farming forecast for ${location}. 
       Also find the current market price for these agricultural items: ${commoditiesList}.
+      Provide a "dailyTip" which is a useful, practical, and scientific piece of advice for farmers regarding crops or livestock for the current season.
       Format the output as a concise JSON object:
       {
         "weather": { "current": "Temp/Condition", "forecast": "Summary" },
         "market": [
            { "name": "Exact Item Name from list", "price": "Price with unit" }
-        ]
+        ],
+        "dailyTip": { "title": "Short Title", "content": "1-2 sentences of advice", "category": "Crops|Livestock|General" }
       }`,
       config: {
         tools: [{ googleSearch: {} }],

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getDashboardInsights } from '../services/geminiService';
 import { backend } from '../services/mockBackend';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface DashboardProps {
   location: string;
@@ -72,16 +71,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ location }) => {
       name.toLowerCase().includes(m.name.toLowerCase())
     );
   };
-
-  // Mock data for the yield chart
-  const data = [
-    { name: '2019', yield: 160 },
-    { name: '2020', yield: 168 },
-    { name: '2021', yield: 172 },
-    { name: '2022', yield: 155 },
-    { name: '2023', yield: 178 },
-    { name: '2024', yield: 182 },
-  ];
 
   const getGreeting = () => {
       const hour = new Date().getHours();
@@ -237,45 +226,57 @@ export const Dashboard: React.FC<DashboardProps> = ({ location }) => {
         </div>
       </div>
 
-      {/* Yield Chart */}
+      {/* Expert Insight / Daily Tip (Replaces Yield Chart) */}
       <div className="bg-white p-6 md:p-8 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100">
-        <div className="flex justify-between items-center mb-6">
-             <h3 className="text-lg font-bold text-gray-800">Historical Yield Trends</h3>
-             <select className="text-sm border-gray-200 rounded-lg text-gray-600 focus:ring-green-500 focus:border-green-500">
-                 <option>All Crops</option>
-                 <option>Corn</option>
-                 <option>Soybeans</option>
-             </select>
+        <div className="flex items-center gap-3 mb-6">
+            <div className="bg-indigo-100 p-2 rounded-lg text-indigo-600">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+            </div>
+            <h3 className="text-xl font-bold text-gray-900">Expert Insight of the Day</h3>
         </div>
-        <div className="h-72 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorYield" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#16a34a" stopOpacity={0.2}/>
-                  <stop offset="95%" stopColor="#16a34a" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} dy={10} />
-              <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
-              <Tooltip 
-                contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', padding: '12px'}} 
-                itemStyle={{color: '#166534', fontWeight: 'bold'}}
-                cursor={{stroke: '#16a34a', strokeWidth: 1, strokeDasharray: '4 4'}}
-              />
-              <Area 
-                type="monotone" 
-                dataKey="yield" 
-                stroke="#16a34a" 
-                strokeWidth={3}
-                fillOpacity={1} 
-                fill="url(#colorYield)" 
-                activeDot={{r: 6, strokeWidth: 0, fill: '#15803d'}}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+
+        {loading && !insights ? (
+             <div className="animate-pulse space-y-4 max-w-2xl">
+                <div className="h-8 w-3/4 bg-gray-100 rounded"></div>
+                <div className="h-4 w-full bg-gray-100 rounded"></div>
+                <div className="h-4 w-5/6 bg-gray-100 rounded"></div>
+            </div>
+        ) : (
+             <div className="flex flex-col md:flex-row gap-8 items-center">
+                 <div className="flex-1">
+                     {insights?.dailyTip ? (
+                         <div className="space-y-4">
+                            <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                {insights.dailyTip.category || 'Farming Tip'}
+                            </span>
+                            <h4 className="text-2xl font-extrabold text-gray-900 leading-tight">
+                                {insights.dailyTip.title}
+                            </h4>
+                            <p className="text-lg text-gray-600 leading-relaxed">
+                                {insights.dailyTip.content}
+                            </p>
+                         </div>
+                     ) : (
+                         <div className="space-y-4">
+                            <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                General Tip
+                            </span>
+                            <h4 className="text-2xl font-extrabold text-gray-900 leading-tight">
+                                Monitor Soil Moisture Levels
+                            </h4>
+                            <p className="text-lg text-gray-600 leading-relaxed">
+                                Consistent soil moisture monitoring is crucial during early crop stages. Use tensiometers or simple hand-feel tests to ensure roots are establishing well without waterlogging.
+                            </p>
+                         </div>
+                     )}
+                 </div>
+                 
+                 {/* Decorative Illustration/Icon */}
+                 <div className="hidden md:flex flex-shrink-0 w-48 h-48 bg-gray-50 rounded-full items-center justify-center text-8xl border-4 border-white shadow-lg animate-fade-in">
+                    💡
+                 </div>
+             </div>
+        )}
       </div>
     </div>
   );
