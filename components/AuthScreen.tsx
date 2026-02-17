@@ -229,15 +229,15 @@ export const AuthScreen: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#f0fdf4] flex flex-col justify-center py-12 sm:px-6 lg:px-8 animate-fade-in">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex flex-col items-center justify-center mb-8">
+        <div className="flex flex-col items-center justify-center mb-2">
            <div className="bg-white p-4 rounded-2xl shadow-lg border border-green-100 mb-4">
              <svg className="w-12 h-12" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-               <text y=".9em" fontSize="90">🚜</text>
+               <text y=".9em" fontSize="90">🧑‍🌾</text>
              </svg>
            </div>
-           <h1 className="text-4xl font-extrabold text-green-800 tracking-tight">FarmKeeper Pro</h1>
+           <h1 className="text-4xl font-extrabold text-green-800 tracking-tight leading-none">FarmKeeper Pro</h1>
         </div>
-        <h2 className="text-center text-3xl font-extrabold text-gray-900 tracking-tight">
+        <h2 className="text-center text-3xl font-extrabold text-gray-900 tracking-tight leading-tight">
           {view === 'LOGIN' ? 'Welcome back' : `Create your ${selectedPlan === 'pro' ? 'Pro' : 'Free'} account`}
         </h2>
         {view === 'REGISTER' && (

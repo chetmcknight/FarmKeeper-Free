@@ -41,7 +41,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, setPage }) 
             <h1 className="text-2xl font-extrabold text-green-800 dark:text-green-400 flex items-center gap-3 tracking-tight">
               <div className="bg-green-100 dark:bg-green-900 p-2 rounded-xl">
                  <svg className="w-7 h-7" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <text y=".9em" fontSize="90">🚜</text>
+                    <text y=".9em" fontSize="90">🧑‍🌾</text>
                  </svg>
               </div>
               FarmKeeper
