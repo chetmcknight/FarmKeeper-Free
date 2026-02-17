@@ -1,0 +1,9 @@
+{
+  "name": "FarmKeeper Pro",
+  "description": "An intelligent agricultural assistant helping farmers manage crops, diagnose plant diseases, and access real-time farming advice using Gemini AI.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
