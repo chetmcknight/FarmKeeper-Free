@@ -32,10 +32,15 @@ export const FieldScout: React.FC = () => {
   };
 
   const handleDiagnose = async () => {
-    if (!image) return;
+    if (!image) {
+        alert("Please upload an image first.");
+        return;
+    }
     setLoading(true);
     try {
       const base64Data = image.split(',')[1];
+      if (!base64Data) throw new Error("Invalid image data");
+      
       const diagnosis = await diagnoseHealth(base64Data);
       setResult(diagnosis);
       
@@ -45,8 +50,9 @@ export const FieldScout: React.FC = () => {
         result: diagnosis
       });
       setHistory(prev => [newRecord, ...prev].slice(0, 5));
-    } catch (error) {
-      alert("Analysis failed. Please try again.");
+    } catch (error: any) {
+      console.error("Diagnosis failed:", error);
+      alert(`Analysis failed: ${error.message || "Please check your internet connection or API key."}`);
     } finally {
       setLoading(false);
     }
@@ -129,7 +135,7 @@ export const FieldScout: React.FC = () => {
                          <p className="text-gray-500">Click below to identify the subject and diagnose health.</p>
                          <button 
                             onClick={handleDiagnose}
-                            className="w-full py-4 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
+                            className="w-full py-4 bg-white text-green-600 border border-green-200 hover:bg-green-600 hover:text-white rounded-2xl font-bold text-lg shadow-sm hover:shadow-lg transition-all transform hover:-translate-y-1"
                         >
                             Run Health Check
                          </button>

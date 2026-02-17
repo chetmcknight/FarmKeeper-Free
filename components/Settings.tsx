@@ -161,7 +161,7 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
                                 <button 
                                     onClick={handleUpdateProfile}
                                     disabled={savingProfile || name === user?.name}
-                                    className="px-5 py-2.5 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 disabled:opacity-50 disabled:bg-gray-300 transition-colors"
+                                    className="px-5 py-2.5 bg-white dark:bg-gray-800 text-green-600 border border-green-200 dark:border-green-800 rounded-lg font-bold hover:bg-green-600 hover:text-white disabled:opacity-50 disabled:bg-gray-50 disabled:border-gray-200 disabled:text-gray-400 transition-colors shadow-sm"
                                 >
                                     {savingProfile ? 'Saving...' : 'Update'}
                                 </button>
@@ -210,26 +210,11 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
                              <button 
                                 onClick={handleUpdatePassword}
                                 disabled={savingPassword || !newPassword}
-                                className="px-6 py-2.5 bg-gray-900 text-white rounded-lg font-bold hover:bg-black disabled:opacity-50 transition-colors dark:bg-gray-600 dark:hover:bg-gray-500"
+                                className="px-6 py-2.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-600 rounded-lg font-bold hover:bg-gray-900 hover:text-white dark:hover:bg-gray-600 disabled:opacity-50 transition-colors shadow-sm"
                             >
                                 {savingPassword ? 'Updating...' : 'Change Password'}
                             </button>
                         </div>
-                    </div>
-                </div>
-
-                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h4 className="font-bold text-gray-800 dark:text-gray-200">Dark Mode</h4>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Reduce eye strain with a dark color theme.</p>
-                        </div>
-                        <button 
-                            onClick={toggleDarkMode}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${isDarkMode ? 'bg-green-600' : 'bg-gray-200'}`}
-                        >
-                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ease-in-out ${isDarkMode ? 'translate-x-6' : 'translate-x-1'}`} />
-                        </button>
                     </div>
                 </div>
             </div>
@@ -248,16 +233,16 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
                       <div>
                         <h4 className="font-bold text-gray-900 dark:text-white text-lg">Export Full Backup</h4>
                         <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                            Download a comprehensive JSON file containing all your crops, livestock profiles, and scout history.
+                            Download a JSON file containing your crops and livestock data.
                         </p>
                       </div>
                   </div>
                   <button 
                     onClick={handleExportData}
                     disabled={loadingExport}
-                    className="flex-shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="flex-shrink-0 bg-white dark:bg-gray-800 text-indigo-600 border border-indigo-200 dark:border-indigo-800 px-6 py-3 rounded-xl font-bold hover:bg-indigo-600 hover:text-white hover:border-indigo-600 dark:hover:bg-indigo-500 dark:hover:border-indigo-500 transition-all shadow-sm flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {loadingExport ? 'Generating JSON...' : 'Download a JSON file containing your crops and livestock data'}
+                    {loadingExport ? 'Generating JSON...' : 'Download JSON'}
                   </button>
                </div>
              </div>
@@ -284,9 +269,9 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
                             <button 
                                 onClick={() => setShowPayment(true)}
                                 style={{ backfaceVisibility: 'hidden', WebkitFontSmoothing: 'subpixel-antialiased' }}
-                                className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform-gpu hover:-translate-y-0.5 hover:scale-105 flex items-center gap-2"
+                                className="bg-white dark:bg-gray-800 text-green-600 border border-green-200 dark:border-green-800 px-8 py-3 rounded-xl font-bold hover:bg-green-600 hover:text-white dark:hover:bg-green-500 dark:hover:border-green-500 transition-colors duration-300 ease-in-out flex items-center gap-2 shadow-sm"
                             >
-                                <svg className="w-5 h-5 text-yellow-300" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                                <svg className="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
                                 Upgrade to Pro
                             </button>
                         ) : (

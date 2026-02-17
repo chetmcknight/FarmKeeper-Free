@@ -347,7 +347,7 @@ export const AnimalManager: React.FC = () => {
                                     className="w-full h-full object-cover"
                                 />
                              ) : (
-                                <div className="w-full h-full bg-gradient-to-r from-green-50 to-green-100"></div>
+                                <div className="w-full h-full bg-gradient-to-br from-green-50 to-green-100"></div>
                              )}
                              {isEditing && (
                                 <button 
@@ -361,13 +361,20 @@ export const AnimalManager: React.FC = () => {
 
                         {/* Edit Toggle Button */}
                         <button 
-                          onClick={() => isEditing ? handleUpdateProfile() : setIsEditing(true)}
+                          onClick={() => {
+                              if (isEditing) {
+                                  setIsEditing(false);
+                                  setEditForm(selectedAnimal);
+                              } else {
+                                  setIsEditing(true);
+                              }
+                          }}
                           className={`absolute top-4 right-4 z-20 p-2 rounded-full transition-colors shadow-sm ${
-                              isEditing ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-white/90 text-gray-500 hover:bg-white hover:text-green-600'
+                              isEditing ? 'bg-gray-100 text-gray-500 hover:bg-red-100 hover:text-red-600' : 'bg-white/90 text-gray-500 hover:bg-white hover:text-green-600'
                           }`}
                         >
                            {isEditing ? (
-                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                            ) : (
                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                            )}
@@ -414,7 +421,7 @@ export const AnimalManager: React.FC = () => {
                                 <select 
                                     value={editForm?.status}
                                     onChange={(e) => setEditForm(prev => prev ? {...prev, status: e.target.value as any} : null)}
-                                    className="mt-2 text-xs font-bold bg-white border border-gray-300 rounded px-2 py-1"
+                                    className="mt-2 text-xs font-bold text-gray-900 bg-white border border-gray-300 rounded px-2 py-1"
                                 >
                                     <option value="Healthy">Healthy</option>
                                     <option value="Sick">Sick</option>
@@ -438,7 +445,7 @@ export const AnimalManager: React.FC = () => {
                                         <input 
                                             value={editForm?.breed}
                                             onChange={(e) => setEditForm(prev => prev ? {...prev, breed: e.target.value} : null)}
-                                            className="w-full text-sm border border-gray-300 rounded px-2 py-1" 
+                                            className="w-full text-sm text-gray-900 border border-gray-300 rounded px-2 py-1" 
                                         />
                                     ) : (
                                         <p className="text-gray-700 font-medium">{selectedAnimal.breed}</p>
@@ -450,7 +457,7 @@ export const AnimalManager: React.FC = () => {
                                         <select 
                                             value={editForm?.type}
                                             onChange={(e) => setEditForm(prev => prev ? {...prev, type: e.target.value} : null)}
-                                            className="w-full text-sm border border-gray-300 rounded px-2 py-1" 
+                                            className="w-full text-sm text-gray-900 border border-gray-300 rounded px-2 py-1" 
                                         >
                                             <option value="Cattle">Cattle</option>
                                             <option value="Pig">Pig</option>
@@ -474,7 +481,7 @@ export const AnimalManager: React.FC = () => {
                                          <select 
                                             value={editForm?.gender}
                                             onChange={(e) => setEditForm(prev => prev ? {...prev, gender: e.target.value as any} : null)}
-                                            className="w-full text-sm border border-gray-300 rounded px-2 py-1" 
+                                            className="w-full text-sm text-gray-900 border border-gray-300 rounded px-2 py-1" 
                                         >
                                             <option value="Female">Female</option>
                                             <option value="Male">Male</option>
@@ -489,7 +496,7 @@ export const AnimalManager: React.FC = () => {
                                         <input 
                                             value={editForm?.weight}
                                             onChange={(e) => setEditForm(prev => prev ? {...prev, weight: e.target.value} : null)}
-                                            className="w-full text-sm border border-gray-300 rounded px-2 py-1" 
+                                            className="w-full text-sm text-gray-900 border border-gray-300 rounded px-2 py-1" 
                                         />
                                     ) : (
                                         <p className="text-gray-700 font-medium">{selectedAnimal.weight}</p>
@@ -502,7 +509,7 @@ export const AnimalManager: React.FC = () => {
                                             type="date"
                                             value={editForm?.birthDate}
                                             onChange={(e) => setEditForm(prev => prev ? {...prev, birthDate: e.target.value} : null)}
-                                            className="w-full text-sm border border-gray-300 rounded px-2 py-1" 
+                                            className="w-full text-sm text-gray-900 border border-gray-300 rounded px-2 py-1" 
                                         />
                                     ) : (
                                         <p className="text-gray-700 font-medium">{new Date(selectedAnimal.birthDate).toLocaleDateString()}</p>
@@ -515,16 +522,27 @@ export const AnimalManager: React.FC = () => {
                                     </p>
                                 </div>
                             </div>
+                            
                             {isEditing && (
-                                <div className="text-xs text-gray-400 text-center mt-2">
-                                    Click the cover image or profile icon to upload new photos.
-                                    <button 
-                                        onClick={() => setIsEditing(false)}
-                                        className="w-full mt-4 bg-gray-100 text-gray-600 text-sm font-medium py-2 rounded hover:bg-gray-200"
-                                    >
-                                        Cancel Changes
-                                    </button>
-                                </div>
+                                <>
+                                    <div className="text-xs text-gray-400 text-center mt-2">
+                                        Click the cover image or profile icon to upload new photos.
+                                    </div>
+                                    <div className="flex gap-3 pt-4 border-t border-gray-100 mt-2">
+                                        <button 
+                                            onClick={() => { setIsEditing(false); setEditForm(selectedAnimal); }}
+                                            className="flex-1 bg-gray-100 text-gray-700 text-sm font-bold py-3 rounded-xl hover:bg-gray-200 transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button 
+                                            onClick={handleUpdateProfile}
+                                            className="flex-1 bg-green-600 text-white text-sm font-bold py-3 rounded-xl hover:bg-green-700 transition-colors shadow-md"
+                                        >
+                                            Save Changes
+                                        </button>
+                                    </div>
+                                </>
                             )}
                         </div>
                     </div>

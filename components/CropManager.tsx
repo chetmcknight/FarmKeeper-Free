@@ -166,13 +166,21 @@ export const CropManager: React.FC = () => {
                     <div className="bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden relative">
                          {/* Edit Toggle Button */}
                          <button 
-                          onClick={() => isEditing ? handleUpdateCrop() : setIsEditing(true)}
+                          onClick={() => {
+                              if (isEditing) {
+                                  // Cancel action
+                                  setIsEditing(false);
+                                  setEditForm(selectedCrop);
+                              } else {
+                                  setIsEditing(true);
+                              }
+                          }}
                           className={`absolute top-4 right-4 z-20 p-2.5 rounded-full transition-all shadow-sm ${
-                              isEditing ? 'bg-green-600 text-white hover:bg-green-700 shadow-md' : 'bg-white/80 backdrop-blur-sm text-gray-500 hover:bg-white hover:text-green-600'
+                              isEditing ? 'bg-gray-100 text-gray-500 hover:bg-red-100 hover:text-red-600' : 'bg-white/80 backdrop-blur-sm text-gray-500 hover:bg-white hover:text-green-600'
                           }`}
                         >
                            {isEditing ? (
-                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                            ) : (
                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                            )}
@@ -200,7 +208,7 @@ export const CropManager: React.FC = () => {
                                 <select 
                                     value={editForm?.status}
                                     onChange={(e) => setEditForm(prev => prev ? {...prev, status: e.target.value as any} : null)}
-                                    className="mt-2 text-sm font-bold bg-white border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-green-500 outline-none"
+                                    className="mt-2 text-sm font-bold text-gray-900 bg-white border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-green-500 outline-none"
                                 >
                                     <option value="Healthy">Healthy</option>
                                     <option value="Needs Attention">Needs Attention</option>
@@ -221,7 +229,7 @@ export const CropManager: React.FC = () => {
                                         <input 
                                             value={editForm?.variety}
                                             onChange={(e) => setEditForm(prev => prev ? {...prev, variety: e.target.value} : null)}
-                                            className="w-full text-sm border border-gray-300 rounded px-2 py-1" 
+                                            className="w-full text-sm text-gray-900 border border-gray-300 rounded px-2 py-1" 
                                         />
                                     ) : (
                                         <p className="text-gray-800 font-semibold">{selectedCrop.variety}</p>
@@ -233,7 +241,7 @@ export const CropManager: React.FC = () => {
                                         <input 
                                             value={editForm?.area}
                                             onChange={(e) => setEditForm(prev => prev ? {...prev, area: e.target.value} : null)}
-                                            className="w-full text-sm border border-gray-300 rounded px-2 py-1" 
+                                            className="w-full text-sm text-gray-900 border border-gray-300 rounded px-2 py-1" 
                                         />
                                     ) : (
                                         <p className="text-gray-800 font-semibold">{selectedCrop.area}</p>
@@ -246,7 +254,7 @@ export const CropManager: React.FC = () => {
                                             type="date"
                                             value={editForm?.plantedDate}
                                             onChange={(e) => setEditForm(prev => prev ? {...prev, plantedDate: e.target.value} : null)}
-                                            className="w-full text-sm border border-gray-300 rounded px-2 py-1" 
+                                            className="w-full text-sm text-gray-900 border border-gray-300 rounded px-2 py-1" 
                                         />
                                     ) : (
                                         <p className="text-gray-800 font-semibold">{new Date(selectedCrop.plantedDate).toLocaleDateString()}</p>
@@ -265,20 +273,29 @@ export const CropManager: React.FC = () => {
                                             type="date"
                                             value={editForm?.harvestDate}
                                             onChange={(e) => setEditForm(prev => prev ? {...prev, harvestDate: e.target.value} : null)}
-                                            className="w-full text-sm border border-gray-300 rounded px-2 py-1 bg-white" 
+                                            className="w-full text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 bg-white" 
                                         />
                                     ) : (
                                         <p className="text-green-700 font-bold text-lg">{new Date(selectedCrop.harvestDate).toLocaleDateString()}</p>
                                     )}
                                 </div>
                             </div>
+                            
                             {isEditing && (
-                                <button 
-                                    onClick={() => setIsEditing(false)}
-                                    className="w-full mt-2 bg-gray-100 text-gray-600 text-sm font-bold py-3 rounded-xl hover:bg-gray-200 transition-colors"
-                                >
-                                    Cancel Changes
-                                </button>
+                                <div className="flex gap-3 pt-4 border-t border-gray-100">
+                                    <button 
+                                        onClick={() => { setIsEditing(false); setEditForm(selectedCrop); }}
+                                        className="flex-1 bg-gray-100 text-gray-700 text-sm font-bold py-3 rounded-xl hover:bg-gray-200 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        onClick={handleUpdateCrop}
+                                        className="flex-1 bg-green-600 text-white text-sm font-bold py-3 rounded-xl hover:bg-green-700 transition-colors shadow-md"
+                                    >
+                                        Save Changes
+                                    </button>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -417,15 +434,16 @@ export const CropManager: React.FC = () => {
 
        {/* Add Crop Modal */}
        {showAddModal && (
-        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity duration-300">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all scale-100 max-h-[90vh] overflow-y-auto">
-                <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 sticky top-0 z-10 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm transition-opacity duration-300">
+            <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 backdrop-blur-sm">
                     <h3 className="text-lg font-bold text-gray-800">Add New Crop</h3>
                     <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
-                <div className="p-8 space-y-6">
+                
+                <div className="p-8 space-y-6 overflow-y-auto">
                     <div className="grid grid-cols-2 gap-5">
                         <div className="col-span-2">
                             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Field Name</label>
@@ -490,7 +508,8 @@ export const CropManager: React.FC = () => {
                         </div>
                     </div>
                 </div>
-                <div className="px-8 py-6 bg-gray-50 flex justify-end gap-3 sticky bottom-0 z-10 border-t border-gray-100">
+
+                <div className="px-8 py-6 bg-gray-50 flex justify-end gap-3 border-t border-gray-100 mt-auto">
                     <button 
                         onClick={() => setShowAddModal(false)}
                         className="px-6 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-700 hover:bg-white transition-colors"
