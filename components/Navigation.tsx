@@ -35,17 +35,19 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, setPage }) 
       <nav className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50 md:relative md:border-t-0 md:border-r md:w-72 md:h-screen md:flex md:flex-col md:justify-between transition-all duration-300">
         <div>
           <div 
-            className="md:p-8 md:mb-2 hidden md:block cursor-pointer hover:opacity-80 transition-opacity"
+            className="md:p-6 md:mb-2 hidden md:block cursor-pointer hover:opacity-80 transition-opacity"
             onClick={() => setPage(Page.DASHBOARD)}
           >
-            <h1 className="text-2xl font-extrabold text-green-800 dark:text-green-400 flex items-center gap-3 tracking-tight">
-              <div className="bg-green-100 dark:bg-green-900 p-2 rounded-xl">
-                 <svg className="w-7 h-7" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <text y=".9em" fontSize="90">🧑‍🌾</text>
-                 </svg>
-              </div>
-              FarmKeeper
-            </h1>
+            <div className="flex flex-col items-center">
+                <div className="bg-white dark:bg-gray-800 p-3 rounded-2xl shadow-md border border-green-100 dark:border-gray-700 mb-3">
+                   <svg className="w-10 h-10" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                      <text y=".9em" fontSize="90">🧑‍🌾</text>
+                   </svg>
+                </div>
+                <h1 className="text-2xl lg:text-3xl font-black text-green-800 dark:text-green-400 tracking-tight text-center leading-tight">
+                  FarmKeeper Pro
+                </h1>
+            </div>
           </div>
           <div className="flex justify-around items-center h-20 md:flex-col md:h-auto md:justify-start md:space-y-1 md:px-4">
             {navItems.map((item) => (

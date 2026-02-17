@@ -142,7 +142,7 @@ export const AIGuide: React.FC = () => {
       <div className="p-4 border-b border-gray-100 bg-green-50 shrink-0">
         <h2 className="text-lg font-bold text-green-900 flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-          FarmKeeper
+          FarmKeeper Pro
         </h2>
       </div>
 

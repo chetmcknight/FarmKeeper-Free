@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { getDashboardInsights } from '../services/geminiService';
 import { backend } from '../services/mockBackend';
+import { Page } from '../types';
 
 interface DashboardProps {
   location: string;
+  onNavigate: (page: Page) => void;
 }
 
 const COMMODITY_OPTIONS = [
@@ -13,7 +15,7 @@ const COMMODITY_OPTIONS = [
   "Milk", "Eggs", "Diesel Fuel", "Urea Fertilizer"
 ];
 
-export const Dashboard: React.FC<DashboardProps> = ({ location }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate }) => {
   const [insights, setInsights] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [selectedCommodities, setSelectedCommodities] = useState<string[]>([
@@ -99,40 +101,52 @@ export const Dashboard: React.FC<DashboardProps> = ({ location }) => {
       
       {/* Farm Status Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          <div className="bg-white p-5 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-md transition-shadow">
+          <div 
+            onClick={() => onNavigate(Page.CROPS)}
+            className="bg-white p-5 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-lg hover:scale-105 hover:border-green-200 transition-all cursor-pointer group"
+          >
               <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center text-2xl shadow-inner">🌽</div>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform">🌽</div>
                   <div>
-                      <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Crops</p>
+                      <p className="text-xs text-gray-500 uppercase font-bold tracking-wider group-hover:text-green-600 transition-colors">Crops</p>
                       <h4 className="text-2xl font-bold text-gray-900">{stats.cropsTotal}</h4>
                   </div>
               </div>
           </div>
-          <div className="bg-white p-5 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-md transition-shadow">
+          <div 
+            onClick={() => onNavigate(Page.CROPS)}
+            className="bg-white p-5 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-lg hover:scale-105 hover:border-yellow-200 transition-all cursor-pointer group"
+          >
               <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-50 to-yellow-100 flex items-center justify-center text-2xl shadow-inner">⚠️</div>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-50 to-yellow-100 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform">⚠️</div>
                   <div>
-                      <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Crop Alerts</p>
+                      <p className="text-xs text-gray-500 uppercase font-bold tracking-wider group-hover:text-yellow-600 transition-colors">Crop Alerts</p>
                       <h4 className={`text-2xl font-bold ${stats.cropsAttention > 0 ? 'text-yellow-600' : 'text-gray-900'}`}>
                           {stats.cropsAttention}
                       </h4>
                   </div>
               </div>
           </div>
-          <div className="bg-white p-5 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-md transition-shadow">
+          <div 
+            onClick={() => onNavigate(Page.ANIMALS)}
+            className="bg-white p-5 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-lg hover:scale-105 hover:border-blue-200 transition-all cursor-pointer group"
+          >
               <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center text-2xl shadow-inner">🐄</div>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform">🐄</div>
                   <div>
-                      <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Livestock</p>
+                      <p className="text-xs text-gray-500 uppercase font-bold tracking-wider group-hover:text-blue-600 transition-colors">Livestock</p>
                       <h4 className="text-2xl font-bold text-gray-900">{stats.animalsTotal}</h4>
                   </div>
               </div>
           </div>
-          <div className="bg-white p-5 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-md transition-shadow">
+          <div 
+            onClick={() => onNavigate(Page.ANIMALS)}
+            className="bg-white p-5 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-lg hover:scale-105 hover:border-red-200 transition-all cursor-pointer group"
+          >
               <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center text-2xl shadow-inner">🏥</div>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform">🏥</div>
                   <div>
-                      <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Vet Alerts</p>
+                      <p className="text-xs text-gray-500 uppercase font-bold tracking-wider group-hover:text-red-600 transition-colors">Vet Alerts</p>
                       <h4 className={`text-2xl font-bold ${stats.animalsAttention > 0 ? 'text-red-600' : 'text-gray-900'}`}>
                           {stats.animalsAttention}
                       </h4>

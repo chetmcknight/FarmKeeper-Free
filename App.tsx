@@ -60,7 +60,7 @@ const AuthenticatedLayout: React.FC = () => {
   const renderPage = () => {
     switch (currentPage) {
       case Page.DASHBOARD:
-        return <Dashboard location={location || 'Sequim, WA'} />;
+        return <Dashboard location={location || 'Sequim, WA'} onNavigate={setCurrentPage} />;
       case Page.CROPS:
         return <CropManager />;
       case Page.ANIMALS:
@@ -72,7 +72,7 @@ const AuthenticatedLayout: React.FC = () => {
       case Page.SETTINGS:
         return <Settings toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} />;
       default:
-        return <Dashboard location={location || 'Sequim, WA'} />;
+        return <Dashboard location={location || 'Sequim, WA'} onNavigate={setCurrentPage} />;
     }
   };
 

@@ -126,7 +126,7 @@ export const AuthScreen: React.FC = () => {
         <div className="min-h-screen bg-[#f0fdf4] py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center animate-fade-in">
             <div className="max-w-5xl w-full space-y-12">
                 <div className="text-center">
-                    <h1 className="text-5xl font-extrabold text-green-700 tracking-tight mb-6">FarmKeeper Pro</h1>
+                    <h1 className="text-5xl font-black text-green-700 tracking-tight mb-6">FarmKeeper Pro</h1>
                     <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-2">Choose your Plan</h2>
                     <p className="text-xl text-gray-500 max-w-2xl mx-auto">Select the best tools for your agricultural needs. Scale as you grow.</p>
                 </div>
@@ -235,7 +235,7 @@ export const AuthScreen: React.FC = () => {
                <text y=".9em" fontSize="90">🧑‍🌾</text>
              </svg>
            </div>
-           <h1 className="text-4xl font-extrabold text-green-800 tracking-tight leading-none">FarmKeeper Pro</h1>
+           <h1 className="text-4xl font-black text-green-800 tracking-tight leading-none">FarmKeeper Pro</h1>
         </div>
         <h2 className="text-center text-3xl font-extrabold text-gray-900 tracking-tight leading-tight">
           {view === 'LOGIN' ? 'Welcome back' : `Create your ${selectedPlan === 'pro' ? 'Pro' : 'Free'} account`}
