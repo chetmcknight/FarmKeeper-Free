@@ -54,7 +54,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, setPage }) 
               <button
                 key={item.id}
                 onClick={() => setPage(item.id)}
-                className={`flex flex-col md:flex-row md:gap-3 md:px-5 md:py-3.5 md:w-full md:rounded-xl items-center justify-center w-full h-full md:h-auto transition-all duration-200 group
+                className={`flex flex-col md:flex-row md:gap-3 md:px-5 md:py-3.5 md:w-full md:rounded-xl items-center justify-center md:justify-start w-full h-full md:h-auto transition-all duration-200 group
                   ${currentPage === item.id 
                     ? 'text-green-700 bg-green-50 md:bg-green-100/70 dark:bg-green-900/40 dark:text-green-400 md:shadow-sm' 
                     : 'text-gray-400 dark:text-gray-500 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}

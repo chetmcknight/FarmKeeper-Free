@@ -133,7 +133,13 @@ export const getDashboardInsights = async (location: string, commodities: string
         "market": [
            { "name": "Exact Item Name from list", "price": "Price with unit" }
         ],
-        "dailyTip": { "title": "Short Title", "content": "1-2 sentences of advice", "category": "Crops|Livestock|General" }
+        "dailyTip": { 
+          "title": "Short Title", 
+          "content": "1-2 sentences of advice", 
+          "category": "Crops|Livestock|General",
+          "source": "Name of reputable source (e.g. USDA, University Extension)",
+          "sourceUrl": "URL to source if available"
+        }
       }`,
       config: {
         tools: [{ googleSearch: {} }],
