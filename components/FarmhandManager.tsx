@@ -161,8 +161,9 @@ export const FarmhandManager: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {hands.map((hand) => (
-                <div key={hand.id} className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-md transition-all relative group overflow-hidden">
-                    <div className="h-24 bg-gradient-to-r from-gray-100 to-gray-200"></div>
+                <div key={hand.id} className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-md transition-all relative group overflow-hidden isolate">
+                    {/* Added rounded-t-2xl to ensure corners are filled */}
+                    <div className="h-24 bg-gradient-to-r from-gray-100 to-gray-200 rounded-t-2xl"></div>
                     
                     <div className="px-6 relative">
                         <div className="w-20 h-20 rounded-full border-4 border-white bg-white shadow-md -mt-10 overflow-hidden flex items-center justify-center text-3xl">
@@ -256,7 +257,7 @@ export const FarmhandManager: React.FC = () => {
         {showAddModal && (
             <div className="fixed inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                 <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] m-4 flex flex-col">
-                    <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                    <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                         <h3 className="text-lg font-bold text-gray-800">{isEditing ? 'Edit Farmhand' : 'Add Farmhand'}</h3>
                         <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors">
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>

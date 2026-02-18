@@ -88,25 +88,23 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
   }, [billingCycle, price, upgradeToPro, success]);
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         
         {/* Background Overlay */}
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-sm transition-opacity" onClick={onClose} aria-hidden="true"></div>
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onClick={onClose} aria-hidden="true"></div>
 
-        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-        <div className="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md w-full relative">
+        {/* Modal Container */}
+        <div className="bg-white rounded-2xl text-left shadow-2xl transform transition-all sm:max-w-md w-full relative flex flex-col max-h-[90vh] overflow-hidden">
           
           <button 
              onClick={onClose}
-             className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
+             className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors z-20 bg-black/20 hover:bg-black/40 rounded-full p-1"
           >
-             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
 
           {success ? (
-            <div className="p-8 text-center bg-white">
+            <div className="p-8 text-center bg-white overflow-y-auto">
               <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-green-50 mb-6 animate-bounce">
                 <svg className="h-10 w-10 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -128,27 +126,28 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
               </button>
             </div>
           ) : (
-            <div className="bg-white">
-              {/* Header */}
-              <div className="bg-gray-900 p-8 text-center relative overflow-hidden">
+            <>
+              {/* Header - Fixed */}
+              <div className="bg-gray-900 p-6 text-center relative shrink-0">
                    <div className="absolute inset-0 bg-gradient-to-br from-green-900/50 to-transparent"></div>
                    <div className="relative z-10">
-                        <div className="inline-block p-3 rounded-full bg-gray-800 mb-4 shadow-xl">
-                            <span className="text-3xl">🚀</span>
+                        <div className="inline-block p-2 rounded-full bg-gray-800 mb-2 shadow-xl">
+                            <span className="text-2xl">🚀</span>
                         </div>
-                        <h3 className="text-2xl font-extrabold text-white">Upgrade to Pro</h3>
-                        <p className="text-gray-400 mt-2 text-sm">Unlock the full potential of your farm with advanced AI tools.</p>
+                        <h3 className="text-xl font-extrabold text-white">Upgrade to Pro</h3>
+                        <p className="text-gray-400 mt-1 text-xs sm:text-sm">Unlock full potential with AI tools.</p>
                    </div>
               </div>
 
-              <div className="p-8">
+              {/* Body - Scrollable */}
+              <div className="p-6 overflow-y-auto">
                 {/* Billing Toggle */}
-                <div className="flex justify-center mb-8">
-                    <div className="bg-gray-100 p-1.5 rounded-xl inline-flex w-full">
+                <div className="flex justify-center mb-6">
+                    <div className="bg-gray-100 p-1 rounded-xl inline-flex w-full">
                     <button
                         onClick={() => setBillingCycle('monthly')}
                         disabled={processing}
-                        className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${
+                        className={`flex-1 py-1.5 text-sm font-bold rounded-lg transition-all ${
                         billingCycle === 'monthly' 
                             ? 'bg-white text-gray-900 shadow-sm' 
                             : 'text-gray-500 hover:text-gray-700'
@@ -159,7 +158,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
                     <button
                         onClick={() => setBillingCycle('yearly')}
                         disabled={processing}
-                        className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                        className={`flex-1 py-1.5 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
                         billingCycle === 'yearly' 
                             ? 'bg-white text-gray-900 shadow-sm' 
                             : 'text-gray-500 hover:text-gray-700'
@@ -171,13 +170,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
                     </div>
                 </div>
 
-                <div className="flex items-baseline justify-center mb-8">
+                <div className="flex items-baseline justify-center mb-6">
                     <span className="text-4xl font-extrabold text-gray-900">${price}</span>
                     <span className="text-gray-500 ml-1 font-medium">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
                 </div>
 
                 {/* Features */}
-                <ul className="space-y-3 mb-8">
+                <ul className="space-y-3 mb-6">
                     <li className="flex items-center text-sm text-gray-600">
                         <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                         Unlimited Crop & Livestock entries
@@ -199,21 +198,19 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
                     </div>
                 ) : null}
                 
-                {/* Always render container, show/hide based on script status handled by conditional rendering above logic, 
-                    but here we just ensure container exists to receive the render */}
+                {/* PayPal Container */}
                 <div 
                     ref={paypalRef} 
                     className={`relative min-h-[150px] z-0 ${processing || loadingScript ? 'hidden' : 'block'}`}
                 ></div>
                 
-                <p className="text-xs text-center text-gray-400 mt-4">
-                    Secure payment processed by PayPal. You can cancel anytime.
+                <p className="text-xs text-center text-gray-400 mt-4 pb-2">
+                    Secure payment processed by PayPal. Cancel anytime.
                 </p>
               </div>
-            </div>
+            </>
           )}
         </div>
-      </div>
     </div>
   );
 };

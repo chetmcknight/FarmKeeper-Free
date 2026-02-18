@@ -8,6 +8,7 @@ export const FieldScout: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<DiagnosisResult | null>(null);
   const [history, setHistory] = useState<ScoutRecord[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -56,9 +57,13 @@ export const FieldScout: React.FC = () => {
     });
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
+  const processFile = async (file: File) => {
+      // Basic validation
+      if (!file.type.match(/^image\/(jpeg|png|jpg)$/i) && !file.type.startsWith('image/')) {
+          alert("Please upload a PNG or JPG image.");
+          return;
+      }
+
       try {
           const compressed = await compressImage(file);
           setImage(compressed);
@@ -67,7 +72,32 @@ export const FieldScout: React.FC = () => {
           console.error("Image processing error:", error);
           alert("Failed to process image. Please try again.");
       }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      processFile(file);
     }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      const file = e.dataTransfer.files?.[0];
+      if (file) {
+          processFile(file);
+      }
   };
 
   const handleDiagnose = async () => {
@@ -127,18 +157,28 @@ export const FieldScout: React.FC = () => {
       <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 min-h-[500px] flex flex-col md:flex-row">
         
         {/* Left Side: Image / Upload */}
-        <div className={`relative w-full md:w-1/2 bg-gray-50 flex flex-col items-center justify-center transition-all duration-500 ${!image ? 'md:w-full p-12' : 'border-b md:border-b-0 md:border-r border-gray-100'}`}>
+        <div className={`relative w-full md:w-1/2 flex flex-col items-center justify-center transition-all duration-500 ${!image ? 'md:w-full p-6 md:p-12 bg-gray-50' : 'bg-gray-50 border-b md:border-b-0 md:border-r border-gray-100'}`}>
             
             {!image ? (
                 <div 
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
                     onClick={() => fileInputRef.current?.click()}
-                    className="cursor-pointer group text-center w-full h-full flex flex-col items-center justify-center"
+                    className={`cursor-pointer group text-center w-full h-full min-h-[300px] flex flex-col items-center justify-center border-2 border-dashed rounded-2xl transition-all duration-300 ${
+                        isDragging 
+                        ? 'border-green-500 bg-green-50 scale-[1.02]' 
+                        : 'border-gray-300 hover:border-green-400 hover:bg-white'
+                    }`}
                 >
-                    <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner group-hover:scale-110 transition-transform duration-300">
+                    <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner transition-transform duration-300 ${isDragging ? 'scale-110 bg-white text-green-600' : 'bg-green-100 text-green-600 group-hover:scale-110'}`}>
                         <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                     </div>
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">Tap to Upload Photo</h3>
-                    <p className="text-sm text-gray-500">Crops & Livestock Supported</p>
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">
+                        {isDragging ? 'Drop to Upload' : 'Tap or Drag to Upload Photo'}
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-4">Crops & Livestock Supported</p>
+                    <p className="text-xs text-gray-400 font-medium bg-white px-3 py-1 rounded-full border border-gray-100">Accepted formats: PNG, JPG</p>
                 </div>
             ) : (
                 <div className="relative w-full h-full min-h-[300px] bg-black group">
@@ -158,7 +198,7 @@ export const FieldScout: React.FC = () => {
                type="file" 
                ref={fileInputRef} 
                className="hidden" 
-               accept="image/*" 
+               accept="image/png, image/jpeg, image/jpg" 
                capture="environment"
                onChange={handleImageUpload} 
             />

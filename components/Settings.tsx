@@ -78,13 +78,31 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
       const crops = await backend.getCrops();
       const animals = await backend.getAnimals();
       const scout = await backend.getScoutHistory();
+      const farmhands = await backend.getFarmhands(); // Include farmhands if available
+      
+      // Strip images to keep JSON light
+      const cleanAnimals = animals.map(a => {
+          const { imageUrl, coverUrl, ...rest } = a;
+          return rest;
+      });
+
+      const cleanScout = scout.map(s => {
+          const { imageBase64, ...rest } = s;
+          return rest;
+      });
+
+      const cleanFarmhands = farmhands.map(f => {
+          const { imageUrl, ...rest } = f;
+          return rest;
+      });
       
       const exportData = {
         user: { name: user?.name, email: user?.email, plan: user?.plan },
         exportedAt: new Date().toISOString(),
         crops,
-        animals,
-        scoutHistory: scout
+        animals: cleanAnimals,
+        scoutHistory: cleanScout,
+        farmhands: cleanFarmhands
       };
 
       const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
@@ -97,6 +115,7 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (e) {
+      console.error(e);
       alert("Failed to export data");
     } finally {
       setLoadingExport(false);
@@ -234,7 +253,7 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
                       <div>
                         <h4 className="font-bold text-gray-900 dark:text-white text-lg">Export Full Backup</h4>
                         <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                            Download a JSON file containing your crops and livestock data.
+                            Download a JSON file containing your crops, livestock, and farmhands data (images excluded).
                         </p>
                       </div>
                   </div>
