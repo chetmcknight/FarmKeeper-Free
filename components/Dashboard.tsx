@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getDashboardInsights } from '../services/geminiService';
 import { backend } from '../services/mockBackend';
 import { Page } from '../types';
+import { useAuth } from '../context/AuthContext';
 
 interface DashboardProps {
   location: string;
@@ -16,6 +17,7 @@ const COMMODITY_OPTIONS = [
 ];
 
 export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate }) => {
+  const { user } = useAuth();
   const [insights, setInsights] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [selectedCommodities, setSelectedCommodities] = useState<string[]>([
@@ -83,12 +85,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate }) =>
 
   return (
     <div className="p-4 md:p-8 space-y-8 pb-32 md:pb-8 animate-fade-in">
-      <header className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+      <header className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 pr-12 md:pr-0">
         <div>
-          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">{getGreeting()}, Farmer.</h2>
+          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">{getGreeting()}, {user?.name || 'Farmer'}.</h2>
           <p className="text-gray-500 dark:text-gray-400 font-medium mt-1">Here's what's happening on your farm today.</p>
         </div>
-        <div className="flex items-center gap-3 bg-white dark:bg-gray-800 px-4 py-2 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="flex items-center gap-3 bg-white dark:bg-gray-800 px-4 py-2 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 w-fit">
           <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded-lg text-green-700 dark:text-green-400">
              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
           </div>
@@ -156,7 +158,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate }) =>
       </div>
 
       {/* Insights Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Weather Card */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 p-6 relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
@@ -212,31 +214,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate }) =>
               );
             })}
           </div>
-        </div>
-
-        {/* Tasks Summary */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 p-6">
-          <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-gray-800 dark:text-white">Pending Tasks</h3>
-              <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide">Today</span>
-          </div>
-          <ul className="space-y-3">
-            <li className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-transparent hover:border-gray-100 dark:hover:border-gray-600">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-sm"></div>
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex-1">Scout North Field</span>
-              <span className="text-[10px] bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-1 rounded-md font-bold border border-red-100 dark:border-red-900/50">HIGH</span>
-            </li>
-            <li className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-transparent hover:border-gray-100 dark:hover:border-gray-600">
-              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow-sm"></div>
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex-1">Check Pump #3</span>
-              <span className="text-[10px] bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 px-2 py-1 rounded-md font-bold border border-yellow-100 dark:border-yellow-900/50">MED</span>
-            </li>
-             <li className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-transparent hover:border-gray-100 dark:hover:border-gray-600">
-              <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-sm"></div>
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex-1">Order Feed</span>
-              <span className="text-[10px] bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-md font-bold border border-blue-100 dark:border-blue-900/50">LOW</span>
-            </li>
-          </ul>
         </div>
       </div>
 

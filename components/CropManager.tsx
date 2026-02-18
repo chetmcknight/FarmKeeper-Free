@@ -434,8 +434,8 @@ export const CropManager: React.FC = () => {
 
        {/* Add Crop Modal */}
        {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm transition-opacity duration-300">
-            <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm transition-opacity duration-300">
+            <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] m-4">
                 <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 backdrop-blur-sm">
                     <h3 className="text-lg font-bold text-gray-800">Add New Crop</h3>
                     <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100">
@@ -443,7 +443,7 @@ export const CropManager: React.FC = () => {
                     </button>
                 </div>
                 
-                <div className="p-8 space-y-6 overflow-y-auto">
+                <div className="p-6 md:p-8 space-y-6 overflow-y-auto">
                     <div className="grid grid-cols-2 gap-5">
                         <div className="col-span-2">
                             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Field Name</label>

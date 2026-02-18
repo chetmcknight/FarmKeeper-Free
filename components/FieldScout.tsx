@@ -135,7 +135,8 @@ export const FieldScout: React.FC = () => {
                          <p className="text-gray-500">Click below to identify the subject and diagnose health.</p>
                          <button 
                             onClick={handleDiagnose}
-                            className="w-full py-4 bg-white text-green-600 border border-green-200 hover:bg-green-600 hover:text-white rounded-2xl font-bold text-lg shadow-sm hover:shadow-lg transition-all transform hover:-translate-y-1"
+                            style={{ backfaceVisibility: 'hidden', WebkitFontSmoothing: 'subpixel-antialiased' }}
+                            className="w-full py-4 bg-white text-green-600 border border-green-200 hover:bg-green-600 hover:text-white rounded-2xl font-bold text-lg shadow-sm hover:shadow-lg transition-colors duration-300 ease-in-out transform hover:-translate-y-1"
                         >
                             Run Health Check
                          </button>

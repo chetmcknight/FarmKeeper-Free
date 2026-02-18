@@ -92,14 +92,30 @@ create table if not exists public.scout_history (
   "created_at" timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- 6. Enable RLS
+-- 6. Farmhands Table
+create table if not exists public.farmhands (
+  "id" uuid default gen_random_uuid() primary key,
+  "userId" text not null,
+  "name" text not null,
+  "role" text,
+  "phone" text,
+  "email" text,
+  "status" text,
+  "notes" text,
+  "startDate" text,
+  "imageUrl" text,
+  "created_at" timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- 7. Enable RLS
 alter table public.crops enable row level security;
 alter table public.field_records enable row level security;
 alter table public.animals enable row level security;
 alter table public.medical_records enable row level security;
 alter table public.scout_history enable row level security;
+alter table public.farmhands enable row level security;
 
--- 7. Policies (SECURE: Only allow access to own data)
+-- 8. Policies (SECURE: Only allow access to own data)
 -- Crops
 create policy "Users can CRUD own crops" on public.crops for all 
 using (auth.uid()::text = "userId");
@@ -116,6 +132,10 @@ create policy "Users can CRUD medical records" on public.medical_records for all
 
 -- Scout History
 create policy "Users can CRUD own scout history" on public.scout_history for all 
+using (auth.uid()::text = "userId");
+
+-- Farmhands
+create policy "Users can CRUD own farmhands" on public.farmhands for all 
 using (auth.uid()::text = "userId");
 `;
 

@@ -78,18 +78,51 @@ export const AnimalManager: React.FC = () => {
       }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, field: 'imageUrl' | 'coverUrl', isAddMode: boolean = false) => {
+  // Helper to compress image
+  const compressImage = (file: File, maxWidth: number = 800): Promise<string> => {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target?.result as string;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth) {
+                    height *= maxWidth / width;
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx?.drawImage(img, 0, 0, width, height);
+                // Compress to JPEG at 0.7 quality
+                resolve(canvas.toDataURL('image/jpeg', 0.7));
+            };
+        };
+    });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'imageUrl' | 'coverUrl', isAddMode: boolean = false) => {
       const file = e.target.files?.[0];
       if (file) {
-          const reader = new FileReader();
-          reader.onloadend = () => {
+          try {
+              // Resize to max 600px for profile/cover to save LocalStorage space
+              const resizedBase64 = await compressImage(file, 600);
+              
               if (isAddMode) {
-                  setNewAnimal(prev => ({ ...prev, [field]: reader.result as string }));
+                  setNewAnimal(prev => ({ ...prev, [field]: resizedBase64 }));
               } else {
-                  setEditForm(prev => prev ? { ...prev, [field]: reader.result as string } : null);
+                  setEditForm(prev => prev ? { ...prev, [field]: resizedBase64 } : null);
               }
-          };
-          reader.readAsDataURL(file);
+          } catch (error) {
+              console.error("Image processing failed", error);
+              alert("Failed to process image. Please try a smaller file.");
+          }
       }
   };
 
@@ -100,8 +133,12 @@ export const AnimalManager: React.FC = () => {
         setSelectedAnimal(editForm);
         setIsEditing(false);
         loadAnimals(); // Refresh main list
-    } catch (e) {
-        alert("Failed to update animal");
+    } catch (e: any) {
+        if (e.name === 'QuotaExceededError' || e.message?.includes('QuotaExceededError')) {
+            alert("Storage full! Please delete old records or remove large images.");
+        } else {
+            alert("Failed to update animal: " + (e.message || "Unknown error"));
+        }
     }
   };
 
@@ -261,8 +298,13 @@ export const AnimalManager: React.FC = () => {
               coverUrl: ''
           });
           loadAnimals();
-      } catch (e) {
-          alert("Failed to add animal");
+      } catch (e: any) {
+          console.error(e);
+          if (e.name === 'QuotaExceededError' || e.message?.includes('QuotaExceededError')) {
+              alert("Storage limit reached! The image might be too large. Try a different photo or delete old items.");
+          } else {
+              alert("Failed to add animal: " + (e.message || "Unknown error"));
+          }
       }
   };
 
@@ -874,40 +916,40 @@ export const AnimalManager: React.FC = () => {
 
       {/* Add Animal Modal */}
        {showAddModal && (
-                <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden max-h-[90vh] overflow-y-auto">
-                        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <div className="fixed inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[85vh] m-4 flex flex-col">
+                        <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                             <h3 className="text-lg font-bold text-gray-800">Add New Animal</h3>
-                            <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-600">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                            <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
                         </div>
-                        <div className="p-6 space-y-4">
+                        <div className="p-6 md:p-8 space-y-6 overflow-y-auto">
                              {/* Image Uploads for New Animal */}
-                             <div className="flex gap-4 items-center justify-center mb-4">
+                             <div className="flex gap-6 items-center justify-center mb-2">
                                 <div 
                                     onClick={() => addFileInputRefProfile.current?.click()}
-                                    className="w-20 h-20 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-green-500 overflow-hidden relative"
+                                    className="w-20 h-20 rounded-full bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-green-500 hover:bg-green-50 transition-all overflow-hidden relative group"
                                 >
                                     {newAnimal.imageUrl ? (
                                         <img src={newAnimal.imageUrl} alt="Preview" className="w-full h-full object-cover" />
                                     ) : (
-                                        <div className="text-center">
-                                            <span className="text-xs text-gray-500">Profile</span>
-                                            <svg className="w-6 h-6 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                        <div className="text-center group-hover:scale-105 transition-transform">
+                                            <span className="text-[10px] text-gray-400 font-bold uppercase block mb-1">Profile</span>
+                                            <svg className="w-6 h-6 text-gray-300 mx-auto group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                         </div>
                                     )}
                                 </div>
                                 <div 
                                     onClick={() => addFileInputRefCover.current?.click()}
-                                    className="w-32 h-20 rounded-lg bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-green-500 overflow-hidden relative"
+                                    className="w-32 h-20 rounded-xl bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-green-500 hover:bg-green-50 transition-all overflow-hidden relative group"
                                 >
                                      {newAnimal.coverUrl ? (
                                         <img src={newAnimal.coverUrl} alt="Cover Preview" className="w-full h-full object-cover" />
                                     ) : (
-                                        <div className="text-center">
-                                            <span className="text-xs text-gray-500">Poster</span>
-                                            <svg className="w-6 h-6 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                        <div className="text-center group-hover:scale-105 transition-transform">
+                                            <span className="text-[10px] text-gray-400 font-bold uppercase block mb-1">Cover</span>
+                                            <svg className="w-6 h-6 text-gray-300 mx-auto group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                         </div>
                                     )}
                                 </div>
@@ -915,23 +957,23 @@ export const AnimalManager: React.FC = () => {
                                 <input type="file" ref={addFileInputRefCover} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'coverUrl', true)} />
                              </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-5">
                                 <div className="col-span-2">
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">Name</label>
+                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Name</label>
                                     <input 
                                         type="text" 
                                         placeholder="e.g. Bessie"
                                         value={newAnimal.name}
                                         onChange={(e) => setNewAnimal({...newAnimal, name: e.target.value})}
-                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all placeholder-gray-400"
                                     />
                                 </div>
                                 <div className="col-span-1">
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
+                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Type</label>
                                     <select 
                                         value={newAnimal.type}
                                         onChange={(e) => setNewAnimal({...newAnimal, type: e.target.value})}
-                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                                     >
                                         <option value="Cattle">Cattle</option>
                                         <option value="Pig">Pig</option>
@@ -946,31 +988,31 @@ export const AnimalManager: React.FC = () => {
                                     </select>
                                 </div>
                                 <div className="col-span-1">
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">Breed</label>
+                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Breed</label>
                                     <input 
                                         type="text" 
                                         value={newAnimal.breed}
                                         onChange={(e) => setNewAnimal({...newAnimal, breed: e.target.value})}
-                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                                     />
                                 </div>
                                 <div className="col-span-1">
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">Gender</label>
+                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Gender</label>
                                     <select 
                                         value={newAnimal.gender}
                                         onChange={(e) => setNewAnimal({...newAnimal, gender: e.target.value as any})}
-                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                                     >
                                         <option value="Female">Female</option>
                                         <option value="Male">Male</option>
                                     </select>
                                 </div>
                                 <div className="col-span-1">
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Status</label>
                                     <select 
                                         value={newAnimal.status}
                                         onChange={(e) => setNewAnimal({...newAnimal, status: e.target.value as any})}
-                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                                     >
                                         <option value="Healthy">Healthy</option>
                                         <option value="Sick">Sick</option>
@@ -981,37 +1023,37 @@ export const AnimalManager: React.FC = () => {
                                     </select>
                                 </div>
                                 <div className="col-span-1">
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">Birth Date</label>
+                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Birth Date</label>
                                     <input 
                                         type="date" 
                                         value={newAnimal.birthDate}
                                         onChange={(e) => setNewAnimal({...newAnimal, birthDate: e.target.value})}
-                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-gray-600"
                                     />
                                 </div>
                                 <div className="col-span-1">
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">Current Weight</label>
+                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Weight</label>
                                     <input 
                                         type="text" 
                                         placeholder="e.g. 150 lbs"
                                         value={newAnimal.weight}
                                         onChange={(e) => setNewAnimal({...newAnimal, weight: e.target.value})}
-                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                                     />
                                 </div>
                             </div>
                         </div>
-                        <div className="px-6 py-4 bg-gray-50 flex justify-end gap-3">
+                        <div className="px-8 py-6 bg-gray-50 flex justify-end gap-3 border-t border-gray-100 mt-auto">
                             <button 
                                 onClick={() => setShowAddModal(false)}
-                                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-white"
+                                className="px-6 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-700 hover:bg-white transition-colors"
                             >
                                 Cancel
                             </button>
                             <button 
                                 onClick={handleCreateAnimal}
                                 disabled={!newAnimal.name}
-                                className="px-4 py-2 bg-green-600 rounded-lg text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                                className="px-6 py-2.5 bg-green-600 rounded-xl text-sm font-bold text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg transition-all"
                             >
                                 Add Animal
                             </button>

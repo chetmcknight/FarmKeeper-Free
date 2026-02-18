@@ -99,12 +99,28 @@ export const supabase = (supabaseUrl && supabaseKey)
     "created_at" timestamp with time zone default timezone('utc'::text, now()) not null
   );
 
-  -- 6. Enable RLS (Optional for prototype, recommended for prod)
+  -- 6. Farmhands Table
+  create table if not exists public.farmhands (
+    "id" uuid default gen_random_uuid() primary key,
+    "userId" text not null,
+    "name" text not null,
+    "role" text,
+    "phone" text,
+    "email" text,
+    "status" text,
+    "notes" text,
+    "startDate" text,
+    "imageUrl" text,
+    "created_at" timestamp with time zone default timezone('utc'::text, now()) not null
+  );
+
+  -- 7. Enable RLS (Optional for prototype, recommended for prod)
   alter table public.crops enable row level security;
   alter table public.field_records enable row level security;
   alter table public.animals enable row level security;
   alter table public.medical_records enable row level security;
   alter table public.scout_history enable row level security;
+  alter table public.farmhands enable row level security;
 
   -- Policy example (Open for all for prototype if userId matches, or just true for dev)
   create policy "Enable all access for users" on public.crops for all using (true);
@@ -112,4 +128,5 @@ export const supabase = (supabaseUrl && supabaseKey)
   create policy "Enable all access for users" on public.animals for all using (true);
   create policy "Enable all access for users" on public.medical_records for all using (true);
   create policy "Enable all access for users" on public.scout_history for all using (true);
+  create policy "Enable all access for users" on public.farmhands for all using (true);
 */

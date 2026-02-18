@@ -1,4 +1,4 @@
-import { User, Crop, Animal, ScoutRecord } from '../types';
+import { User, Crop, Animal, ScoutRecord, Farmhand } from '../types';
 import { supabase } from './supabaseClient';
 
 const KEYS = {
@@ -7,6 +7,7 @@ const KEYS = {
   CROPS: 'farmhand_crops',
   ANIMALS: 'farmhand_animals',
   SCOUT_HISTORY: 'farmhand_scout_history',
+  FARMHANDS: 'farmhand_workers',
 };
 
 // --- Local Storage Implementation (Fallback) ---
@@ -98,6 +99,7 @@ const localBackend = {
     localStorage.removeItem(KEYS.CROPS);
     localStorage.removeItem(KEYS.ANIMALS);
     localStorage.removeItem(KEYS.SCOUT_HISTORY);
+    localStorage.removeItem(KEYS.FARMHANDS);
   },
 
   async getCurrentUser(): Promise<User | null> {
@@ -133,7 +135,9 @@ const localBackend = {
     const crops = await this.getCrops();
     const newCrop: Crop = { ...crop, id: Date.now().toString() };
     const updated = [...crops, newCrop];
-    localStorage.setItem(KEYS.CROPS, JSON.stringify(updated));
+    try {
+        localStorage.setItem(KEYS.CROPS, JSON.stringify(updated));
+    } catch (e) { throw e; }
     return newCrop;
   },
   async updateCrop(updatedCrop: Crop): Promise<Crop> {
@@ -160,7 +164,11 @@ const localBackend = {
     const animals = await this.getAnimals();
     const newAnimal: Animal = { ...animal, id: Date.now().toString() };
     const updated = [...animals, newAnimal];
-    localStorage.setItem(KEYS.ANIMALS, JSON.stringify(updated));
+    try {
+        localStorage.setItem(KEYS.ANIMALS, JSON.stringify(updated));
+    } catch (e) {
+        throw e; // Pass to UI for handling
+    }
     return newAnimal;
   },
   async updateAnimal(updatedAnimal: Animal): Promise<Animal> {
@@ -168,7 +176,9 @@ const localBackend = {
     const index = animals.findIndex(a => a.id === updatedAnimal.id);
     if (index !== -1) {
       animals[index] = updatedAnimal;
-      localStorage.setItem(KEYS.ANIMALS, JSON.stringify(animals));
+      try {
+        localStorage.setItem(KEYS.ANIMALS, JSON.stringify(animals));
+      } catch (e) { throw e; }
       return updatedAnimal;
     }
     throw new Error("Animal not found");
@@ -178,6 +188,35 @@ const localBackend = {
     const updated = animals.filter(a => a.id !== id);
     localStorage.setItem(KEYS.ANIMALS, JSON.stringify(updated));
   },
+  // Farmhands
+  async getFarmhands(): Promise<Farmhand[]> {
+    const stored = localStorage.getItem(KEYS.FARMHANDS);
+    return stored ? JSON.parse(stored) : [];
+  },
+  async addFarmhand(farmhand: Omit<Farmhand, 'id'>): Promise<Farmhand> {
+    const hands = await this.getFarmhands();
+    const newHand: Farmhand = { ...farmhand, id: Date.now().toString() };
+    const updated = [...hands, newHand];
+    try {
+      localStorage.setItem(KEYS.FARMHANDS, JSON.stringify(updated));
+    } catch (e) { throw e; }
+    return newHand;
+  },
+  async updateFarmhand(updatedHand: Farmhand): Promise<Farmhand> {
+    const hands = await this.getFarmhands();
+    const index = hands.findIndex(h => h.id === updatedHand.id);
+    if (index !== -1) {
+      hands[index] = updatedHand;
+      localStorage.setItem(KEYS.FARMHANDS, JSON.stringify(hands));
+      return updatedHand;
+    }
+    throw new Error("Farmhand not found");
+  },
+  async deleteFarmhand(id: string): Promise<void> {
+    const hands = await this.getFarmhands();
+    const updated = hands.filter(h => h.id !== id);
+    localStorage.setItem(KEYS.FARMHANDS, JSON.stringify(updated));
+  },
   // Scout
   async getScoutHistory(): Promise<ScoutRecord[]> {
     const stored = localStorage.getItem(KEYS.SCOUT_HISTORY);
@@ -186,10 +225,11 @@ const localBackend = {
   async addScoutRecord(record: Omit<ScoutRecord, 'id'>): Promise<ScoutRecord> {
     const history = await this.getScoutHistory();
     const newRecord = { ...record, id: Date.now().toString() };
-    const updated = [newRecord, ...history].slice(0, 5);
+    // Keep max 5 for localStorage limit safety
+    const updated = [newRecord, ...history].slice(0, 5); 
     try {
         localStorage.setItem(KEYS.SCOUT_HISTORY, JSON.stringify(updated));
-    } catch (e) { console.error("Quota exceeded"); }
+    } catch (e) { throw e; }
     return newRecord;
   },
   async deleteScoutRecord(id: string): Promise<void> {
@@ -257,6 +297,7 @@ const supabaseBackend = {
       await supabase!.from('crops').delete().eq('userId', userId);
       await supabase!.from('animals').delete().eq('userId', userId);
       await supabase!.from('scout_history').delete().eq('userId', userId);
+      await supabase!.from('farmhands').delete().eq('userId', userId);
       await supabase!.auth.signOut();
   },
 
@@ -401,6 +442,44 @@ const supabaseBackend = {
 
   async deleteAnimal(id: string): Promise<void> {
     await supabase!.from('animals').delete().eq('id', id);
+  },
+
+  // Farmhands
+  async getFarmhands(): Promise<Farmhand[]> {
+    const userId = await this.getUserId();
+    const { data, error } = await supabase!
+      .from('farmhands')
+      .select('*')
+      .eq('userId', userId);
+    
+    if (error) { console.error(error); return []; }
+    return data || [];
+  },
+
+  async addFarmhand(farmhand: Omit<Farmhand, 'id'>): Promise<Farmhand> {
+    const userId = await this.getUserId();
+    const { data, error } = await supabase!
+      .from('farmhands')
+      .insert([{ ...farmhand, userId }])
+      .select()
+      .single();
+    
+    if (error || !data) throw new Error("Failed to add farmhand");
+    return data;
+  },
+
+  async updateFarmhand(updatedHand: Farmhand): Promise<Farmhand> {
+    const { error } = await supabase!
+      .from('farmhands')
+      .update(updatedHand)
+      .eq('id', updatedHand.id);
+    
+    if (error) throw new Error("Failed to update farmhand");
+    return updatedHand;
+  },
+
+  async deleteFarmhand(id: string): Promise<void> {
+    await supabase!.from('farmhands').delete().eq('id', id);
   },
 
   // Scout History

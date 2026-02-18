@@ -161,7 +161,8 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
                                 <button 
                                     onClick={handleUpdateProfile}
                                     disabled={savingProfile || name === user?.name}
-                                    className="px-5 py-2.5 bg-white dark:bg-gray-800 text-green-600 border border-green-200 dark:border-green-800 rounded-lg font-bold hover:bg-green-600 hover:text-white disabled:opacity-50 disabled:bg-gray-50 disabled:border-gray-200 disabled:text-gray-400 transition-colors shadow-sm"
+                                    style={{ backfaceVisibility: 'hidden', WebkitFontSmoothing: 'subpixel-antialiased' }}
+                                    className="px-5 py-2.5 bg-white dark:bg-gray-800 text-green-600 border border-green-200 dark:border-green-800 rounded-lg font-bold hover:bg-green-600 hover:text-white disabled:opacity-50 disabled:bg-gray-50 disabled:border-gray-200 disabled:text-gray-400 transition-colors duration-300 ease-in-out shadow-sm"
                                 >
                                     {savingProfile ? 'Saving...' : 'Update'}
                                 </button>

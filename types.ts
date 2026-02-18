@@ -4,6 +4,7 @@ export enum Page {
   SCOUT = 'SCOUT',
   CROPS = 'CROPS',
   ANIMALS = 'ANIMALS',
+  FARMHANDS = 'FARMHANDS',
   ADVISOR = 'ADVISOR',
   SETTINGS = 'SETTINGS',
 }
@@ -63,6 +64,18 @@ export interface Animal {
   medicalHistory: MedicalRecord[];
   imageUrl?: string;
   coverUrl?: string;
+}
+
+export interface Farmhand {
+  id: string;
+  name: string;
+  role: string;
+  phone: string;
+  email: string;
+  status: 'Active' | 'Seasonal' | 'Inactive';
+  notes: string;
+  startDate: string;
+  imageUrl?: string;
 }
 
 export interface Task {

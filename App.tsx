@@ -3,6 +3,7 @@ import { Navigation } from './components/Navigation';
 import { Dashboard } from './components/Dashboard';
 import { CropManager } from './components/CropManager';
 import { AnimalManager } from './components/AnimalManager';
+import { FarmhandManager } from './components/FarmhandManager';
 import { FieldScout } from './components/FieldScout';
 import { AIGuide } from './components/AIGuide';
 import { Settings } from './components/Settings';
@@ -69,6 +70,8 @@ const AuthenticatedLayout: React.FC = () => {
         return <CropManager />;
       case Page.ANIMALS:
         return <AnimalManager />;
+      case Page.FARMHANDS:
+        return <FarmhandManager />;
       case Page.SCOUT:
         return <FieldScout />;
       case Page.ADVISOR:

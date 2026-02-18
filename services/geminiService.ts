@@ -59,10 +59,22 @@ export const diagnoseHealth = async (base64Image: string): Promise<DiagnosisResu
       },
     });
 
-    const text = response.text;
+    let text = response.text;
     if (!text) throw new Error("No response from AI");
     
-    return JSON.parse(text) as DiagnosisResult;
+    // Clean potential markdown wrapping
+    if (text.startsWith('```json')) {
+        text = text.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    } else if (text.startsWith('```')) {
+        text = text.replace(/^```\s*/, '').replace(/\s*```$/, '');
+    }
+
+    try {
+        return JSON.parse(text) as DiagnosisResult;
+    } catch (parseError) {
+        console.error("JSON Parse Error", parseError, text);
+        throw new Error("Failed to parse diagnosis result.");
+    }
 
   } catch (error) {
     console.error("Diagnosis error:", error);
@@ -136,9 +148,7 @@ export const getDashboardInsights = async (location: string, commodities: string
         "dailyTip": { 
           "title": "Short Title", 
           "content": "1-2 sentences of advice", 
-          "category": "Crops|Livestock|General",
-          "source": "Name of reputable source (e.g. USDA, University Extension)",
-          "sourceUrl": "URL to source if available"
+          "category": "Crops|Livestock|General"
         }
       }`,
       config: {
@@ -147,10 +157,12 @@ export const getDashboardInsights = async (location: string, commodities: string
       },
     });
 
-    const result = JSON.parse(response.text || "{}");
+    const text = response.text || "{}";
+    // Basic cleaning just in case
+    const cleanText = text.replace(/```json/g, '').replace(/```/g, '');
+    const result = JSON.parse(cleanText);
     
     // Hardcode a reliable single source for all prices to ensure links work
-    // and avoid 4014/404 errors.
     const SINGLE_RELIABLE_SOURCE = "https://www.agweb.com/markets";
     
     if (result.market && Array.isArray(result.market)) {
@@ -158,6 +170,12 @@ export const getDashboardInsights = async (location: string, commodities: string
             ...m,
             sourceUrl: SINGLE_RELIABLE_SOURCE
         }));
+    }
+
+    // Fix Daily Tip Source to be reliable
+    if (result.dailyTip) {
+        result.dailyTip.sourceUrl = "https://www.agriculture.com/";
+        result.dailyTip.source = "Agriculture.com";
     }
 
     return result;
