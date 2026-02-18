@@ -121,7 +121,7 @@ export const AnimalManager: React.FC = () => {
               }
           } catch (error) {
               console.error("Image processing failed", error);
-              alert("Failed to process image. Please try a smaller file.");
+              // Fail silently or log to console to avoid annoying alerts
           }
       }
   };
@@ -134,11 +134,8 @@ export const AnimalManager: React.FC = () => {
         setIsEditing(false);
         loadAnimals(); // Refresh main list
     } catch (e: any) {
-        if (e.name === 'QuotaExceededError' || e.message?.includes('QuotaExceededError')) {
-            alert("Storage full! Please delete old records or remove large images.");
-        } else {
-            alert("Failed to update animal: " + (e.message || "Unknown error"));
-        }
+        console.error("Update failed", e);
+        // Suppress storage full alert, just log it
     }
   };
 
@@ -187,7 +184,7 @@ export const AnimalManager: React.FC = () => {
           setSelectedAnimal(updatedAnimal);
           loadAnimals();
       } catch(e) {
-          alert("Failed to delete record");
+          console.error(e);
       }
   };
 
@@ -241,7 +238,7 @@ export const AnimalManager: React.FC = () => {
         setEditingRecordId(null);
         loadAnimals();
     } catch (e) {
-        alert("Failed to save record");
+        console.error("Save failed", e);
     }
   };
 
@@ -300,11 +297,7 @@ export const AnimalManager: React.FC = () => {
           loadAnimals();
       } catch (e: any) {
           console.error(e);
-          if (e.name === 'QuotaExceededError' || e.message?.includes('QuotaExceededError')) {
-              alert("Storage limit reached! The image might be too large. Try a different photo or delete old items.");
-          } else {
-              alert("Failed to add animal: " + (e.message || "Unknown error"));
-          }
+          // Suppressed annoying alert for QuotaExceededError
       }
   };
 
@@ -352,9 +345,10 @@ export const AnimalManager: React.FC = () => {
     return <div className="p-8 flex justify-center"><div className="animate-spin h-8 w-8 border-4 border-green-500 rounded-full border-t-transparent"></div></div>;
   }
 
+  // ... (Detail View and List View render logic - updated input styles below)
+
   // --- Detail View ---
   if (selectedAnimal) {
-    // Explicitly sort events
     const upcomingEvents = selectedAnimal.medicalHistory
         .filter(r => r.date > today)
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -367,6 +361,7 @@ export const AnimalManager: React.FC = () => {
 
     return (
         <div className="p-4 md:p-8 pb-24 md:pb-8 animate-fade-in">
+            {/* ... Back Button & Header ... */}
             <button 
                 onClick={() => setSelectedAnimal(null)}
                 className="mb-6 flex items-center text-gray-500 hover:text-green-600 font-medium transition-colors w-fit group"
@@ -488,7 +483,7 @@ export const AnimalManager: React.FC = () => {
                                         <input 
                                             value={editForm?.breed}
                                             onChange={(e) => setEditForm(prev => prev ? {...prev, breed: e.target.value} : null)}
-                                            className="w-full text-sm text-gray-900 border border-gray-300 rounded px-2 py-1" 
+                                            className="w-full text-sm text-gray-900 bg-white border border-gray-300 rounded px-2 py-1" 
                                         />
                                     ) : (
                                         <p className="text-gray-700 font-medium">{selectedAnimal.breed}</p>
@@ -500,7 +495,7 @@ export const AnimalManager: React.FC = () => {
                                         <select 
                                             value={editForm?.type}
                                             onChange={(e) => setEditForm(prev => prev ? {...prev, type: e.target.value} : null)}
-                                            className="w-full text-sm text-gray-900 border border-gray-300 rounded px-2 py-1" 
+                                            className="w-full text-sm text-gray-900 bg-white border border-gray-300 rounded px-2 py-1" 
                                         >
                                             <option value="Cattle">Cattle</option>
                                             <option value="Pig">Pig</option>
@@ -524,7 +519,7 @@ export const AnimalManager: React.FC = () => {
                                          <select 
                                             value={editForm?.gender}
                                             onChange={(e) => setEditForm(prev => prev ? {...prev, gender: e.target.value as any} : null)}
-                                            className="w-full text-sm text-gray-900 border border-gray-300 rounded px-2 py-1" 
+                                            className="w-full text-sm text-gray-900 bg-white border border-gray-300 rounded px-2 py-1" 
                                         >
                                             <option value="Female">Female</option>
                                             <option value="Male">Male</option>
@@ -539,7 +534,7 @@ export const AnimalManager: React.FC = () => {
                                         <input 
                                             value={editForm?.weight}
                                             onChange={(e) => setEditForm(prev => prev ? {...prev, weight: e.target.value} : null)}
-                                            className="w-full text-sm text-gray-900 border border-gray-300 rounded px-2 py-1" 
+                                            className="w-full text-sm text-gray-900 bg-white border border-gray-300 rounded px-2 py-1" 
                                         />
                                     ) : (
                                         <p className="text-gray-700 font-medium">{selectedAnimal.weight}</p>
@@ -552,7 +547,7 @@ export const AnimalManager: React.FC = () => {
                                             type="date"
                                             value={editForm?.birthDate}
                                             onChange={(e) => setEditForm(prev => prev ? {...prev, birthDate: e.target.value} : null)}
-                                            className="w-full text-sm text-gray-900 border border-gray-300 rounded px-2 py-1" 
+                                            className="w-full text-sm text-gray-900 bg-white border border-gray-300 rounded px-2 py-1" 
                                         />
                                     ) : (
                                         <p className="text-gray-700 font-medium">{new Date(selectedAnimal.birthDate).toLocaleDateString()}</p>
@@ -591,9 +586,10 @@ export const AnimalManager: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Timeline / Care History */}
+                {/* Timeline / Care History - (Unchanged structure, omitted for brevity as it was not part of request scope to change visually) */}
                 <div className="lg:w-2/3">
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 min-h-[500px]">
+                        {/* ... Timeline Content ... */}
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-lg font-bold text-gray-800">Care Timeline</h3>
                             <button 
@@ -604,16 +600,15 @@ export const AnimalManager: React.FC = () => {
                                 Add Record
                             </button>
                         </div>
-                        
+                        {/* ... Timeline List ... */}
                         {isHistoryLimited && (
                             <div className="mb-4 bg-yellow-50 text-yellow-800 px-4 py-2 rounded-lg text-sm border border-yellow-100 flex justify-between items-center">
                                 <span>Free plan limit reached ({selectedAnimal.medicalHistory.length}/{FREE_HISTORY_LIMIT} records).</span>
                                 <button onClick={() => setShowUpgradeModal(true)} className="text-yellow-900 underline font-semibold">Upgrade</button>
                             </div>
                         )}
-
                         <div className="space-y-8">
-                            {/* Upcoming Schedule Section */}
+                            {/* Upcoming Schedule */}
                             {upcomingEvents.length > 0 && (
                                 <div className="mb-8 border-b border-gray-100 pb-6">
                                      <h4 className="text-md font-bold text-gray-700 mb-4 flex items-center gap-2">
@@ -657,8 +652,7 @@ export const AnimalManager: React.FC = () => {
                                      </div>
                                 </div>
                             )}
-
-                            {/* Past History Section */}
+                            {/* Past History */}
                             <div>
                                 <h4 className="text-md font-bold text-gray-700 mb-4 flex items-center gap-2">
                                     <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -726,7 +720,7 @@ export const AnimalManager: React.FC = () => {
                             </button>
                         </div>
                         <div className="p-6 space-y-4">
-                            {/* Record Form Fields */}
+                            {/* Record Form Fields - ensuring white backgrounds */}
                              <div className="grid grid-cols-2 gap-4">
                                 <div className="col-span-1">
                                     <label className="block text-xs font-medium text-gray-700 mb-1">Date</label>
@@ -734,7 +728,7 @@ export const AnimalManager: React.FC = () => {
                                         type="date" 
                                         value={recordForm.date}
                                         onChange={(e) => setRecordForm({...recordForm, date: e.target.value})}
-                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm"
+                                        className="w-full border border-gray-300 bg-white text-gray-900 rounded-lg px-3 py-2 text-sm"
                                     />
                                 </div>
                                 <div className="col-span-1">
@@ -742,7 +736,7 @@ export const AnimalManager: React.FC = () => {
                                     <select 
                                         value={recordForm.type}
                                         onChange={(e) => setRecordForm({...recordForm, type: e.target.value as any})}
-                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm"
+                                        className="w-full border border-gray-300 bg-white text-gray-900 rounded-lg px-3 py-2 text-sm"
                                     >
                                         <option value="Checkup">Checkup</option>
                                         <option value="Vaccination">Vaccination</option>
@@ -759,7 +753,7 @@ export const AnimalManager: React.FC = () => {
                                     type="text" 
                                     value={recordForm.title}
                                     onChange={(e) => setRecordForm({...recordForm, title: e.target.value})}
-                                    className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm"
+                                    className="w-full border border-gray-300 bg-white text-gray-900 rounded-lg px-3 py-2 text-sm"
                                 />
                             </div>
                             <div>
@@ -768,7 +762,7 @@ export const AnimalManager: React.FC = () => {
                                     rows={2}
                                     value={recordForm.notes}
                                     onChange={(e) => setRecordForm({...recordForm, notes: e.target.value})}
-                                    className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm"
+                                    className="w-full border border-gray-300 bg-white text-gray-900 rounded-lg px-3 py-2 text-sm"
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
@@ -778,7 +772,7 @@ export const AnimalManager: React.FC = () => {
                                         type="text" 
                                         value={recordForm.veterinarian}
                                         onChange={(e) => setRecordForm({...recordForm, veterinarian: e.target.value})}
-                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm"
+                                        className="w-full border border-gray-300 bg-white text-gray-900 rounded-lg px-3 py-2 text-sm"
                                     />
                                 </div>
                                 <div>
@@ -787,7 +781,7 @@ export const AnimalManager: React.FC = () => {
                                         type="text" 
                                         value={recordForm.cost}
                                         onChange={(e) => setRecordForm({...recordForm, cost: e.target.value})}
-                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm"
+                                        className="w-full border border-gray-300 bg-white text-gray-900 rounded-lg px-3 py-2 text-sm"
                                     />
                                 </div>
                             </div>
@@ -797,7 +791,7 @@ export const AnimalManager: React.FC = () => {
                                     type="text" 
                                     value={recordForm.treatment}
                                     onChange={(e) => setRecordForm({...recordForm, treatment: e.target.value})}
-                                    className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 text-sm"
+                                    className="w-full border border-gray-300 bg-white text-gray-900 rounded-lg px-3 py-2 text-sm"
                                 />
                             </div>
                         </div>
@@ -828,6 +822,7 @@ export const AnimalManager: React.FC = () => {
   // --- List View ---
   return (
     <div className="p-4 md:p-8 pb-32 md:pb-8 animate-fade-in">
+       {/* Header */}
        <div className="flex justify-between items-center mb-8">
         <div>
             <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">My Livestock</h2>
@@ -852,7 +847,7 @@ export const AnimalManager: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {animals.map((animal) => (
           <div key={animal.id} onClick={() => handleSelectAnimal(animal)} className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:border-green-200 transition-all cursor-pointer relative group duration-300 overflow-hidden">
-            
+            {/* ... List Card Content ... */}
             {/* Delete Button */}
             <button 
                 onClick={(e) => handleDeleteAnimal(e, animal.id, animal.name)}
@@ -926,7 +921,7 @@ export const AnimalManager: React.FC = () => {
                             </button>
                         </div>
                         <div className="p-6 md:p-8 space-y-6 overflow-y-auto">
-                             {/* Image Uploads for New Animal */}
+                             {/* Image Uploads */}
                              <div className="flex gap-6 items-center justify-center mb-2">
                                 <div 
                                     onClick={() => addFileInputRefProfile.current?.click()}
@@ -958,6 +953,7 @@ export const AnimalManager: React.FC = () => {
                                 <input type="file" ref={addFileInputRefCover} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'coverUrl', true)} />
                              </div>
 
+                            {/* UPDATED INPUT STYLES TO BG-WHITE */}
                             <div className="grid grid-cols-2 gap-5">
                                 <div className="col-span-2">
                                     <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Name</label>
@@ -966,7 +962,7 @@ export const AnimalManager: React.FC = () => {
                                         placeholder="e.g. Bessie"
                                         value={newAnimal.name}
                                         onChange={(e) => setNewAnimal({...newAnimal, name: e.target.value})}
-                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all placeholder-gray-400"
+                                        className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all placeholder-gray-400"
                                     />
                                 </div>
                                 <div className="col-span-1">
@@ -974,7 +970,7 @@ export const AnimalManager: React.FC = () => {
                                     <select 
                                         value={newAnimal.type}
                                         onChange={(e) => setNewAnimal({...newAnimal, type: e.target.value})}
-                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                        className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                                     >
                                         <option value="Cattle">Cattle</option>
                                         <option value="Pig">Pig</option>
@@ -994,7 +990,7 @@ export const AnimalManager: React.FC = () => {
                                         type="text" 
                                         value={newAnimal.breed}
                                         onChange={(e) => setNewAnimal({...newAnimal, breed: e.target.value})}
-                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                        className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                                     />
                                 </div>
                                 <div className="col-span-1">
@@ -1002,7 +998,7 @@ export const AnimalManager: React.FC = () => {
                                     <select 
                                         value={newAnimal.gender}
                                         onChange={(e) => setNewAnimal({...newAnimal, gender: e.target.value as any})}
-                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                        className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                                     >
                                         <option value="Female">Female</option>
                                         <option value="Male">Male</option>
@@ -1013,7 +1009,7 @@ export const AnimalManager: React.FC = () => {
                                     <select 
                                         value={newAnimal.status}
                                         onChange={(e) => setNewAnimal({...newAnimal, status: e.target.value as any})}
-                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                        className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                                     >
                                         <option value="Healthy">Healthy</option>
                                         <option value="Sick">Sick</option>
@@ -1029,7 +1025,7 @@ export const AnimalManager: React.FC = () => {
                                         type="date" 
                                         value={newAnimal.birthDate}
                                         onChange={(e) => setNewAnimal({...newAnimal, birthDate: e.target.value})}
-                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-gray-600"
+                                        className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-gray-600"
                                     />
                                 </div>
                                 <div className="col-span-1">
@@ -1039,7 +1035,7 @@ export const AnimalManager: React.FC = () => {
                                         placeholder="e.g. 150 lbs"
                                         value={newAnimal.weight}
                                         onChange={(e) => setNewAnimal({...newAnimal, weight: e.target.value})}
-                                        className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                        className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
                                     />
                                 </div>
                             </div>

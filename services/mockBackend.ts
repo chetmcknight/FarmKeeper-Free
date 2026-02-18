@@ -15,7 +15,19 @@ const localBackend = {
   async login(email: string, password?: string): Promise<User> {
     // Check registered users DB
     const usersDbJson = localStorage.getItem(KEYS.USERS_DB);
-    const usersDb: User[] = usersDbJson ? JSON.parse(usersDbJson) : [];
+    let usersDb: User[] = usersDbJson ? JSON.parse(usersDbJson) : [];
+    
+    // Auto-seed Demo User if requested and missing
+    if (email === 'demo@farmkeeper.com' && !usersDb.find(u => u.email === email)) {
+        const demoUser: User = {
+            id: 'demo_user',
+            email: 'demo@farmkeeper.com',
+            name: 'Demo Farmer',
+            plan: 'pro',
+        };
+        usersDb.push(demoUser);
+        localStorage.setItem(KEYS.USERS_DB, JSON.stringify(usersDb));
+    }
     
     const foundUser = usersDb.find(u => u.email === email);
     

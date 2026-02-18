@@ -146,12 +146,12 @@ export const getWeatherInsight = async (location: string) => {
   }
 };
 
-export const getMarketPrices = async (commodities: string[]) => {
+export const getMarketPrices = async (commodities: string[], storeName: string = "Coastal") => {
   try {
     const commoditiesList = commodities.join(", ");
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Find current market price for: ${commoditiesList}.
+      contents: `Find current retail price for: ${commoditiesList} at ${storeName}.
       Format output as JSON array: [ { "name": "Item Name", "price": "Price" } ]`,
       config: {
         tools: [{ googleSearch: {} }],
@@ -160,12 +160,25 @@ export const getMarketPrices = async (commodities: string[]) => {
     });
     const data = JSON.parse(response.text || "[]");
     
-    // Normalize and add reliable source
-    return (Array.isArray(data) ? data : []).map((item: any) => ({
-        name: item.name,
-        price: item.price,
-        sourceUrl: "https://www.agweb.com/markets"
-    }));
+    let url = "https://www.coastalcountry.com/";
+    let displaySource = "Coastal";
+
+    if (storeName.includes("Leitz")) {
+        url = "https://leitzfarm.com/";
+        displaySource = "Leitz";
+    } else if (storeName.includes("Farm Supply")) {
+        url = "https://www.portangelesfarmsupply.com/"; // Mock url or closest real one
+        displaySource = "Farm Supply";
+    }
+
+    return (Array.isArray(data) ? data : []).map((item: any) => {
+        return {
+            name: item.name,
+            price: item.price,
+            sourceName: displaySource,
+            sourceUrl: url
+        };
+    });
   } catch (error) {
     console.error("Market error:", error);
     return [];
@@ -200,7 +213,7 @@ export const getDailyTip = async () => {
 export const getDashboardInsights = async (location: string, commodities: string[]) => {
     const [weather, market, dailyTip] = await Promise.all([
         getWeatherInsight(location),
-        getMarketPrices(commodities),
+        getMarketPrices(commodities, "Coastal"),
         getDailyTip()
     ]);
     return { weather, market, dailyTip };

@@ -5,6 +5,7 @@ import { backend } from '../services/mockBackend';
 export const FarmhandManager: React.FC = () => {
   const [hands, setHands] = useState<Farmhand[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedHand, setSelectedHand] = useState<Farmhand | null>(null);
   
   // Modal State
   const [showAddModal, setShowAddModal] = useState(false);
@@ -26,6 +27,8 @@ export const FarmhandManager: React.FC = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
+  const editCoverInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadHands();
@@ -36,6 +39,12 @@ export const FarmhandManager: React.FC = () => {
     const data = await backend.getFarmhands();
     setHands(data);
     setLoading(false);
+  };
+
+  const handleSelectHand = (hand: Farmhand) => {
+      setSelectedHand(hand);
+      setForm(hand);
+      setIsEditing(false);
   };
 
   const resetForm = () => {
@@ -54,18 +63,25 @@ export const FarmhandManager: React.FC = () => {
       setEditingId(null);
   };
 
-  const handleEdit = (hand: Farmhand) => {
-      setForm(hand);
-      setEditingId(hand.id);
-      setIsEditing(true);
-      setShowAddModal(true);
-  };
-
   const handleDelete = async (e: React.MouseEvent, id: string, name: string) => {
       e.stopPropagation();
       if(window.confirm(`Remove ${name} from farmhands?`)) {
           await backend.deleteFarmhand(id);
           loadHands();
+          if (selectedHand?.id === id) setSelectedHand(null);
+      }
+  };
+
+  const handleUpdate = async () => {
+      if (!selectedHand) return;
+      try {
+          // If we are editing in detail view, 'form' holds the state
+          const updated = await backend.updateFarmhand({ ...form, id: selectedHand.id } as Farmhand);
+          setSelectedHand(updated);
+          setIsEditing(false);
+          loadHands();
+      } catch (e) {
+          alert("Failed to update farmhand");
       }
   };
 
@@ -97,7 +113,7 @@ export const FarmhandManager: React.FC = () => {
     });
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'imageUrl' | 'coverUrl') => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'imageUrl' | 'coverUrl', isEdit: boolean = false) => {
       const file = e.target.files?.[0];
       if (file) {
           try {
@@ -116,11 +132,7 @@ export const FarmhandManager: React.FC = () => {
       }
 
       try {
-          if (isEditing && editingId) {
-              await backend.updateFarmhand({ ...form, id: editingId } as Farmhand);
-          } else {
-              await backend.addFarmhand(form as any);
-          }
+          await backend.addFarmhand(form as any);
           setShowAddModal(false);
           resetForm();
           loadHands();
@@ -146,6 +158,226 @@ export const FarmhandManager: React.FC = () => {
     return <div className="p-8 flex justify-center"><div className="animate-spin h-8 w-8 border-4 border-green-500 rounded-full border-t-transparent"></div></div>;
   }
 
+  // --- Detail View ---
+  if (selectedHand) {
+      return (
+        <div className="p-4 md:p-8 pb-32 md:pb-8 animate-fade-in">
+            <button 
+                onClick={() => setSelectedHand(null)}
+                className="mb-6 group flex items-center text-gray-500 hover:text-green-700 font-semibold transition-colors px-3 py-2 rounded-lg hover:bg-green-50 w-fit"
+            >
+                <div className="bg-white p-2 rounded-full shadow-sm mr-2 group-hover:bg-green-50 transition-colors">
+                    <svg className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                </div>
+                Back to Team
+            </button>
+
+            <div className="flex flex-col lg:flex-row gap-8">
+                {/* Profile Card */}
+                <div className="lg:w-1/3">
+                    <div className="bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden relative">
+                         {/* Edit Toggle Button */}
+                         <button 
+                          onClick={() => {
+                              if (isEditing) {
+                                  setIsEditing(false);
+                                  setForm(selectedHand);
+                              } else {
+                                  setIsEditing(true);
+                              }
+                          }}
+                          className={`absolute top-4 right-4 z-20 p-2.5 rounded-full transition-all shadow-sm ${
+                              isEditing ? 'bg-gray-100 text-gray-500 hover:bg-red-100 hover:text-red-600' : 'bg-white/80 backdrop-blur-sm text-gray-500 hover:bg-white hover:text-green-600'
+                          }`}
+                        >
+                           {isEditing ? (
+                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                           ) : (
+                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                           )}
+                        </button>
+
+                        {/* Cover Image */}
+                        <div className="h-32 bg-gray-100 relative">
+                             {(isEditing && form?.coverUrl) || (!isEditing && selectedHand.coverUrl) ? (
+                                <img 
+                                    src={isEditing ? form?.coverUrl : selectedHand.coverUrl} 
+                                    alt="Cover" 
+                                    className="w-full h-full object-cover"
+                                />
+                             ) : (
+                                <div className="w-full h-full bg-gradient-to-b from-blue-50 to-blue-100/50"></div>
+                             )}
+                             {isEditing && (
+                                <button 
+                                    onClick={() => editCoverInputRef.current?.click()}
+                                    className="absolute top-2 left-2 bg-white/80 p-1.5 rounded-full text-gray-600 hover:text-green-600 text-xs font-bold shadow-sm"
+                                >
+                                    Change Poster
+                                </button>
+                             )}
+                        </div>
+
+                        <div className="bg-white p-8 pt-0 flex flex-col items-center border-b border-gray-50 relative">
+                            <div className="w-28 h-28 bg-white rounded-full flex items-center justify-center text-5xl shadow-[0_8px_16px_-4px_rgba(0,0,0,0.1)] mb-5 border-4 border-white -mt-14 overflow-hidden relative group">
+                                {(isEditing && form?.imageUrl) || (!isEditing && selectedHand.imageUrl) ? (
+                                    <img 
+                                        src={isEditing ? form?.imageUrl : selectedHand.imageUrl} 
+                                        alt="Profile" 
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <span>🧑‍🌾</span>
+                                )}
+
+                                {isEditing && (
+                                    <div 
+                                        onClick={() => editFileInputRef.current?.click()}
+                                        className="absolute inset-0 bg-black/50 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity"
+                                    >
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /></svg>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Hidden Inputs for Edit */}
+                            <input type="file" ref={editFileInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'imageUrl', true)} />
+                            <input type="file" ref={editCoverInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'coverUrl', true)} />
+                            
+                            {isEditing ? (
+                                <input 
+                                    type="text" 
+                                    value={form?.name}
+                                    onChange={(e) => setForm(prev => ({...prev, name: e.target.value}))}
+                                    className="text-2xl font-bold text-gray-900 text-center bg-white border border-gray-300 rounded-lg px-3 py-1 w-full mb-2 focus:ring-2 focus:ring-green-500 outline-none"
+                                />
+                            ) : (
+                                <h2 className="text-3xl font-extrabold text-gray-900 mb-1">{selectedHand.name}</h2>
+                            )}
+
+                            <p className="text-gray-400 font-mono text-xs mb-3">{selectedHand.role}</p>
+                            
+                            {isEditing ? (
+                                <select 
+                                    value={form?.status}
+                                    onChange={(e) => setForm(prev => ({...prev, status: e.target.value as any}))}
+                                    className="mt-2 text-sm font-bold text-gray-900 bg-white border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-green-500 outline-none"
+                                >
+                                    <option value="Active">Active</option>
+                                    <option value="Seasonal">Seasonal</option>
+                                    <option value="Inactive">Inactive</option>
+                                </select>
+                            ) : (
+                                <span className={`px-4 py-1.5 rounded-full text-sm font-bold border shadow-sm ${getStatusColor(selectedHand.status)}`}>
+                                    {selectedHand.status}
+                                </span>
+                            )}
+                        </div>
+                        <div className="p-8 space-y-6">
+                            <div className="grid grid-cols-1 gap-6">
+                                <div>
+                                    <span className="text-xs text-gray-400 uppercase font-bold tracking-wider block mb-1">Phone</span>
+                                    {isEditing ? (
+                                        <input 
+                                            value={form?.phone}
+                                            onChange={(e) => setForm(prev => ({...prev, phone: e.target.value}))}
+                                            className="w-full text-sm text-gray-900 border border-gray-300 rounded px-2 py-1" 
+                                        />
+                                    ) : (
+                                        <p className="text-gray-800 font-semibold">{selectedHand.phone || 'N/A'}</p>
+                                    )}
+                                </div>
+                                <div>
+                                    <span className="text-xs text-gray-400 uppercase font-bold tracking-wider block mb-1">Email</span>
+                                    {isEditing ? (
+                                        <input 
+                                            value={form?.email}
+                                            onChange={(e) => setForm(prev => ({...prev, email: e.target.value}))}
+                                            className="w-full text-sm text-gray-900 border border-gray-300 rounded px-2 py-1" 
+                                        />
+                                    ) : (
+                                        <p className="text-gray-800 font-semibold">{selectedHand.email || 'N/A'}</p>
+                                    )}
+                                </div>
+                                <div>
+                                    <span className="text-xs text-gray-400 uppercase font-bold tracking-wider block mb-1">Start Date</span>
+                                    {isEditing ? (
+                                        <input 
+                                            type="date"
+                                            value={form?.startDate}
+                                            onChange={(e) => setForm(prev => ({...prev, startDate: e.target.value}))}
+                                            className="w-full text-sm text-gray-900 border border-gray-300 rounded px-2 py-1" 
+                                        />
+                                    ) : (
+                                        <p className="text-gray-800 font-semibold">{new Date(selectedHand.startDate).toLocaleDateString()}</p>
+                                    )}
+                                </div>
+                            </div>
+                            
+                            {isEditing && (
+                                <div className="flex gap-3 pt-4 border-t border-gray-100">
+                                    <button 
+                                        onClick={() => { setIsEditing(false); setForm(selectedHand); }}
+                                        className="flex-1 bg-gray-100 text-gray-700 text-sm font-bold py-3 rounded-xl hover:bg-gray-200 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        onClick={handleUpdate}
+                                        className="flex-1 bg-green-600 text-white text-sm font-bold py-3 rounded-xl hover:bg-green-700 transition-colors shadow-md"
+                                    >
+                                        Save Changes
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right Side: Details/Notes */}
+                <div className="lg:w-2/3">
+                    <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 p-8 min-h-[500px]">
+                        <h3 className="text-xl font-bold text-gray-900 mb-6">Notes & History</h3>
+                        
+                        <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-100 mb-6">
+                            <span className="text-xs text-yellow-800 uppercase font-bold tracking-wider block mb-2">General Notes</span>
+                            {isEditing ? (
+                                <textarea 
+                                    value={form?.notes}
+                                    onChange={(e) => setForm(prev => ({...prev, notes: e.target.value}))}
+                                    className="w-full text-sm text-gray-800 bg-white border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                                    rows={4}
+                                />
+                            ) : (
+                                <p className="text-gray-700 leading-relaxed text-sm">
+                                    {selectedHand.notes || "No additional notes."}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-4">
+                             {selectedHand.phone && (
+                                <a href={`tel:${selectedHand.phone}`} className="flex-1 bg-green-50 text-green-700 font-bold py-3 rounded-xl hover:bg-green-100 transition-colors flex items-center justify-center gap-2">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                                    Call Now
+                                </a>
+                             )}
+                             {selectedHand.email && (
+                                <a href={`mailto:${selectedHand.email}`} className="flex-1 bg-blue-50 text-blue-700 font-bold py-3 rounded-xl hover:bg-blue-100 transition-colors flex items-center justify-center gap-2">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                    Send Email
+                                </a>
+                             )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+      );
+  }
+
+  // --- List View ---
   return (
     <div className="p-4 md:p-8 pb-32 md:pb-8 animate-fade-in">
         <div className="flex justify-between items-center mb-8">
@@ -164,46 +396,44 @@ export const FarmhandManager: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {hands.map((hand) => (
-                <div key={hand.id} className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-md transition-all relative group overflow-hidden isolate">
+                <div key={hand.id} onClick={() => handleSelectHand(hand)} className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:border-green-200 transition-all cursor-pointer relative group duration-300 overflow-hidden">
                     
                     {/* Cover Image */}
-                    <div className="h-24 bg-gray-100 relative rounded-t-2xl overflow-hidden">
+                    <div className="h-32 bg-gray-100 relative">
                         {hand.coverUrl ? (
                             <img src={hand.coverUrl} className="w-full h-full object-cover" alt="Cover" />
                         ) : (
-                            <div className="w-full h-full bg-gradient-to-r from-gray-100 to-gray-200"></div>
+                            <div className="w-full h-full bg-gradient-to-r from-blue-50 to-blue-100/50"></div>
                         )}
-                    </div>
-                    
-                    <div className="px-6 relative">
-                        <div className="w-20 h-20 rounded-full border-4 border-white bg-white shadow-md -mt-10 overflow-hidden flex items-center justify-center text-3xl z-10 relative">
+                        <div className="absolute top-4 right-4 z-10">
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold border shadow-sm ${getStatusColor(hand.status)} bg-white/90 backdrop-blur-sm`}>
+                                {hand.status}
+                            </span>
+                        </div>
+                        <div className="absolute -bottom-8 left-6 w-16 h-16 rounded-full border-4 border-white bg-white shadow-md flex items-center justify-center text-3xl overflow-hidden">
                             {hand.imageUrl ? (
                                 <img src={hand.imageUrl} className="w-full h-full object-cover" alt={hand.name} />
                             ) : (
                                 <span>🧑‍🌾</span>
                             )}
                         </div>
-                        
-                        <div className="absolute top-2 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                             <button onClick={() => handleEdit(hand)} className="text-gray-400 hover:text-green-600 bg-white/80 p-1.5 rounded-full shadow-sm">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                             </button>
-                             <button onClick={(e) => handleDelete(e, hand.id, hand.name)} className="text-gray-400 hover:text-red-600 bg-white/80 p-1.5 rounded-full shadow-sm">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                             </button>
-                        </div>
                     </div>
+                    
+                    {/* Delete Button */}
+                    <button 
+                        onClick={(e) => handleDelete(e, hand.id, hand.name)}
+                        className="absolute top-4 right-16 p-2 bg-white/80 backdrop-blur-sm text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover:opacity-100 z-10 scale-90 hover:scale-100 shadow-sm"
+                        title="Delete Farmhand"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
 
-                    <div className="p-6 pt-2">
-                        <div className="flex justify-between items-start mb-1">
-                            <h3 className="text-xl font-bold text-gray-900">{hand.name}</h3>
-                            <span className={`px-2 py-0.5 rounded-full text-xs font-bold border ${getStatusColor(hand.status)}`}>
-                                {hand.status}
-                            </span>
+                    <div className="pt-10 px-6 pb-6">
+                        <div className="flex justify-between items-start mb-2">
+                            <h3 className="text-xl font-bold text-gray-900 group-hover:text-green-700 transition-colors">{hand.name}</h3>
                         </div>
                         <p className="text-sm text-green-600 font-semibold mb-4">{hand.role}</p>
 
-                        {/* Contact Info Section */}
                         <div className="space-y-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
                             {hand.phone ? (
                                 <div className="flex items-center gap-3">
@@ -218,31 +448,12 @@ export const FarmhandManager: React.FC = () => {
                             ) : (
                                 <div className="text-xs text-gray-400 italic px-2">No phone number</div>
                             )}
-                            
-                            {hand.email ? (
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-gray-200 shadow-sm text-blue-500">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                                    </div>
-                                    <div className="flex flex-col min-w-0">
-                                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wide">Email</span>
-                                        <span className="text-sm font-semibold text-gray-800 truncate">{hand.email}</span>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="text-xs text-gray-400 italic px-2">No email address</div>
-                            )}
                         </div>
 
-                        <div className="mt-6 pt-4 border-t border-gray-50 flex gap-2">
-                            <a href={`tel:${hand.phone}`} className={`flex-1 text-center py-2.5 rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-2 ${!hand.phone ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700 shadow-sm'}`}>
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                                Call
-                            </a>
-                            <a href={`mailto:${hand.email}`} className={`flex-1 text-center py-2.5 rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-2 ${!hand.email ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'}`}>
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                                Email
-                            </a>
+                        <div className="mt-6 pt-4 border-t border-gray-50 flex justify-end">
+                            <span className="text-green-600 group-hover:text-green-700 text-sm font-bold flex items-center gap-1 transition-colors">
+                                View Details <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -268,7 +479,7 @@ export const FarmhandManager: React.FC = () => {
             <div className="fixed inset-0 bg-white/60 dark:bg-gray-900/80 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all">
                 <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] m-4 flex flex-col">
                     <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                        <h3 className="text-lg font-bold text-gray-800">{isEditing ? 'Edit Farmhand' : 'Add Farmhand'}</h3>
+                        <h3 className="text-lg font-bold text-gray-800">Add Farmhand</h3>
                         <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors">
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>

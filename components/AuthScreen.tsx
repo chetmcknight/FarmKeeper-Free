@@ -339,7 +339,7 @@ export const AuthScreen: React.FC = () => {
           </form>
           
           {view === 'LOGIN' && (
-              <div className="mt-8 text-center border-t border-gray-100 pt-6">
+              <div className="mt-6 text-center border-t border-gray-100 pt-6">
                   <p className="text-sm text-gray-600">
                       Don't have an account?{' '}
                       <button onClick={() => setView('PLAN_SELECTION')} className="font-bold text-green-600 hover:text-green-500 transition-colors">

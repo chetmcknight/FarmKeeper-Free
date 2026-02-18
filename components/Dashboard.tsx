@@ -7,6 +7,8 @@ import { useAuth } from '../context/AuthContext';
 interface DashboardProps {
   location: string;
   onNavigate: (page: Page) => void;
+  toggleDarkMode: () => void;
+  isDarkMode: boolean;
 }
 
 const COMMODITY_OPTIONS = [
@@ -16,7 +18,13 @@ const COMMODITY_OPTIONS = [
   "Milk", "Eggs", "Diesel Fuel", "Urea Fertilizer"
 ];
 
-export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate }) => {
+const STORE_OPTIONS = [
+    { label: "Coastal (Sequim)", value: "Coastal Farm & Ranch Sequim" },
+    { label: "Leitz (Port Angeles)", value: "Leitz Farm Supply Port Angeles" },
+    { label: "Farm Supply (Port Angeles)", value: "Port Angeles Farm Supply" }
+];
+
+export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, toggleDarkMode, isDarkMode }) => {
   const { user } = useAuth();
   
   // Data States
@@ -32,6 +40,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate }) =>
   const [selectedCommodities, setSelectedCommodities] = useState<string[]>([
     "Oats", "Alfalfa Hay", "Straw", "Chicken Feed"
   ]);
+  const [selectedStore, setSelectedStore] = useState<string>(STORE_OPTIONS[0].value);
   
   // Farm Stats
   const [stats, setStats] = useState({ 
@@ -85,12 +94,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate }) =>
     return () => { mounted = false; };
   }, [location]); // Re-run if location changes
 
-  // Fetch Markets (Whenever commodities change)
+  // Fetch Markets (Whenever commodities or store change)
   useEffect(() => {
       let mounted = true;
       const fetchMarkets = async () => {
           setLoadingMarkets(true);
-          const data = await getMarketPrices(selectedCommodities);
+          const data = await getMarketPrices(selectedCommodities, selectedStore);
           if (mounted) {
               setMarketData(data);
               setLoadingMarkets(false);
@@ -98,7 +107,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate }) =>
       };
       fetchMarkets();
       return () => { mounted = false; };
-  }, [selectedCommodities]);
+  }, [selectedCommodities, selectedStore]);
 
   const handleCommodityChange = (index: number, value: string) => {
     const newSelections = [...selectedCommodities];
@@ -122,19 +131,35 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate }) =>
 
   return (
     <div className="p-4 md:p-8 space-y-8 pb-32 md:pb-8 animate-fade-in">
-      <header className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 pr-12 md:pr-0">
+      <header className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 pr-2 md:pr-0">
         <div>
           <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">{getGreeting()}, {user?.name || 'Farmer'}.</h2>
           <p className="text-gray-500 dark:text-gray-400 font-medium mt-1">Here's what's happening on your farm today.</p>
         </div>
-        <div className="flex items-center gap-3 bg-white dark:bg-gray-800 px-4 py-2 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 w-fit">
-          <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded-lg text-green-700 dark:text-green-400">
-             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-          </div>
-          <div className="text-right">
-             <p className="text-sm font-bold text-gray-800 dark:text-gray-200">Sequim, WA</p>
-             <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">{new Date().toLocaleDateString(undefined, {weekday: 'long', month: 'short', day: 'numeric'})}</p>
-          </div>
+        
+        {/* Location & Theme Toggle Container */}
+        <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 bg-white dark:bg-gray-800 px-4 py-2 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 w-fit">
+              <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded-lg text-green-700 dark:text-green-400">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-bold text-gray-800 dark:text-gray-200">Sequim, WA</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">{new Date().toLocaleDateString(undefined, {weekday: 'long', month: 'short', day: 'numeric'})}</p>
+              </div>
+            </div>
+
+            <button 
+                onClick={toggleDarkMode}
+                className="p-3 rounded-full bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 shadow-sm border border-gray-100 dark:border-gray-700 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                title="Toggle Dark Mode"
+            >
+                {isDarkMode ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                )}
+            </button>
         </div>
       </header>
       
@@ -218,12 +243,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate }) =>
           )}
         </div>
 
-        {/* Markets Card */}
+        {/* Markets Card (Now Local Prices) */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 p-6 relative overflow-hidden group min-h-[180px]">
           <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
             <svg className="w-32 h-32 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zm6-4a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zm6-3a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" /></svg>
           </div>
-          <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4 relative z-10">Market Prices</h3>
+          
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 relative z-10 gap-2">
+            <h3 className="text-lg font-bold text-gray-800 dark:text-white">Local Prices</h3>
+            <select 
+                value={selectedStore}
+                onChange={(e) => setSelectedStore(e.target.value)}
+                className="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 text-xs font-semibold rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-green-500 max-w-[200px]"
+            >
+                {STORE_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+            </select>
+          </div>
           
           <div className="space-y-3 relative z-10">
             {selectedCommodities.map((item, index) => {
@@ -252,7 +289,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate }) =>
                             </span>
                             {marketItem?.sourceUrl && (
                                 <a href={marketItem.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium block truncate max-w-[80px] text-right ml-auto">
-                                    Source &rarr;
+                                    {marketItem.sourceName || 'Source'} &rarr;
                                 </a>
                             )}
                         </>

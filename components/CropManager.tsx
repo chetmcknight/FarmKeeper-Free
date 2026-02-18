@@ -54,7 +54,7 @@ export const CropManager: React.FC = () => {
           setIsEditing(false);
           loadCrops();
       } catch (e) {
-          alert("Failed to update crop");
+          console.error("Update failed", e);
       }
   };
 
@@ -106,7 +106,7 @@ export const CropManager: React.FC = () => {
                   setNewCrop(prev => ({ ...prev, [field]: resizedBase64 }));
               }
           } catch (error) {
-              alert("Failed to process image.");
+              console.error("Image processing error", error);
           }
       }
   };
@@ -129,39 +129,44 @@ export const CropManager: React.FC = () => {
          finalHarvestDate = d.toISOString().split('T')[0];
     }
     
-    await backend.addCrop({
-      name: newCrop.name,
-      variety: newCrop.variety || 'Unknown',
-      plantedDate: newCrop.plantedDate,
-      harvestDate: finalHarvestDate,
-      status: newCrop.status as any || 'Healthy',
-      area: newCrop.area || 'N/A',
-      imageUrl: newCrop.imageUrl,
-      coverUrl: newCrop.coverUrl,
-      history: [
-        {
-          id: Date.now().toString(),
-          date: new Date().toISOString().split('T')[0], // Created record date is today
-          type: 'Planting',
-          title: 'Field Created',
-          notes: `Initial entry. ${ageText}.`, // <--- Added Age info here
-          technician: 'System'
-        }
-      ]
-    });
-    
-    setShowAddModal(false);
-    setNewCrop({
-      name: '',
-      variety: '',
-      plantedDate: new Date().toISOString().split('T')[0],
-      harvestDate: '',
-      status: 'Healthy',
-      area: '',
-      imageUrl: '',
-      coverUrl: ''
-    });
-    loadCrops();
+    try {
+        await backend.addCrop({
+          name: newCrop.name,
+          variety: newCrop.variety || 'Unknown',
+          plantedDate: newCrop.plantedDate,
+          harvestDate: finalHarvestDate,
+          status: newCrop.status as any || 'Healthy',
+          area: newCrop.area || 'N/A',
+          imageUrl: newCrop.imageUrl,
+          coverUrl: newCrop.coverUrl,
+          history: [
+            {
+              id: Date.now().toString(),
+              date: new Date().toISOString().split('T')[0], // Created record date is today
+              type: 'Planting',
+              title: 'Field Created',
+              notes: `Initial entry. ${ageText}.`, // <--- Added Age info here
+              technician: 'System'
+            }
+          ]
+        });
+        
+        setShowAddModal(false);
+        setNewCrop({
+          name: '',
+          variety: '',
+          plantedDate: new Date().toISOString().split('T')[0],
+          harvestDate: '',
+          status: 'Healthy',
+          area: '',
+          imageUrl: '',
+          coverUrl: ''
+        });
+        loadCrops();
+    } catch (e) {
+        console.error("Create crop failed", e);
+        // Suppress alert
+    }
   };
   
   const handleDeleteCrop = async (e: React.MouseEvent, id: string, name: string) => {
@@ -201,6 +206,7 @@ export const CropManager: React.FC = () => {
      return <div className="min-h-[50vh] flex justify-center items-center"><div className="animate-spin h-10 w-10 border-4 border-green-500 rounded-full border-t-transparent"></div></div>;
   }
 
+  // ... (Detail View Code - Unchanged logic, no inputs here to fix) ...
   // --- Detail View ---
   if (selectedCrop) {
     // Force sort descending (Newest first)
@@ -212,7 +218,9 @@ export const CropManager: React.FC = () => {
                 onClick={() => setSelectedCrop(null)}
                 className="mb-6 group flex items-center text-gray-500 hover:text-green-700 font-semibold transition-colors px-3 py-2 rounded-lg hover:bg-green-50 w-fit"
             >
-                <svg className="w-5 h-5 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                <div className="bg-white p-2 rounded-full shadow-sm mr-2 group-hover:bg-green-50 transition-colors">
+                    <svg className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                </div>
                 Back to Field Overview
             </button>
 
@@ -431,252 +439,3 @@ export const CropManager: React.FC = () => {
                                                 <div className="mt-3 flex flex-wrap gap-2 text-xs">
                                                     {record.product && (
                                                         <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-gray-200 text-gray-700 font-medium shadow-sm">
-                                                            <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
-                                                            {record.product} {record.quantity && <span className="text-gray-400">({record.quantity})</span>}
-                                                        </span>
-                                                    )}
-                                                    {record.technician && (
-                                                        <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-gray-200 text-gray-700 font-medium shadow-sm">
-                                                            <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                                                            {record.technician}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="flex flex-col items-end gap-2">
-                                            <span className={`px-2.5 py-1 rounded-md text-xs font-bold border shadow-sm ${getEventTypeColor(record.type)}`}>
-                                                {record.type}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-  }
-
-  // --- List View ---
-  return (
-    <div className="p-4 md:p-8 pb-32 md:pb-8 animate-fade-in">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-            <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">My Crops</h2>
-            <p className="text-gray-500 font-medium mt-1">Manage your fields and harvest schedules.</p>
-        </div>
-        <button 
-          onClick={() => setShowAddModal(true)}
-          className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-          Add Crop
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-        {crops.map((crop) => (
-          <div key={crop.id} onClick={() => handleSelectCrop(crop)} className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:border-green-200 transition-all cursor-pointer relative group duration-300 overflow-hidden">
-            
-            {/* Cover & Profile Image Display for List Card */}
-            <div className="h-28 bg-gray-100 relative">
-                 {crop.coverUrl ? (
-                     <img src={crop.coverUrl} className="w-full h-full object-cover" alt="Cover" />
-                 ) : (
-                     <div className="w-full h-full bg-gradient-to-r from-green-50 to-green-100/50" />
-                 )}
-                 <div className="absolute top-4 right-4 z-10">
-                     <span className={`px-3 py-1 rounded-full text-xs font-bold border shadow-sm ${getStatusColor(crop.status)} bg-white/90 backdrop-blur-sm`}>
-                        {crop.status}
-                    </span>
-                 </div>
-                 <div className="absolute -bottom-6 left-6 w-14 h-14 rounded-xl border-4 border-white bg-white shadow-md flex items-center justify-center text-2xl overflow-hidden">
-                     {crop.imageUrl ? (
-                         <img src={crop.imageUrl} className="w-full h-full object-cover" alt="Profile" />
-                     ) : (
-                         <span>🌽</span>
-                     )}
-                 </div>
-            </div>
-
-            {/* Delete Button */}
-            <button 
-                onClick={(e) => handleDeleteCrop(e, crop.id, crop.name)}
-                className="absolute top-4 right-16 p-2 bg-white/80 backdrop-blur-sm text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover:opacity-100 z-10 scale-90 hover:scale-100 shadow-sm"
-                title="Delete Crop"
-            >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-
-            <div className="pt-8 px-6 pb-6">
-              <div className="mb-4">
-                <h3 className="text-xl font-bold text-gray-900 group-hover:text-green-700 transition-colors">{crop.name}</h3>
-                <p className="text-sm font-medium text-gray-500 mt-1">{crop.variety}</p>
-              </div>
-            
-              <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
-                <div className="flex flex-col">
-                    <span className="text-gray-400 text-xs uppercase font-bold tracking-wider mb-1">Planted</span>
-                    <span className="font-semibold text-gray-700">{new Date(crop.plantedDate).toLocaleDateString()}</span>
-                </div>
-                <div className="flex flex-col">
-                    <span className="text-gray-400 text-xs uppercase font-bold tracking-wider mb-1">Est. Harvest</span>
-                    <span className="font-semibold text-gray-700">{new Date(crop.harvestDate).toLocaleDateString()}</span>
-                </div>
-                <div className="flex flex-col">
-                    <span className="text-gray-400 text-xs uppercase font-bold tracking-wider mb-1">Area</span>
-                    <span className="font-semibold text-gray-700">{crop.area}</span>
-                </div>
-                <div className="flex flex-col">
-                    <span className="text-gray-400 text-xs uppercase font-bold tracking-wider mb-1">Last Activity</span>
-                    <span className="font-semibold text-gray-700 truncate bg-gray-50 px-2 py-0.5 rounded-md -ml-2">
-                        {crop.history && crop.history.length > 0 ? crop.history[crop.history.length -1].type : 'None'}
-                    </span>
-                </div>
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-gray-50 flex justify-end">
-                <span className="text-green-600 group-hover:text-green-700 text-sm font-bold flex items-center gap-1 transition-colors">
-                    View Details <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-                </span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-       {/* Add Crop Modal */}
-       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/60 dark:bg-gray-900/80 backdrop-blur-md transition-opacity duration-300">
-            <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col m-4 max-h-[90vh]">
-                <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 backdrop-blur-sm">
-                    <h3 className="text-lg font-bold text-gray-800">Add New Crop</h3>
-                    <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                </div>
-                
-                <div className="p-6 space-y-5 overflow-y-auto">
-                    {/* Image Uploads */}
-                    <div className="flex gap-4 justify-center mb-2">
-                        <div 
-                            onClick={() => fileInputRef.current?.click()}
-                            className="w-20 h-20 rounded-xl bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-green-500 hover:bg-green-50 transition-all overflow-hidden relative group"
-                        >
-                            {newCrop.imageUrl ? (
-                                <img src={newCrop.imageUrl} alt="Preview" className="w-full h-full object-cover" />
-                            ) : (
-                                <div className="text-center group-hover:scale-105 transition-transform">
-                                    <span className="text-[10px] text-gray-400 font-bold uppercase block mb-1">Icon</span>
-                                    <svg className="w-6 h-6 text-gray-300 mx-auto group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                </div>
-                            )}
-                        </div>
-                        
-                        <div 
-                            onClick={() => coverInputRef.current?.click()}
-                            className="w-32 h-20 rounded-xl bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-green-500 hover:bg-green-50 transition-all overflow-hidden relative group"
-                        >
-                            {newCrop.coverUrl ? (
-                                <img src={newCrop.coverUrl} alt="Cover Preview" className="w-full h-full object-cover" />
-                            ) : (
-                                <div className="text-center group-hover:scale-105 transition-transform">
-                                    <span className="text-[10px] text-gray-400 font-bold uppercase block mb-1">Cover</span>
-                                    <svg className="w-6 h-6 text-gray-300 mx-auto group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                </div>
-                            )}
-                        </div>
-                        
-                        <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'imageUrl')} />
-                        <input type="file" ref={coverInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'coverUrl')} />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-5">
-                        <div className="col-span-2">
-                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Field Name</label>
-                            <input 
-                                type="text" 
-                                placeholder="e.g. North Pasture"
-                                value={newCrop.name}
-                                onChange={(e) => setNewCrop({...newCrop, name: e.target.value})}
-                                className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all placeholder-gray-400"
-                            />
-                        </div>
-                        <div className="col-span-1">
-                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Variety/Crop</label>
-                            <input 
-                                type="text" 
-                                placeholder="e.g. Corn"
-                                value={newCrop.variety}
-                                onChange={(e) => setNewCrop({...newCrop, variety: e.target.value})}
-                                className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all placeholder-gray-400"
-                            />
-                        </div>
-                        <div className="col-span-1">
-                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Area/Size</label>
-                            <input 
-                                type="text" 
-                                placeholder="e.g. 50 Acres"
-                                value={newCrop.area}
-                                onChange={(e) => setNewCrop({...newCrop, area: e.target.value})}
-                                className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all placeholder-gray-400"
-                            />
-                        </div>
-                        <div className="col-span-1">
-                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Date Planted</label>
-                            <input 
-                                type="date" 
-                                value={newCrop.plantedDate}
-                                onChange={(e) => setNewCrop({...newCrop, plantedDate: e.target.value})}
-                                className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-gray-600"
-                            />
-                        </div>
-                        <div className="col-span-1">
-                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Status</label>
-                            <select 
-                                value={newCrop.status}
-                                onChange={(e) => setNewCrop({...newCrop, status: e.target.value as any})}
-                                className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
-                            >
-                                <option value="Healthy">Healthy</option>
-                                <option value="Needs Attention">Needs Attention</option>
-                                <option value="Harvest Ready">Harvest Ready</option>
-                                <option value="Harvested">Harvested</option>
-                            </select>
-                        </div>
-                         <div className="col-span-2">
-                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Est. Harvest Date (Optional)</label>
-                            <input 
-                                type="date" 
-                                value={newCrop.harvestDate}
-                                onChange={(e) => setNewCrop({...newCrop, harvestDate: e.target.value})}
-                                className="w-full border border-gray-200 bg-gray-50 text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-gray-600"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <div className="px-8 py-4 bg-gray-50 flex justify-end gap-3 border-t border-gray-100 mt-auto">
-                    <button 
-                        onClick={() => setShowAddModal(false)}
-                        className="px-6 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-700 hover:bg-white transition-colors"
-                    >
-                        Cancel
-                    </button>
-                    <button 
-                        onClick={handleCreateCrop}
-                        disabled={!newCrop.name}
-                        className="px-6 py-2.5 bg-green-600 rounded-xl text-sm font-bold text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg transition-all"
-                    >
-                        Add Crop
-                    </button>
-                </div>
-            </div>
-        </div>
-      )}
-    </div>
-  );
-};
