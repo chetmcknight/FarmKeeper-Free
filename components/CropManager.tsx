@@ -148,6 +148,7 @@ export const CropManager: React.FC = () => {
 
   // --- Detail View ---
   if (selectedCrop) {
+    // Force sort descending (Newest first)
     const sortedHistory = [...selectedCrop.history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     return (

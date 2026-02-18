@@ -16,18 +16,57 @@ export const FieldScout: React.FC = () => {
 
   const loadHistory = async () => {
     const data = await backend.getScoutHistory();
-    setHistory(data);
+    // Sort history by date descending (newest first)
+    const sorted = data.sort((a, b) => b.date - a.date);
+    setHistory(sorted);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Helper to compress image
+  const compressImage = (file: File, maxWidth: number = 800): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target?.result as string;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth) {
+                    height *= maxWidth / width;
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    reject(new Error("Could not get canvas context"));
+                    return;
+                }
+                ctx.drawImage(img, 0, 0, width, height);
+                // Compress to JPEG at 0.7 quality
+                resolve(canvas.toDataURL('image/jpeg', 0.7));
+            };
+            img.onerror = (e) => reject(e);
+        };
+        reader.onerror = (e) => reject(e);
+    });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result as string);
-        setResult(null); // Reset previous result
-      };
-      reader.readAsDataURL(file);
+      try {
+          const compressed = await compressImage(file);
+          setImage(compressed);
+          setResult(null); // Reset previous result
+      } catch (error) {
+          console.error("Image processing error:", error);
+          alert("Failed to process image. Please try again.");
+      }
     }
   };
 
@@ -38,6 +77,7 @@ export const FieldScout: React.FC = () => {
     }
     setLoading(true);
     try {
+      // Image is already a base64 data URL from compressImage
       const base64Data = image.split(',')[1];
       if (!base64Data) throw new Error("Invalid image data");
       
@@ -46,7 +86,7 @@ export const FieldScout: React.FC = () => {
       
       const newRecord = await backend.addScoutRecord({
         date: Date.now(),
-        imageBase64: image,
+        imageBase64: image, // Store the compressed image
         result: diagnosis
       });
       setHistory(prev => [newRecord, ...prev].slice(0, 5));

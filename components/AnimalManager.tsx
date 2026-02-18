@@ -354,6 +354,7 @@ export const AnimalManager: React.FC = () => {
 
   // --- Detail View ---
   if (selectedAnimal) {
+    // Explicitly sort events
     const upcomingEvents = selectedAnimal.medicalHistory
         .filter(r => r.date > today)
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
