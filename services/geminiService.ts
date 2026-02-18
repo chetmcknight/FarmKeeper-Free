@@ -126,61 +126,82 @@ export const getFarmingAdvice = async (
   }
 };
 
-/**
- * Get quick weather/market snapshot and a daily tip.
- */
-export const getDashboardInsights = async (location: string, commodities: string[] = ["Corn", "Soybeans"]) => {
+// --- Granular Dashboard Functions ---
+
+export const getWeatherInsight = async (location: string) => {
   try {
-    const commoditiesList = commodities.join(", ");
-    // We ask Gemini only for the price value to ensure we get data,
-    // but we will provide the source link ourselves.
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Get the current weather and a brief 3-day farming forecast for ${location}. 
-      Also find the current market price for these agricultural items: ${commoditiesList}.
-      Provide a "dailyTip" which is a useful, practical, and scientific piece of advice for farmers regarding crops or livestock for the current season.
-      Format the output as a concise JSON object:
-      {
-        "weather": { "current": "Temp/Condition", "forecast": "Summary" },
-        "market": [
-           { "name": "Exact Item Name from list", "price": "Price with unit" }
-        ],
-        "dailyTip": { 
-          "title": "Short Title", 
-          "content": "1-2 sentences of advice", 
-          "category": "Crops|Livestock|General"
-        }
-      }`,
+      contents: `Get the current weather and a brief 3-day farming forecast for ${location}.
+      Format output as JSON: { "current": "Temp/Condition", "forecast": "Short summary" }`,
       config: {
         tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
       },
     });
-
-    const text = response.text || "{}";
-    // Basic cleaning just in case
-    const cleanText = text.replace(/```json/g, '').replace(/```/g, '');
-    const result = JSON.parse(cleanText);
-    
-    // Hardcode a reliable single source for all prices to ensure links work
-    const SINGLE_RELIABLE_SOURCE = "https://www.agweb.com/markets";
-    
-    if (result.market && Array.isArray(result.market)) {
-        result.market = result.market.map((m: any) => ({
-            ...m,
-            sourceUrl: SINGLE_RELIABLE_SOURCE
-        }));
-    }
-
-    // Fix Daily Tip Source to be reliable
-    if (result.dailyTip) {
-        result.dailyTip.sourceUrl = "https://www.agriculture.com/";
-        result.dailyTip.source = "Agriculture.com";
-    }
-
-    return result;
+    return JSON.parse(response.text || "{}");
   } catch (error) {
-    console.error("Dashboard insight error:", error);
+    console.error("Weather error:", error);
+    return { current: "--", forecast: "Unavailable" };
+  }
+};
+
+export const getMarketPrices = async (commodities: string[]) => {
+  try {
+    const commoditiesList = commodities.join(", ");
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `Find current market price for: ${commoditiesList}.
+      Format output as JSON array: [ { "name": "Item Name", "price": "Price" } ]`,
+      config: {
+        tools: [{ googleSearch: {} }],
+        responseMimeType: "application/json",
+      },
+    });
+    const data = JSON.parse(response.text || "[]");
+    
+    // Normalize and add reliable source
+    return (Array.isArray(data) ? data : []).map((item: any) => ({
+        name: item.name,
+        price: item.price,
+        sourceUrl: "https://www.agweb.com/markets"
+    }));
+  } catch (error) {
+    console.error("Market error:", error);
+    return [];
+  }
+};
+
+export const getDailyTip = async () => {
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `Provide a "dailyTip" which is a useful, practical, and scientific piece of advice for farmers regarding crops or livestock for the current season.
+      Format output as JSON: { "title": "Short Title", "content": "1-2 sentences", "category": "Crops|Livestock|General" }`,
+      config: {
+        responseMimeType: "application/json",
+      },
+    });
+    const data = JSON.parse(response.text || "{}");
+    return {
+        ...data,
+        source: "Agriculture.com",
+        sourceUrl: "https://www.agriculture.com/"
+    };
+  } catch (error) {
+    console.error("Tip error:", error);
     return null;
   }
+};
+
+/**
+ * @deprecated Use granular functions above
+ */
+export const getDashboardInsights = async (location: string, commodities: string[]) => {
+    const [weather, market, dailyTip] = await Promise.all([
+        getWeatherInsight(location),
+        getMarketPrices(commodities),
+        getDailyTip()
+    ]);
+    return { weather, market, dailyTip };
 };

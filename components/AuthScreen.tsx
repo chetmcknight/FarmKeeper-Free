@@ -47,7 +47,11 @@ export const AuthScreen: React.FC = () => {
                     paypal.Buttons({
                         style: { shape: 'rect', layout: 'vertical', color: 'blue', label: 'subscribe' },
                         funding: {
-                            disallowed: [window.paypal.FUNDING.PAYLATER, window.paypal.FUNDING.CREDIT]
+                            disallowed: [
+                                window.paypal.FUNDING.PAYLATER, 
+                                window.paypal.FUNDING.CREDIT,
+                                window.paypal.FUNDING.VENMO
+                            ]
                         },
                         createOrder: (data: any, actions: any) => {
                             const currentEmail = emailRef.current;

@@ -20,10 +20,12 @@ export const FarmhandManager: React.FC = () => {
       status: 'Active',
       notes: '',
       startDate: new Date().toISOString().split('T')[0],
-      imageUrl: ''
+      imageUrl: '',
+      coverUrl: ''
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadHands();
@@ -45,7 +47,8 @@ export const FarmhandManager: React.FC = () => {
         status: 'Active',
         notes: '',
         startDate: new Date().toISOString().split('T')[0],
-        imageUrl: ''
+        imageUrl: '',
+        coverUrl: ''
       });
       setIsEditing(false);
       setEditingId(null);
@@ -94,12 +97,12 @@ export const FarmhandManager: React.FC = () => {
     });
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'imageUrl' | 'coverUrl') => {
       const file = e.target.files?.[0];
       if (file) {
           try {
               const resizedBase64 = await compressImage(file);
-              setForm(prev => ({ ...prev, imageUrl: resizedBase64 }));
+              setForm(prev => ({ ...prev, [field]: resizedBase64 }));
           } catch (error) {
               alert("Failed to process image.");
           }
@@ -162,11 +165,18 @@ export const FarmhandManager: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {hands.map((hand) => (
                 <div key={hand.id} className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-md transition-all relative group overflow-hidden isolate">
-                    {/* Added rounded-t-2xl to ensure corners are filled */}
-                    <div className="h-24 bg-gradient-to-r from-gray-100 to-gray-200 rounded-t-2xl"></div>
+                    
+                    {/* Cover Image */}
+                    <div className="h-24 bg-gray-100 relative rounded-t-2xl overflow-hidden">
+                        {hand.coverUrl ? (
+                            <img src={hand.coverUrl} className="w-full h-full object-cover" alt="Cover" />
+                        ) : (
+                            <div className="w-full h-full bg-gradient-to-r from-gray-100 to-gray-200"></div>
+                        )}
+                    </div>
                     
                     <div className="px-6 relative">
-                        <div className="w-20 h-20 rounded-full border-4 border-white bg-white shadow-md -mt-10 overflow-hidden flex items-center justify-center text-3xl">
+                        <div className="w-20 h-20 rounded-full border-4 border-white bg-white shadow-md -mt-10 overflow-hidden flex items-center justify-center text-3xl z-10 relative">
                             {hand.imageUrl ? (
                                 <img src={hand.imageUrl} className="w-full h-full object-cover" alt={hand.name} />
                             ) : (
@@ -174,7 +184,7 @@ export const FarmhandManager: React.FC = () => {
                             )}
                         </div>
                         
-                        <div className="absolute top-2 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute top-2 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
                              <button onClick={() => handleEdit(hand)} className="text-gray-400 hover:text-green-600 bg-white/80 p-1.5 rounded-full shadow-sm">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                              </button>
@@ -255,7 +265,7 @@ export const FarmhandManager: React.FC = () => {
 
         {/* Modal */}
         {showAddModal && (
-            <div className="fixed inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="fixed inset-0 bg-white/60 dark:bg-gray-900/80 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all">
                 <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] m-4 flex flex-col">
                     <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                         <h3 className="text-lg font-bold text-gray-800">{isEditing ? 'Edit Farmhand' : 'Add Farmhand'}</h3>
@@ -265,7 +275,7 @@ export const FarmhandManager: React.FC = () => {
                     </div>
                     
                     <div className="p-6 md:p-8 space-y-6 overflow-y-auto">
-                        <div className="flex justify-center mb-4">
+                        <div className="flex gap-4 justify-center mb-4">
                             <div 
                                 onClick={() => fileInputRef.current?.click()}
                                 className="w-24 h-24 rounded-full bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-green-500 hover:bg-green-50 transition-all overflow-hidden relative group"
@@ -274,12 +284,28 @@ export const FarmhandManager: React.FC = () => {
                                     <img src={form.imageUrl} alt="Preview" className="w-full h-full object-cover" />
                                 ) : (
                                     <div className="text-center group-hover:scale-105 transition-transform">
-                                        <span className="text-[10px] text-gray-400 font-bold uppercase block mb-1">Photo</span>
+                                        <span className="text-[10px] text-gray-400 font-bold uppercase block mb-1">Profile</span>
                                         <svg className="w-6 h-6 text-gray-300 mx-auto group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                     </div>
                                 )}
                             </div>
-                            <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
+                            
+                            <div 
+                                onClick={() => coverInputRef.current?.click()}
+                                className="w-32 h-24 rounded-xl bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-green-500 hover:bg-green-50 transition-all overflow-hidden relative group"
+                            >
+                                {form.coverUrl ? (
+                                    <img src={form.coverUrl} alt="Cover Preview" className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="text-center group-hover:scale-105 transition-transform">
+                                        <span className="text-[10px] text-gray-400 font-bold uppercase block mb-1">Cover</span>
+                                        <svg className="w-6 h-6 text-gray-300 mx-auto group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                    </div>
+                                )}
+                            </div>
+                            
+                            <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'imageUrl')} />
+                            <input type="file" ref={coverInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'coverUrl')} />
                         </div>
 
                         <div className="grid grid-cols-2 gap-5">

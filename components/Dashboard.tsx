@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getDashboardInsights } from '../services/geminiService';
+import { getWeatherInsight, getMarketPrices, getDailyTip } from '../services/geminiService';
 import { backend } from '../services/mockBackend';
 import { Page } from '../types';
 import { useAuth } from '../context/AuthContext';
@@ -18,8 +18,17 @@ const COMMODITY_OPTIONS = [
 
 export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate }) => {
   const { user } = useAuth();
-  const [insights, setInsights] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+  
+  // Data States
+  const [weatherData, setWeatherData] = useState<any>(null);
+  const [marketData, setMarketData] = useState<any[]>([]);
+  const [tipData, setTipData] = useState<any>(null);
+
+  // Loading States
+  const [loadingWeather, setLoadingWeather] = useState(true);
+  const [loadingMarkets, setLoadingMarkets] = useState(true);
+  const [loadingTip, setLoadingTip] = useState(true);
+
   const [selectedCommodities, setSelectedCommodities] = useState<string[]>([
     "Oats", "Alfalfa Hay", "Straw", "Chicken Feed"
   ]);
@@ -47,19 +56,48 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate }) =>
     loadStats();
   }, []);
 
+  // Fetch Weather & Tip (Once on mount or location change)
   useEffect(() => {
     let mounted = true;
-    const fetchInsights = async () => {
-      setLoading(true);
-      // Hardcoded location as requested for stability
-      const data = await getDashboardInsights("Sequim, WA 98382", selectedCommodities);
-      if (mounted && data) {
-        setInsights(data);
-      }
-      setLoading(false);
+    
+    const fetchGeneral = async () => {
+        setLoadingWeather(true);
+        setLoadingTip(true);
+
+        // Fetch Weather
+        getWeatherInsight("Sequim, WA 98382").then(data => {
+            if(mounted) {
+                setWeatherData(data);
+                setLoadingWeather(false);
+            }
+        });
+
+        // Fetch Tip
+        getDailyTip().then(data => {
+            if(mounted) {
+                setTipData(data);
+                setLoadingTip(false);
+            }
+        });
     };
-    fetchInsights();
+
+    fetchGeneral();
     return () => { mounted = false; };
+  }, [location]); // Re-run if location changes
+
+  // Fetch Markets (Whenever commodities change)
+  useEffect(() => {
+      let mounted = true;
+      const fetchMarkets = async () => {
+          setLoadingMarkets(true);
+          const data = await getMarketPrices(selectedCommodities);
+          if (mounted) {
+              setMarketData(data);
+              setLoadingMarkets(false);
+          }
+      };
+      fetchMarkets();
+      return () => { mounted = false; };
   }, [selectedCommodities]);
 
   const handleCommodityChange = (index: number, value: string) => {
@@ -69,8 +107,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate }) =>
   };
 
   const getMarketItem = (name: string) => {
-    if (!insights?.market) return null;
-    return insights.market.find((m: any) => 
+    return marketData.find((m: any) => 
       m.name.toLowerCase().includes(name.toLowerCase()) || 
       name.toLowerCase().includes(m.name.toLowerCase())
     );
@@ -160,26 +197,29 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate }) =>
       {/* Insights Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Weather Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 p-6 relative overflow-hidden group">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 p-6 relative overflow-hidden group min-h-[180px]">
           <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
             <svg className="w-32 h-32 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" /></svg>
           </div>
           <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-2 relative z-10">Local Weather</h3>
-          {loading && !insights ? (
-            <div className="animate-pulse space-y-3 mt-4">
-                <div className="h-8 w-24 bg-gray-100 dark:bg-gray-700 rounded"></div>
-                <div className="h-4 w-full bg-gray-100 dark:bg-gray-700 rounded"></div>
+          {loadingWeather ? (
+            <div className="animate-pulse space-y-4 mt-4 relative z-10">
+                <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                <div className="space-y-2">
+                    <div className="h-4 w-full bg-gray-100 dark:bg-gray-700 rounded"></div>
+                    <div className="h-4 w-2/3 bg-gray-100 dark:bg-gray-700 rounded"></div>
+                </div>
             </div>
           ) : (
-            <div className="relative z-10 mt-4">
-              <p className="text-4xl font-extrabold text-gray-900 dark:text-white">{insights?.weather?.current || "Loading..."}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 font-medium leading-relaxed">{insights?.weather?.forecast || "Updating forecast..."}</p>
+            <div className="relative z-10 mt-4 animate-fade-in">
+              <p className="text-4xl font-extrabold text-gray-900 dark:text-white">{weatherData?.current || "--"}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 font-medium leading-relaxed">{weatherData?.forecast || "Forecast unavailable."}</p>
             </div>
           )}
         </div>
 
         {/* Markets Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 p-6 relative overflow-hidden group">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 p-6 relative overflow-hidden group min-h-[180px]">
           <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
             <svg className="w-32 h-32 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zm6-4a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zm6-3a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" /></svg>
           </div>
@@ -187,27 +227,35 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate }) =>
           
           <div className="space-y-3 relative z-10">
             {selectedCommodities.map((item, index) => {
-              const marketData = getMarketItem(item);
+              const marketItem = getMarketItem(item);
+              const isLoadingItem = loadingMarkets; // Granular enough for the card level, items load together per API call
+
               return (
                 <div key={index} className="flex justify-between items-center bg-gray-50/80 dark:bg-gray-700/50 backdrop-blur-sm p-3 rounded-xl border border-gray-100 dark:border-gray-600 hover:border-green-200 dark:hover:border-green-500 transition-colors">
                   <select 
                     value={item}
                     onChange={(e) => handleCommodityChange(index, e.target.value)}
                     className="bg-transparent border-none text-gray-700 dark:text-gray-300 text-sm font-semibold focus:ring-0 cursor-pointer w-32 md:w-36 outline-none py-0 pl-0"
-                    disabled={loading}
+                    disabled={isLoadingItem}
                   >
                     {COMMODITY_OPTIONS.map(opt => (
                       <option key={opt} value={opt} className="text-gray-900 bg-white dark:bg-gray-800 dark:text-white">{opt}</option>
                     ))}
                   </select>
                   <div className="text-right">
-                    <span className={`font-bold text-sm block ${loading ? 'text-gray-400 dark:text-gray-500' : 'text-green-700 dark:text-green-400'}`}>
-                      {loading ? '...' : (marketData?.price || '--')}
-                    </span>
-                    {!loading && marketData?.sourceUrl && (
-                        <a href={marketData.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium block truncate max-w-[80px] text-right ml-auto">
-                            Source &rarr;
-                        </a>
+                    {isLoadingItem ? (
+                        <div className="h-4 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse"></div>
+                    ) : (
+                        <>
+                            <span className="font-bold text-sm block text-green-700 dark:text-green-400 animate-fade-in">
+                            {marketItem?.price || '--'}
+                            </span>
+                            {marketItem?.sourceUrl && (
+                                <a href={marketItem.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium block truncate max-w-[80px] text-right ml-auto">
+                                    Source &rarr;
+                                </a>
+                            )}
+                        </>
                     )}
                   </div>
                 </div>
@@ -217,8 +265,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate }) =>
         </div>
       </div>
 
-      {/* Expert Insight / Daily Tip (Replaces Yield Chart) */}
-      <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700">
+      {/* Expert Insight / Daily Tip */}
+      <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 min-h-[200px]">
         <div className="flex items-center gap-3 mb-6">
             <div className="bg-indigo-100 dark:bg-indigo-900/30 p-2 rounded-lg text-indigo-600 dark:text-indigo-400">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
@@ -226,29 +274,32 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate }) =>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white">Expert Insight of the Day</h3>
         </div>
 
-        {loading && !insights ? (
+        {loadingTip ? (
              <div className="animate-pulse space-y-4 max-w-2xl">
-                <div className="h-8 w-3/4 bg-gray-100 dark:bg-gray-700 rounded"></div>
-                <div className="h-4 w-full bg-gray-100 dark:bg-gray-700 rounded"></div>
-                <div className="h-4 w-5/6 bg-gray-100 dark:bg-gray-700 rounded"></div>
+                <div className="h-6 w-32 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                <div className="h-8 w-3/4 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                <div className="space-y-2">
+                    <div className="h-4 w-full bg-gray-100 dark:bg-gray-700 rounded"></div>
+                    <div className="h-4 w-5/6 bg-gray-100 dark:bg-gray-700 rounded"></div>
+                </div>
             </div>
         ) : (
-             <div className="flex flex-col md:flex-row gap-8 items-center">
+             <div className="flex flex-col md:flex-row gap-8 items-center animate-fade-in">
                  <div className="flex-1">
-                     {insights?.dailyTip ? (
+                     {tipData ? (
                          <div className="space-y-4">
                             <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/50">
-                                {insights.dailyTip.category || 'Farming Tip'}
+                                {tipData.category || 'Farming Tip'}
                             </span>
                             <h4 className="text-2xl font-extrabold text-gray-900 dark:text-white leading-tight">
-                                {insights.dailyTip.title}
+                                {tipData.title}
                             </h4>
                             <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-                                {insights.dailyTip.content}
+                                {tipData.content}
                             </p>
-                            {insights.dailyTip.source && (
+                            {tipData.source && (
                                 <div className="mt-4 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 pt-3">
-                                    Source: <a href={insights.dailyTip.sourceUrl || '#'} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:underline">{insights.dailyTip.source}</a>
+                                    Source: <a href={tipData.sourceUrl || '#'} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:underline">{tipData.source}</a>
                                 </div>
                             )}
                          </div>
@@ -268,7 +319,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate }) =>
                  </div>
                  
                  {/* Decorative Illustration/Icon */}
-                 <div className="hidden md:flex flex-shrink-0 w-48 h-48 bg-gray-50 dark:bg-gray-700/50 rounded-full items-center justify-center text-8xl border-4 border-white dark:border-gray-600 shadow-lg animate-fade-in">
+                 <div className="hidden md:flex flex-shrink-0 w-48 h-48 bg-gray-50 dark:bg-gray-700/50 rounded-full items-center justify-center text-8xl border-4 border-white dark:border-gray-600 shadow-lg">
                     💡
                  </div>
              </div>

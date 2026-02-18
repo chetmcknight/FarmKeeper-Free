@@ -36,6 +36,8 @@ export interface Crop {
   status: 'Healthy' | 'Needs Attention' | 'Harvest Ready' | 'Harvested';
   area: string;
   history: FieldRecord[];
+  imageUrl?: string;
+  coverUrl?: string;
 }
 
 export interface MedicalRecord {
@@ -76,6 +78,7 @@ export interface Farmhand {
   notes: string;
   startDate: string;
   imageUrl?: string;
+  coverUrl?: string;
 }
 
 export interface Task {

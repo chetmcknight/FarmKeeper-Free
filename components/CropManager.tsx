@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Crop, FieldRecord } from '../types';
 import { backend } from '../services/mockBackend';
 
@@ -19,8 +19,15 @@ export const CropManager: React.FC = () => {
       plantedDate: new Date().toISOString().split('T')[0],
       harvestDate: '',
       status: 'Healthy',
-      area: ''
+      area: '',
+      imageUrl: '',
+      coverUrl: ''
   });
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
+  const editCoverInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadCrops();
@@ -60,6 +67,50 @@ export const CropManager: React.FC = () => {
     return diffDays;
   };
 
+  // Compress image helper (reused logic)
+  const compressImage = (file: File, maxWidth: number = 600): Promise<string> => {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target?.result as string;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth) {
+                    height *= maxWidth / width;
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx?.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', 0.7));
+            };
+        };
+    });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'imageUrl' | 'coverUrl', isEdit: boolean = false) => {
+      const file = e.target.files?.[0];
+      if (file) {
+          try {
+              const resizedBase64 = await compressImage(file);
+              if (isEdit) {
+                  setEditForm(prev => prev ? { ...prev, [field]: resizedBase64 } : null);
+              } else {
+                  setNewCrop(prev => ({ ...prev, [field]: resizedBase64 }));
+              }
+          } catch (error) {
+              alert("Failed to process image.");
+          }
+      }
+  };
+
   const handleCreateCrop = async () => {
     if (!newCrop.name || !newCrop.plantedDate) {
         alert("Please fill in required fields.");
@@ -85,6 +136,8 @@ export const CropManager: React.FC = () => {
       harvestDate: finalHarvestDate,
       status: newCrop.status as any || 'Healthy',
       area: newCrop.area || 'N/A',
+      imageUrl: newCrop.imageUrl,
+      coverUrl: newCrop.coverUrl,
       history: [
         {
           id: Date.now().toString(),
@@ -104,7 +157,9 @@ export const CropManager: React.FC = () => {
       plantedDate: new Date().toISOString().split('T')[0],
       harvestDate: '',
       status: 'Healthy',
-      area: ''
+      area: '',
+      imageUrl: '',
+      coverUrl: ''
     });
     loadCrops();
   };
@@ -187,10 +242,52 @@ export const CropManager: React.FC = () => {
                            )}
                         </button>
 
-                        <div className="bg-gradient-to-b from-green-50 to-white p-8 flex flex-col items-center border-b border-gray-50 pt-16 relative">
-                            <div className="w-28 h-28 bg-white rounded-full flex items-center justify-center text-5xl shadow-[0_8px_16px_-4px_rgba(0,0,0,0.1)] mb-5 border-4 border-white">
-                                🌽
+                        {/* Cover Image */}
+                        <div className="h-32 bg-gray-100 relative">
+                             {(isEditing && editForm?.coverUrl) || (!isEditing && selectedCrop.coverUrl) ? (
+                                <img 
+                                    src={isEditing ? editForm?.coverUrl : selectedCrop.coverUrl} 
+                                    alt="Cover" 
+                                    className="w-full h-full object-cover"
+                                />
+                             ) : (
+                                <div className="w-full h-full bg-gradient-to-b from-green-50 to-green-100/50"></div>
+                             )}
+                             {isEditing && (
+                                <button 
+                                    onClick={() => editCoverInputRef.current?.click()}
+                                    className="absolute top-2 left-2 bg-white/80 p-1.5 rounded-full text-gray-600 hover:text-green-600 text-xs font-bold shadow-sm"
+                                >
+                                    Change Poster
+                                </button>
+                             )}
+                        </div>
+
+                        <div className="bg-white p-8 pt-0 flex flex-col items-center border-b border-gray-50 relative">
+                            <div className="w-28 h-28 bg-white rounded-full flex items-center justify-center text-5xl shadow-[0_8px_16px_-4px_rgba(0,0,0,0.1)] mb-5 border-4 border-white -mt-14 overflow-hidden relative group">
+                                {(isEditing && editForm?.imageUrl) || (!isEditing && selectedCrop.imageUrl) ? (
+                                    <img 
+                                        src={isEditing ? editForm?.imageUrl : selectedCrop.imageUrl} 
+                                        alt="Profile" 
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <span>🌽</span>
+                                )}
+
+                                {isEditing && (
+                                    <div 
+                                        onClick={() => editFileInputRef.current?.click()}
+                                        className="absolute inset-0 bg-black/50 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity"
+                                    >
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /></svg>
+                                    </div>
+                                )}
                             </div>
+
+                            {/* Hidden Inputs for Edit */}
+                            <input type="file" ref={editFileInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'imageUrl', true)} />
+                            <input type="file" ref={editCoverInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'coverUrl', true)} />
                             
                             {isEditing ? (
                                 <input 
@@ -382,52 +479,70 @@ export const CropManager: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
         {crops.map((crop) => (
-          <div key={crop.id} onClick={() => handleSelectCrop(crop)} className="bg-white p-6 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:border-green-200 transition-all cursor-pointer relative group duration-300">
+          <div key={crop.id} onClick={() => handleSelectCrop(crop)} className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:border-green-200 transition-all cursor-pointer relative group duration-300 overflow-hidden">
             
+            {/* Cover & Profile Image Display for List Card */}
+            <div className="h-28 bg-gray-100 relative">
+                 {crop.coverUrl ? (
+                     <img src={crop.coverUrl} className="w-full h-full object-cover" alt="Cover" />
+                 ) : (
+                     <div className="w-full h-full bg-gradient-to-r from-green-50 to-green-100/50" />
+                 )}
+                 <div className="absolute top-4 right-4 z-10">
+                     <span className={`px-3 py-1 rounded-full text-xs font-bold border shadow-sm ${getStatusColor(crop.status)} bg-white/90 backdrop-blur-sm`}>
+                        {crop.status}
+                    </span>
+                 </div>
+                 <div className="absolute -bottom-6 left-6 w-14 h-14 rounded-xl border-4 border-white bg-white shadow-md flex items-center justify-center text-2xl overflow-hidden">
+                     {crop.imageUrl ? (
+                         <img src={crop.imageUrl} className="w-full h-full object-cover" alt="Profile" />
+                     ) : (
+                         <span>🌽</span>
+                     )}
+                 </div>
+            </div>
+
             {/* Delete Button */}
             <button 
                 onClick={(e) => handleDeleteCrop(e, crop.id, crop.name)}
-                className="absolute top-4 right-4 p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover:opacity-100 z-10 scale-90 hover:scale-100"
+                className="absolute top-4 right-16 p-2 bg-white/80 backdrop-blur-sm text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover:opacity-100 z-10 scale-90 hover:scale-100 shadow-sm"
                 title="Delete Crop"
             >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
 
-            <div className="flex justify-between items-start mb-6">
-              <div>
+            <div className="pt-8 px-6 pb-6">
+              <div className="mb-4">
                 <h3 className="text-xl font-bold text-gray-900 group-hover:text-green-700 transition-colors">{crop.name}</h3>
                 <p className="text-sm font-medium text-gray-500 mt-1">{crop.variety}</p>
               </div>
-              <span className={`px-3 py-1 rounded-full text-xs font-bold border shadow-sm ${getStatusColor(crop.status)}`}>
-                {crop.status}
-              </span>
-            </div>
             
-            <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
-              <div className="flex flex-col">
-                <span className="text-gray-400 text-xs uppercase font-bold tracking-wider mb-1">Planted</span>
-                <span className="font-semibold text-gray-700">{new Date(crop.plantedDate).toLocaleDateString()}</span>
+              <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase font-bold tracking-wider mb-1">Planted</span>
+                    <span className="font-semibold text-gray-700">{new Date(crop.plantedDate).toLocaleDateString()}</span>
+                </div>
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase font-bold tracking-wider mb-1">Est. Harvest</span>
+                    <span className="font-semibold text-gray-700">{new Date(crop.harvestDate).toLocaleDateString()}</span>
+                </div>
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase font-bold tracking-wider mb-1">Area</span>
+                    <span className="font-semibold text-gray-700">{crop.area}</span>
+                </div>
+                <div className="flex flex-col">
+                    <span className="text-gray-400 text-xs uppercase font-bold tracking-wider mb-1">Last Activity</span>
+                    <span className="font-semibold text-gray-700 truncate bg-gray-50 px-2 py-0.5 rounded-md -ml-2">
+                        {crop.history && crop.history.length > 0 ? crop.history[crop.history.length -1].type : 'None'}
+                    </span>
+                </div>
               </div>
-              <div className="flex flex-col">
-                <span className="text-gray-400 text-xs uppercase font-bold tracking-wider mb-1">Est. Harvest</span>
-                <span className="font-semibold text-gray-700">{new Date(crop.harvestDate).toLocaleDateString()}</span>
-              </div>
-               <div className="flex flex-col">
-                <span className="text-gray-400 text-xs uppercase font-bold tracking-wider mb-1">Area</span>
-                <span className="font-semibold text-gray-700">{crop.area}</span>
-              </div>
-               <div className="flex flex-col">
-                <span className="text-gray-400 text-xs uppercase font-bold tracking-wider mb-1">Last Activity</span>
-                <span className="font-semibold text-gray-700 truncate bg-gray-50 px-2 py-0.5 rounded-md -ml-2">
-                    {crop.history && crop.history.length > 0 ? crop.history[crop.history.length -1].type : 'None'}
+
+              <div className="mt-6 pt-4 border-t border-gray-50 flex justify-end">
+                <span className="text-green-600 group-hover:text-green-700 text-sm font-bold flex items-center gap-1 transition-colors">
+                    View Details <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                 </span>
               </div>
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-gray-50 flex justify-end">
-               <span className="text-green-600 group-hover:text-green-700 text-sm font-bold flex items-center gap-1 transition-colors">
-                 View Details <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-               </span>
             </div>
           </div>
         ))}
@@ -435,16 +550,50 @@ export const CropManager: React.FC = () => {
 
        {/* Add Crop Modal */}
        {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm transition-opacity duration-300">
-            <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] m-4">
-                <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/60 dark:bg-gray-900/80 backdrop-blur-md transition-opacity duration-300">
+            <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col m-4 max-h-[90vh]">
+                <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 backdrop-blur-sm">
                     <h3 className="text-lg font-bold text-gray-800">Add New Crop</h3>
                     <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
                 
-                <div className="p-6 md:p-8 space-y-6 overflow-y-auto">
+                <div className="p-6 space-y-5 overflow-y-auto">
+                    {/* Image Uploads */}
+                    <div className="flex gap-4 justify-center mb-2">
+                        <div 
+                            onClick={() => fileInputRef.current?.click()}
+                            className="w-20 h-20 rounded-xl bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-green-500 hover:bg-green-50 transition-all overflow-hidden relative group"
+                        >
+                            {newCrop.imageUrl ? (
+                                <img src={newCrop.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="text-center group-hover:scale-105 transition-transform">
+                                    <span className="text-[10px] text-gray-400 font-bold uppercase block mb-1">Icon</span>
+                                    <svg className="w-6 h-6 text-gray-300 mx-auto group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                </div>
+                            )}
+                        </div>
+                        
+                        <div 
+                            onClick={() => coverInputRef.current?.click()}
+                            className="w-32 h-20 rounded-xl bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-green-500 hover:bg-green-50 transition-all overflow-hidden relative group"
+                        >
+                            {newCrop.coverUrl ? (
+                                <img src={newCrop.coverUrl} alt="Cover Preview" className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="text-center group-hover:scale-105 transition-transform">
+                                    <span className="text-[10px] text-gray-400 font-bold uppercase block mb-1">Cover</span>
+                                    <svg className="w-6 h-6 text-gray-300 mx-auto group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                </div>
+                            )}
+                        </div>
+                        
+                        <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'imageUrl')} />
+                        <input type="file" ref={coverInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'coverUrl')} />
+                    </div>
+
                     <div className="grid grid-cols-2 gap-5">
                         <div className="col-span-2">
                             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Field Name</label>
@@ -510,7 +659,7 @@ export const CropManager: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="px-8 py-6 bg-gray-50 flex justify-end gap-3 border-t border-gray-100 mt-auto">
+                <div className="px-8 py-4 bg-gray-50 flex justify-end gap-3 border-t border-gray-100 mt-auto">
                     <button 
                         onClick={() => setShowAddModal(false)}
                         className="px-6 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-700 hover:bg-white transition-colors"

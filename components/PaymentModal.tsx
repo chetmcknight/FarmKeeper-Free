@@ -39,7 +39,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
                 await paypal.Buttons({
                     style: { shape: 'rect', layout: 'vertical', color: 'blue', label: 'pay' },
                     funding: {
-                        disallowed: [window.paypal.FUNDING.PAYLATER, window.paypal.FUNDING.CREDIT]
+                        disallowed: [
+                            window.paypal.FUNDING.PAYLATER, 
+                            window.paypal.FUNDING.CREDIT,
+                            window.paypal.FUNDING.VENMO
+                        ]
                     },
                     createOrder: (data: any, actions: any) => {
                         return actions.order.create({
@@ -90,8 +94,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         
-        {/* Background Overlay */}
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onClick={onClose} aria-hidden="true"></div>
+        {/* Background Overlay - Updated to be blur white in light mode, dark in dark mode */}
+        <div className="fixed inset-0 bg-white/60 dark:bg-gray-900/80 backdrop-blur-md transition-opacity" onClick={onClose} aria-hidden="true"></div>
 
         {/* Modal Container */}
         <div className="bg-white rounded-2xl text-left shadow-2xl transform transition-all sm:max-w-md w-full relative flex flex-col max-h-[90vh] overflow-hidden">
