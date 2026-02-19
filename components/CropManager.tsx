@@ -208,10 +208,12 @@ export const CropManager: React.FC = () => {
 
   // --- Detail View ---
   if (selectedCrop) {
+    // ... (Detail view implementation remains same as previous step)
     const sortedHistory = [...selectedCrop.history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     return (
         <div className="p-4 md:p-8 pb-32 md:pb-8 animate-fade-in">
+            {/* Same detail view as previous turn */}
             <button 
                 onClick={() => setSelectedCrop(null)}
                 className="mb-6 group flex items-center text-gray-500 hover:text-green-700 font-semibold transition-colors px-3 py-2 rounded-lg hover:bg-green-50 w-fit"
@@ -496,10 +498,10 @@ export const CropManager: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {crops.map((crop) => (
                 <div key={crop.id} onClick={() => handleSelectCrop(crop)} className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:border-green-200 transition-all cursor-pointer relative group duration-300 overflow-hidden">
-                    {/* Delete Button */}
+                    {/* Delete Button - Uniform Style */}
                     <button 
                         onClick={(e) => handleDeleteCrop(e, crop.id, crop.name)}
-                        className="absolute top-3 right-3 p-2 bg-white/90 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover:opacity-100 z-10 shadow-sm"
+                        className="absolute top-2 right-2 p-2.5 bg-white/80 backdrop-blur-sm text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all z-20 shadow-md border border-white/50"
                         title="Delete Field"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -558,18 +560,24 @@ export const CropManager: React.FC = () => {
             </div>
         )}
 
-        {/* Add Modal */}
+        {/* Add Modal (Same as before with glass close button) */}
         {showAddModal && (
             <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col relative">
+                    {/* Glass Morphism Close Button */}
+                    <button 
+                        onClick={() => setShowAddModal(false)}
+                        className="absolute top-4 right-4 p-2 rounded-full bg-white/40 backdrop-blur-md border border-white/50 shadow-sm hover:bg-white/60 text-gray-600 transition-all z-10"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+
                     <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                         <h3 className="text-lg font-bold text-gray-800">Add New Field</h3>
-                        <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
                     </div>
                     
                     <div className="p-6 md:p-8 space-y-6 overflow-y-auto">
+                        {/* ... Modal Content ... */}
                         <div className="flex gap-6 justify-center">
                              <div 
                                 onClick={() => fileInputRef.current?.click()}

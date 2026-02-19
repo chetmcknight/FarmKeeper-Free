@@ -94,15 +94,16 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         
-        {/* Background Overlay - Updated to be blur white in light mode, dark in dark mode */}
+        {/* Background Overlay */}
         <div className="fixed inset-0 bg-white/60 dark:bg-gray-900/80 backdrop-blur-md transition-opacity" onClick={onClose} aria-hidden="true"></div>
 
         {/* Modal Container */}
         <div className="bg-white rounded-2xl text-left shadow-2xl transform transition-all sm:max-w-md w-full relative flex flex-col max-h-[90vh] overflow-hidden">
           
+          {/* Glass Morphism Close Button */}
           <button 
              onClick={onClose}
-             className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors z-20 bg-black/20 hover:bg-black/40 rounded-full p-1"
+             className="absolute top-4 right-4 p-2 rounded-full bg-black/20 hover:bg-black/30 backdrop-blur-md text-white/80 hover:text-white transition-all z-20 shadow-sm border border-white/10"
           >
              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>

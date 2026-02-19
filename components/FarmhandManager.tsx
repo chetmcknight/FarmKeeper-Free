@@ -160,6 +160,7 @@ export const FarmhandManager: React.FC = () => {
 
   // --- Detail View ---
   if (selectedHand) {
+      // ... (Detail view implementation remains similar, already looks good, just fix close button in list view mainly)
       return (
         <div className="p-4 md:p-8 pb-32 md:pb-8 animate-fade-in">
             <button 
@@ -394,10 +395,20 @@ export const FarmhandManager: React.FC = () => {
             </button>
         </div>
 
+        {/* Grid - Standardized to match Crop/Animal card */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {hands.map((hand) => (
                 <div key={hand.id} onClick={() => handleSelectHand(hand)} className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:border-green-200 transition-all cursor-pointer relative group duration-300 overflow-hidden">
                     
+                    {/* Delete Button - Uniform Style */}
+                    <button 
+                        onClick={(e) => handleDelete(e, hand.id, hand.name)}
+                        className="absolute top-2 right-2 p-2.5 bg-white/80 backdrop-blur-sm text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all z-20 shadow-md border border-white/50"
+                        title="Delete Farmhand"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+
                     {/* Cover Image */}
                     <div className="h-32 bg-gray-100 relative">
                         {hand.coverUrl ? (
@@ -405,11 +416,6 @@ export const FarmhandManager: React.FC = () => {
                         ) : (
                             <div className="w-full h-full bg-gradient-to-r from-blue-50 to-blue-100/50"></div>
                         )}
-                        <div className="absolute top-4 right-4 z-10">
-                            <span className={`px-3 py-1 rounded-full text-xs font-bold border shadow-sm ${getStatusColor(hand.status)} bg-white/90 backdrop-blur-sm`}>
-                                {hand.status}
-                            </span>
-                        </div>
                         <div className="absolute -bottom-8 left-6 w-16 h-16 rounded-full border-4 border-white bg-white shadow-md flex items-center justify-center text-3xl overflow-hidden">
                             {hand.imageUrl ? (
                                 <img src={hand.imageUrl} className="w-full h-full object-cover" alt={hand.name} />
@@ -418,42 +424,25 @@ export const FarmhandManager: React.FC = () => {
                             )}
                         </div>
                     </div>
-                    
-                    {/* Delete Button */}
-                    <button 
-                        onClick={(e) => handleDelete(e, hand.id, hand.name)}
-                        className="absolute top-4 right-16 p-2 bg-white/80 backdrop-blur-sm text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover:opacity-100 z-10 scale-90 hover:scale-100 shadow-sm"
-                        title="Delete Farmhand"
-                    >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
 
                     <div className="pt-10 px-6 pb-6">
                         <div className="flex justify-between items-start mb-2">
                             <h3 className="text-xl font-bold text-gray-900 group-hover:text-green-700 transition-colors">{hand.name}</h3>
-                        </div>
-                        <p className="text-sm text-green-600 font-semibold mb-4">{hand.role}</p>
-
-                        <div className="space-y-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
-                            {hand.phone ? (
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-gray-200 shadow-sm text-green-600">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wide">Phone</span>
-                                        <span className="text-sm font-semibold text-gray-800">{hand.phone}</span>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="text-xs text-gray-400 italic px-2">No phone number</div>
-                            )}
-                        </div>
-
-                        <div className="mt-6 pt-4 border-t border-gray-50 flex justify-end">
-                            <span className="text-green-600 group-hover:text-green-700 text-sm font-bold flex items-center gap-1 transition-colors">
-                                View Details <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-bold border shadow-sm whitespace-nowrap ${getStatusColor(hand.status)}`}>
+                                {hand.status}
                             </span>
+                        </div>
+                        <p className="text-sm text-gray-500 font-medium mb-4">{hand.role}</p>
+
+                        <div className="grid grid-cols-2 gap-4 text-sm pt-4 border-t border-gray-50">
+                            <div>
+                                <span className="text-gray-400 text-xs uppercase font-bold tracking-wider block mb-0.5">Contact</span>
+                                <span className="font-semibold text-gray-700 truncate block">{hand.phone || 'N/A'}</span>
+                            </div>
+                            <div>
+                                <span className="text-gray-400 text-xs uppercase font-bold tracking-wider block mb-0.5">Started</span>
+                                <span className="font-semibold text-gray-700">{new Date(hand.startDate).toLocaleDateString()}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -476,16 +465,22 @@ export const FarmhandManager: React.FC = () => {
 
         {/* Modal */}
         {showAddModal && (
-            <div className="fixed inset-0 bg-white/60 dark:bg-gray-900/80 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all">
-                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] m-4 flex flex-col">
+            <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] m-4 flex flex-col relative">
+                    {/* Glass Morphism Close */}
+                    <button 
+                        onClick={() => setShowAddModal(false)}
+                        className="absolute top-4 right-4 p-2 rounded-full bg-white/40 backdrop-blur-md border border-white/50 shadow-sm hover:bg-white/60 text-gray-600 transition-all z-10"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+
                     <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                         <h3 className="text-lg font-bold text-gray-800">Add Farmhand</h3>
-                        <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
                     </div>
                     
                     <div className="p-6 md:p-8 space-y-6 overflow-y-auto">
+                        {/* ... Modal content ... */}
                         <div className="flex gap-4 justify-center mb-4">
                             <div 
                                 onClick={() => fileInputRef.current?.click()}
