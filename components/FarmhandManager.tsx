@@ -160,9 +160,8 @@ export const FarmhandManager: React.FC = () => {
 
   // --- Detail View ---
   if (selectedHand) {
-      // ... (Detail view implementation remains similar, already looks good, just fix close button in list view mainly)
       return (
-        <div className="p-4 md:p-8 pb-32 md:pb-8 animate-fade-in">
+        <div className="p-6 md:p-10 pb-32 md:pb-12 animate-fade-in">
             <button 
                 onClick={() => setSelectedHand(null)}
                 className="mb-6 group flex items-center text-gray-500 hover:text-green-700 font-semibold transition-colors px-3 py-2 rounded-lg hover:bg-green-50 w-fit"
@@ -380,8 +379,8 @@ export const FarmhandManager: React.FC = () => {
 
   // --- List View ---
   return (
-    <div className="p-4 md:p-8 pb-32 md:pb-8 animate-fade-in">
-        <div className="flex justify-between items-center mb-8">
+    <div className="p-6 md:p-10 pb-32 md:pb-12 animate-fade-in">
+        <div className="flex justify-between items-center mb-10">
             <div>
                 <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Farmhands</h2>
                 <p className="text-gray-500 font-medium mt-1">Manage your team and local contacts.</p>
@@ -395,7 +394,6 @@ export const FarmhandManager: React.FC = () => {
             </button>
         </div>
 
-        {/* Grid - Standardized to match Crop/Animal card */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {hands.map((hand) => (
                 <div key={hand.id} onClick={() => handleSelectHand(hand)} className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:border-green-200 transition-all cursor-pointer relative group duration-300 overflow-hidden">

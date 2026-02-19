@@ -347,7 +347,6 @@ export const AnimalManager: React.FC = () => {
 
   // --- Detail View ---
   if (selectedAnimal) {
-    // ... (Detail view stays the same as before, already looked good, just updated list view to match crop)
     const upcomingEvents = selectedAnimal.medicalHistory
         .filter(r => r.date > today)
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -359,7 +358,7 @@ export const AnimalManager: React.FC = () => {
     const isHistoryLimited = user?.plan === 'free' && selectedAnimal.medicalHistory.length >= FREE_HISTORY_LIMIT;
 
     return (
-        <div className="p-4 md:p-8 pb-24 md:pb-8 animate-fade-in">
+        <div className="p-6 md:p-10 pb-24 md:pb-12 animate-fade-in">
             {/* Back Button */}
             <button 
                 onClick={() => setSelectedAnimal(null)}
@@ -411,7 +410,7 @@ export const AnimalManager: React.FC = () => {
                           }`}
                         >
                            {isEditing ? (
-                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                            ) : (
                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                            )}
@@ -825,9 +824,9 @@ export const AnimalManager: React.FC = () => {
 
   // --- List View ---
   return (
-    <div className="p-4 md:p-8 pb-32 md:pb-8 animate-fade-in">
+    <div className="p-6 md:p-10 pb-32 md:pb-12 animate-fade-in">
        {/* Header */}
-       <div className="flex justify-between items-center mb-8">
+       <div className="flex justify-between items-center mb-10">
         <div>
             <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">My Livestock</h2>
             <p className="text-gray-500 font-medium mt-1">Manage your herd and health records.</p>

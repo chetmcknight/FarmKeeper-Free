@@ -19,9 +19,9 @@ const COMMODITY_OPTIONS = [
 ];
 
 const STORE_OPTIONS = [
-    { label: "Coastal (Sequim)", value: "Coastal Farm & Ranch Sequim" },
-    { label: "Leitz (Port Angeles)", value: "Leitz Farm Supply Port Angeles" },
-    { label: "Farm Supply (Port Angeles)", value: "Port Angeles Farm Supply" }
+    { label: "Tractor Supply Co.", value: "Tractor Supply Co." },
+    { label: "Leitz", value: "Leitz Farm Supply" },
+    { label: "Farm Supply", value: "Port Angeles Farm Supply" }
 ];
 
 export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, toggleDarkMode, isDarkMode }) => {
@@ -265,7 +265,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
           <div className="space-y-3 relative z-10">
             {selectedCommodities.map((item, index) => {
               const marketItem = getMarketItem(item);
-              const isLoadingItem = loadingMarkets; // Granular enough for the card level, items load together per API call
+              const isLoadingItem = loadingMarkets;
 
               return (
                 <div key={index} className="flex justify-between items-center bg-gray-50/80 dark:bg-gray-700/50 backdrop-blur-sm p-3 rounded-xl border border-gray-100 dark:border-gray-600 hover:border-green-200 dark:hover:border-green-500 transition-colors">

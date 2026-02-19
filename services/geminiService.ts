@@ -146,7 +146,7 @@ export const getWeatherInsight = async (location: string) => {
   }
 };
 
-export const getMarketPrices = async (commodities: string[], storeName: string = "Coastal") => {
+export const getMarketPrices = async (commodities: string[], storeName: string = "Tractor Supply Co.") => {
   try {
     const commoditiesList = commodities.join(", ");
     const response = await ai.models.generateContent({
@@ -160,8 +160,8 @@ export const getMarketPrices = async (commodities: string[], storeName: string =
     });
     const data = JSON.parse(response.text || "[]");
     
-    let url = "https://www.coastalcountry.com/";
-    let displaySource = "Coastal";
+    let url = "https://www.tractorsupply.com/";
+    let displaySource = "Tractor Supply";
 
     if (storeName.includes("Leitz")) {
         url = "https://leitzfarm.com/";
@@ -213,7 +213,7 @@ export const getDailyTip = async () => {
 export const getDashboardInsights = async (location: string, commodities: string[]) => {
     const [weather, market, dailyTip] = await Promise.all([
         getWeatherInsight(location),
-        getMarketPrices(commodities, "Coastal"),
+        getMarketPrices(commodities, "Tractor Supply Co."),
         getDailyTip()
     ]);
     return { weather, market, dailyTip };
