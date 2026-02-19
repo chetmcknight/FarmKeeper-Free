@@ -38,19 +38,19 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, setPage, is
   return (
     <>
       <nav 
-        className={`fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50 
-        md:relative md:border-t-0 md:border-r md:h-screen md:flex md:flex-col md:justify-between transition-all duration-300 ease-in-out
+        className={`fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50 pb-safe-bottom
+        md:relative md:border-t-0 md:border-r md:h-screen md:flex md:flex-col md:justify-between transition-all duration-300 ease-in-out md:pb-0
         ${isCollapsed ? 'md:w-20' : 'md:w-72'}`}
       >
         <div>
-          {/* Header / Logo Area */}
+          {/* Header / Logo Area - Desktop Only */}
           <div className="hidden md:flex items-center justify-between p-4 mb-2">
              <div 
                 className={`cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-3 ${isCollapsed ? 'justify-center w-full' : ''}`}
                 onClick={() => setPage(Page.DASHBOARD)}
               >
-                <div className="bg-white dark:bg-gray-800 p-2 rounded-xl shadow-md border border-green-100 dark:border-gray-700 shrink-0">
-                   <svg className="w-8 h-8" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <div className="bg-white dark:bg-gray-800 p-2 rounded-xl shadow-md border border-green-100 dark:border-gray-700 shrink-0 flex items-center justify-center">
+                   <svg className="w-8 h-8 flex-shrink-0" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                       <text y="85" fontSize="90">🧑‍🌾</text>
                    </svg>
                 </div>
@@ -61,7 +61,6 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, setPage, is
                 )}
             </div>
             
-            {/* Collapse Button - only visible when NOT collapsed to avoid cluttering the small bar? No, need it to expand. */}
             {!isCollapsed && (
               <button 
                 onClick={toggleCollapse} 
@@ -73,7 +72,6 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, setPage, is
             )}
           </div>
           
-          {/* Collapsed State Toggle Button (Centered if collapsed) */}
           {isCollapsed && (
              <div className="hidden md:flex justify-center mb-6">
                 <button 
@@ -86,7 +84,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, setPage, is
              </div>
           )}
 
-          {/* Navigation Links */}
+          {/* Navigation Links - Mobile & Desktop */}
           <div className="flex justify-around items-center h-20 md:flex-col md:h-auto md:justify-start md:space-y-1 md:px-3">
             {navItems.map((item) => (
               <button
@@ -99,7 +97,8 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, setPage, is
                     : 'text-gray-400 dark:text-gray-500 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-50 dark:hover:bg-gray-800'}
                   ${isCollapsed ? 'md:justify-center md:px-0' : ''}`}
               >
-                <div className={`transition-transform duration-200 shrink-0 ${currentPage === item.id ? 'scale-110' : 'group-hover:scale-110'}`}>
+                {/* SVG Container with flex-shrink-0 to prevent cut-off */}
+                <div className={`transition-transform duration-200 flex-shrink-0 ${currentPage === item.id ? 'scale-110' : 'group-hover:scale-110'}`}>
                   {item.icon}
                 </div>
                 <span className={`text-[10px] md:text-sm font-semibold mt-1 md:mt-0 whitespace-nowrap overflow-hidden transition-all duration-300
@@ -113,9 +112,11 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, setPage, is
              {/* Mobile only Settings button */}
              <button
                 onClick={() => setPage(Page.SETTINGS)}
-                className={`flex md:hidden flex-col items-center justify-center w-full h-full ${currentPage === Page.SETTINGS ? 'text-green-700' : 'text-gray-400'}`}
+                className={`flex md:hidden flex-col items-center justify-center w-full h-full ${currentPage === Page.SETTINGS ? 'text-green-700 bg-green-50' : 'text-gray-400'}`}
               >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                  <div className={`transition-transform duration-200 flex-shrink-0 ${currentPage === Page.SETTINGS ? 'scale-110' : ''}`}>
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                  </div>
                   <span className="text-[10px] font-medium mt-1">Settings</span>
               </button>
           </div>

@@ -92,7 +92,8 @@ const AuthenticatedLayout: React.FC = () => {
         isCollapsed={isSidebarCollapsed}
         toggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
-      <main className="flex-1 h-screen overflow-y-auto no-scrollbar md:p-6 relative">
+      {/* Added pb-20 for mobile nav clearance */}
+      <main className="flex-1 h-screen overflow-y-auto no-scrollbar pb-20 md:pb-0 md:p-6 relative">
         <div className="max-w-7xl mx-auto h-full">
            {renderPage()}
         </div>
