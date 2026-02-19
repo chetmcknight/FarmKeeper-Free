@@ -114,7 +114,13 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, setPage, is
                 className={getMobileClasses(currentPage === Page.SETTINGS)}
               >
                   <div className={`mb-0.5 ${currentPage === Page.SETTINGS ? 'transform scale-110' : ''}`}>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    {user?.imageUrl ? (
+                        <div className="w-5 h-5 rounded-full overflow-hidden border border-green-200">
+                             <img src={user.imageUrl} className="w-full h-full object-cover" alt="Profile" />
+                        </div>
+                    ) : (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    )}
                   </div>
                   <span className={`text-[9px] font-medium leading-none text-center ${currentPage === Page.SETTINGS ? 'font-bold' : ''}`}>Settings</span>
               </button>
@@ -157,15 +163,21 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, setPage, is
              ${isCollapsed ? 'justify-center' : ''}`}
              title={isCollapsed ? 'Settings & Profile' : ''}
            >
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-bold shadow-md shrink-0">
-              {user?.name.charAt(0).toUpperCase()}
-            </div>
+            {user?.imageUrl ? (
+                 <div className="w-10 h-10 rounded-full border border-gray-200 overflow-hidden shrink-0 shadow-sm">
+                     <img src={user.imageUrl} alt="Profile" className="w-full h-full object-cover" />
+                 </div>
+            ) : (
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-bold shadow-md shrink-0">
+                  {user?.name.charAt(0).toUpperCase()}
+                </div>
+            )}
             
             {!isCollapsed && (
               <>
                 <div className="overflow-hidden flex-1">
                   <p className="text-sm font-bold text-gray-800 dark:text-gray-200 truncate">{user?.name}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">{user?.plan} Plan</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">{user?.plan === 'pro' ? 'Unlimited Farm' : user?.plan} Plan</p>
                 </div>
                 <svg className="w-5 h-5 text-gray-400 hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
               </>
@@ -177,7 +189,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, setPage, is
               onClick={() => setShowPayment(true)}
               className="w-full mb-3 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold py-2.5 rounded-lg shadow-sm hover:shadow-md hover:scale-[1.02] transition-all transform"
             >
-              Upgrade to Pro
+              Upgrade to Unlimited Farm
             </button>
           )}
 

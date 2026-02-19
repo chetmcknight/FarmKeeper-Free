@@ -137,6 +137,31 @@ const localBackend = {
     
     return user;
   },
+
+  async downgradePlan(userId: string): Promise<User> {
+    // Update session
+    const stored = localStorage.getItem(KEYS.USER);
+    if (!stored) throw new Error("User not found");
+    const user = JSON.parse(stored);
+    user.plan = 'free';
+    localStorage.setItem(KEYS.USER, JSON.stringify(user));
+
+    // Update DB
+    const usersDbJson = localStorage.getItem(KEYS.USERS_DB);
+    if (usersDbJson) {
+        let usersDb: User[] = JSON.parse(usersDbJson);
+        usersDb = usersDb.map(u => u.id === userId ? user : u);
+        localStorage.setItem(KEYS.USERS_DB, JSON.stringify(usersDb));
+    }
+    
+    return user;
+  },
+
+  async sendInvoice(email: string, plan: string, amount: string): Promise<void> {
+      console.log(`[Mock Backend] Sending invoice to ${email} for ${plan} ($${amount})`);
+      // Simulate email service delay
+      return new Promise(resolve => setTimeout(resolve, 800));
+  },
   
   // Crops
   async getCrops(): Promise<Crop[]> {
@@ -325,6 +350,22 @@ const supabaseBackend = {
     });
     if (error) throw error;
     return this.mapUser(data.user);
+  },
+
+  async downgradePlan(userId: string): Promise<User> {
+    // Update user metadata
+    const { data, error } = await supabase!.auth.updateUser({
+        data: { plan: 'free' }
+    });
+    if (error) throw error;
+    return this.mapUser(data.user);
+  },
+
+  async sendInvoice(email: string, plan: string, amount: string): Promise<void> {
+      console.log(`[Supabase Mock Invoice] Sending invoice to ${email} for ${plan} ($${amount})`);
+      // In a real implementation, you would call a Supabase Edge Function here:
+      // await supabase.functions.invoke('send-invoice', { body: { email, plan, amount } })
+      return new Promise(resolve => setTimeout(resolve, 800));
   },
 
   async getUserId() {

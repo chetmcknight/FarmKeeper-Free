@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Crop, FieldRecord } from '../types';
 import { backend } from '../services/mockBackend';
+import { useAuth } from '../context/AuthContext';
+import { PaymentModal } from './PaymentModal';
 
 export const CropManager: React.FC = () => {
+  const { user } = useAuth();
   const [crops, setCrops] = useState<Crop[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCrop, setSelectedCrop] = useState<Crop | null>(null);
@@ -13,6 +16,7 @@ export const CropManager: React.FC = () => {
 
   // Add State
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [newCrop, setNewCrop] = useState<Partial<Crop>>({
       name: '',
       variety: '',
@@ -28,6 +32,8 @@ export const CropManager: React.FC = () => {
   const coverInputRef = useRef<HTMLInputElement>(null);
   const editFileInputRef = useRef<HTMLInputElement>(null);
   const editCoverInputRef = useRef<HTMLInputElement>(null);
+
+  const FREE_CROP_LIMIT = 4;
 
   useEffect(() => {
     loadCrops();
@@ -211,7 +217,7 @@ export const CropManager: React.FC = () => {
     const sortedHistory = [...selectedCrop.history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     return (
-        <div className="p-6 md:p-10 pb-32 md:pb-12 animate-fade-in">
+        <div className="p-6 pt-28 md:p-10 md:pt-12 pb-32 md:pb-12 animate-fade-in">
             <button 
                 onClick={() => setSelectedCrop(null)}
                 className="mb-6 group flex items-center text-gray-500 hover:text-green-700 font-semibold transition-colors px-3 py-2 rounded-lg hover:bg-green-50 w-fit"
@@ -466,7 +472,7 @@ export const CropManager: React.FC = () => {
 
   // --- List View ---
   return (
-    <div className="p-6 md:p-10 pb-32 md:pb-12 animate-fade-in">
+    <div className="p-6 pt-28 md:p-10 md:pt-12 pb-32 md:pb-12 animate-fade-in">
         <div className="flex justify-between items-center mb-10">
             <div>
                 <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Field Manager</h2>
@@ -474,17 +480,21 @@ export const CropManager: React.FC = () => {
             </div>
             <button 
                 onClick={() => {
-                    setNewCrop({
-                        name: '',
-                        variety: '',
-                        plantedDate: new Date().toISOString().split('T')[0],
-                        harvestDate: '',
-                        status: 'Healthy',
-                        area: '',
-                        imageUrl: '',
-                        coverUrl: ''
-                    });
-                    setShowAddModal(true);
+                    if (user?.plan === 'free' && crops.length >= FREE_CROP_LIMIT) {
+                        setShowUpgradeModal(true);
+                    } else {
+                        setNewCrop({
+                            name: '',
+                            variety: '',
+                            plantedDate: new Date().toISOString().split('T')[0],
+                            harvestDate: '',
+                            status: 'Healthy',
+                            area: '',
+                            imageUrl: '',
+                            coverUrl: ''
+                        });
+                        setShowAddModal(true);
+                    }
                 }}
                 className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0"
             >
@@ -560,8 +570,8 @@ export const CropManager: React.FC = () => {
 
         {/* Add Modal */}
         {showAddModal && (
-            <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col relative">
+            <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-start justify-center z-50 p-4 pt-24 md:pt-36">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[85vh] flex flex-col relative">
                     {/* Glass Morphism Close Button */}
                     <button 
                         onClick={() => setShowAddModal(false)}
@@ -684,6 +694,8 @@ export const CropManager: React.FC = () => {
                 </div>
             </div>
         )}
+        
+        {showUpgradeModal && <PaymentModal onClose={() => setShowUpgradeModal(false)} />}
     </div>
   );
 };

@@ -4,6 +4,32 @@ import { DiagnosisResult } from "../types";
 // Initialize Gemini Client
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
+// --- Caching Helpers ---
+const CACHE_PREFIX = 'farmkeeper_cache_';
+const CACHE_DURATION = 1000 * 60 * 60; // 1 hour default
+
+const getCachedData = (key: string) => {
+  const cached = localStorage.getItem(CACHE_PREFIX + key);
+  if (!cached) return null;
+  try {
+    const { timestamp, data } = JSON.parse(cached);
+    if (Date.now() - timestamp < CACHE_DURATION) {
+      return data;
+    }
+  } catch (e) {
+    return null;
+  }
+  return null;
+};
+
+const setCachedData = (key: string, data: any) => {
+  try {
+    localStorage.setItem(CACHE_PREFIX + key, JSON.stringify({ timestamp: Date.now(), data }));
+  } catch (e) {
+    console.warn("Cache set failed", e);
+  }
+};
+
 /**
  * Analyzes a field image (crop or livestock) using Gemini Vision.
  */
@@ -126,9 +152,13 @@ export const getFarmingAdvice = async (
   }
 };
 
-// --- Granular Dashboard Functions ---
+// --- Granular Dashboard Functions with Caching ---
 
 export const getWeatherInsight = async (location: string) => {
+  const cacheKey = `weather_${location.replace(/\s/g, '')}`;
+  const cached = getCachedData(cacheKey);
+  if (cached) return cached;
+
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
@@ -139,7 +169,9 @@ export const getWeatherInsight = async (location: string) => {
         responseMimeType: "application/json",
       },
     });
-    return JSON.parse(response.text || "{}");
+    const data = JSON.parse(response.text || "{}");
+    setCachedData(cacheKey, data);
+    return data;
   } catch (error) {
     console.error("Weather error:", error);
     return { current: "--", forecast: "Unavailable" };
@@ -147,31 +179,40 @@ export const getWeatherInsight = async (location: string) => {
 };
 
 export const getMarketPrices = async (commodities: string[], storeName: string = "Tractor Supply Co.") => {
+  // Sort commodities to ensure cache key consistency
+  const sortedCommodities = [...commodities].sort();
+  const cacheKey = `market_${storeName.replace(/\s/g, '')}_${sortedCommodities.join('_').substring(0, 20)}`; // shorten key
+  const cached = getCachedData(cacheKey);
+  if (cached) return cached;
+
   try {
+    // Simplify query for speed: "Price of [List] at [Store]"
     const commoditiesList = commodities.join(", ");
+    
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Find current retail price for: ${commoditiesList} at ${storeName}.
-      Format output as JSON array: [ { "name": "Item Name", "price": "Price" } ]`,
+      contents: `Current price of ${commoditiesList} at ${storeName} in Sequim/Port Angeles WA area.
+      Return JSON array only: [ { "name": "Item", "price": "$X.XX" } ]`,
       config: {
         tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
       },
     });
+    
     const data = JSON.parse(response.text || "[]");
     
-    let url = "https://www.tractorsupply.com/";
+    let url = "https://www.tractorsupply.com/tsc/store_Portangeles-WA-98362_2636";
     let displaySource = "Tractor Supply";
 
-    if (storeName.includes("Leitz")) {
-        url = "https://leitzfarm.com/";
+    if (storeName.includes("Coastal")) {
+        url = "https://www.coastalcountry.com/about/store-locations/sequim?srsltid=AfmBOopMJEBsX1qdtHvNmZb870_uSxs7qjrshzqv2CjfYaOFUWDt2qSL";
+        displaySource = "Coastal";
+    } else if (storeName.includes("Leitz")) {
+        url = "https://www.leitzfarmsupply.com/?y_source=1_NzA3MjM5My03MTUtbG9jYXRpb24ud2Vic2l0ZQ%3D%3D";
         displaySource = "Leitz";
-    } else if (storeName.includes("Farm Supply")) {
-        url = "https://www.portangelesfarmsupply.com/"; // Mock url or closest real one
-        displaySource = "Farm Supply";
     }
 
-    return (Array.isArray(data) ? data : []).map((item: any) => {
+    const processedData = (Array.isArray(data) ? data : []).map((item: any) => {
         return {
             name: item.name,
             price: item.price,
@@ -179,6 +220,10 @@ export const getMarketPrices = async (commodities: string[], storeName: string =
             sourceUrl: url
         };
     });
+
+    setCachedData(cacheKey, processedData);
+    return processedData;
+
   } catch (error) {
     console.error("Market error:", error);
     return [];
@@ -186,6 +231,10 @@ export const getMarketPrices = async (commodities: string[], storeName: string =
 };
 
 export const getDailyTip = async () => {
+  const cacheKey = `daily_tip_${new Date().toISOString().split('T')[0]}`; // One tip per day
+  const cached = getCachedData(cacheKey);
+  if (cached) return cached;
+
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
@@ -196,11 +245,13 @@ export const getDailyTip = async () => {
       },
     });
     const data = JSON.parse(response.text || "{}");
-    return {
+    const result = {
         ...data,
         source: "Agriculture.com",
         sourceUrl: "https://www.agriculture.com/"
     };
+    setCachedData(cacheKey, result);
+    return result;
   } catch (error) {
     console.error("Tip error:", error);
     return null;

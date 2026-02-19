@@ -358,7 +358,7 @@ export const AnimalManager: React.FC = () => {
     const isHistoryLimited = user?.plan === 'free' && selectedAnimal.medicalHistory.length >= FREE_HISTORY_LIMIT;
 
     return (
-        <div className="p-6 md:p-10 pb-24 md:pb-12 animate-fade-in">
+        <div className="p-6 pt-28 md:p-10 md:pt-12 pb-24 md:pb-12 animate-fade-in">
             {/* Back Button */}
             <button 
                 onClick={() => setSelectedAnimal(null)}
@@ -707,7 +707,7 @@ export const AnimalManager: React.FC = () => {
             {/* Record Modal */}
             {/* ... Modal code remains same ... */}
             {showRecordModal && (
-                <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4 pt-12">
                     <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden relative">
                         {/* Glass Morphism Close */}
                         <button 
@@ -824,7 +824,7 @@ export const AnimalManager: React.FC = () => {
 
   // --- List View ---
   return (
-    <div className="p-6 md:p-10 pb-32 md:pb-12 animate-fade-in">
+    <div className="p-6 pt-28 md:p-10 md:pt-12 pb-32 md:pb-12 animate-fade-in">
        {/* Header */}
        <div className="flex justify-between items-center mb-10">
         <div>
@@ -914,7 +914,7 @@ export const AnimalManager: React.FC = () => {
 
       {/* Add Animal Modal (Glass close button included) */}
        {showAddModal && (
-                <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-start justify-center z-50 p-4 pt-24 md:pt-36">
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[85vh] m-4 flex flex-col relative">
                         {/* Glass Morphism Close */}
                         <button 

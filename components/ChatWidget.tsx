@@ -49,7 +49,7 @@ export const ChatWidget: React.FC = () => {
     { 
       id: 'init', 
       role: 'model', 
-      text: 'Hi there! 👋 I\'m your farm assistant. Ask me anything about your crops, livestock, or the weather!', 
+      text: 'Hi there! 👋 I\'m your farm assistant. Ask me anything about your crops, livestock, farmhands, or the weather!', 
       timestamp: Date.now() 
     }
   ]);
@@ -74,6 +74,7 @@ export const ChatWidget: React.FC = () => {
     try {
         const crops = await backend.getCrops();
         const animals = await backend.getAnimals();
+        const farmhands = await backend.getFarmhands();
         
         let contextStr = "";
         if (crops.length > 0) {
@@ -93,6 +94,14 @@ export const ChatWidget: React.FC = () => {
         } else {
             contextStr += "\nLIVESTOCK: None registered.\n";
         }
+
+        if (farmhands.length > 0) {
+            contextStr += "\nFARMHANDS:\n";
+            farmhands.forEach(f => {
+                contextStr += `- ${f.name} (${f.role}): Status: ${f.status}.\n`;
+            });
+        }
+
         setFarmContext(contextStr);
     } catch (e) {
         console.error("Failed to load farm context", e);
@@ -252,13 +261,17 @@ export const ChatWidget: React.FC = () => {
 
         <button 
             onClick={() => setIsOpen(!isOpen)}
-            className={`w-16 h-16 md:w-20 md:h-20 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.15)] flex items-center justify-center transition-all duration-300 transform hover:scale-105 active:scale-95 border-4 border-white
+            className={`w-16 h-16 md:w-20 md:h-20 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.15)] flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 border-4 border-white
             ${isOpen ? 'bg-gray-800 text-white rotate-90' : 'bg-gradient-to-br from-green-500 to-green-700 text-white'}`}
+            style={{ willChange: 'transform' }} 
         >
             {isOpen ? (
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
             ) : (
-            <span className="text-4xl md:text-5xl pt-1 filter drop-shadow-sm transform hover:rotate-12 transition-transform">🧑‍🌾</span>
+                // Use a fixed flex container to prevent jitter
+                <div className="flex items-center justify-center w-full h-full">
+                     <span className="text-4xl md:text-5xl leading-none filter drop-shadow-sm pb-1 pl-1">🧑‍🌾</span>
+                </div>
             )}
         </button>
       </div>

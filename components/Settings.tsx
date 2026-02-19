@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { backend } from '../services/mockBackend';
 import { PaymentModal } from './PaymentModal';
@@ -9,15 +9,18 @@ interface SettingsProps {
 }
 
 export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }) => {
-  const { user, deleteAccount, updateProfile, updatePassword } = useAuth();
+  const { user, deleteAccount, updateProfile, updatePassword, downgradeToFree } = useAuth();
   const [loadingExport, setLoadingExport] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [activeTab, setActiveTab] = useState<'general' | 'data' | 'account'>('general');
 
   // Profile Edit State
   const [name, setName] = useState(user?.name || '');
+  const [imageUrl, setImageUrl] = useState(user?.imageUrl || '');
   const [savingProfile, setSavingProfile] = useState(false);
   const [showProfileSuccess, setShowProfileSuccess] = useState(false);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Password State
   const [newPassword, setNewPassword] = useState('');
@@ -32,12 +35,66 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
 
   useEffect(() => {
     if (user?.name) setName(user.name);
+    if (user?.imageUrl) setImageUrl(user.imageUrl);
   }, [user]);
 
-  const handleUpdateProfile = async () => {
+  // Image Compression Helper
+  const compressImage = (file: File, maxWidth: number = 400): Promise<string> => {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target?.result as string;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth) {
+                    height *= maxWidth / width;
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx?.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', 0.8));
+            };
+        };
+    });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+          try {
+              setSavingProfile(true);
+              const resized = await compressImage(file);
+              setImageUrl(resized);
+              
+              // Automatically save the profile update
+              await updateProfile({ imageUrl: resized });
+              setShowProfileSuccess(true);
+              setTimeout(() => setShowProfileSuccess(false), 3000);
+          } catch (error) {
+              console.error("Image upload failed", error);
+              alert("Failed to upload image.");
+          } finally {
+              setSavingProfile(false);
+          }
+      }
+  };
+
+  // Called automatically on blur or enter
+  const handleAutoSaveName = async () => {
+      if (name === user?.name) return; // No change
+      if (!name.trim()) return;
+
       setSavingProfile(true);
       try {
-          await updateProfile(name);
+          await updateProfile({ name });
           setShowProfileSuccess(true);
           setTimeout(() => setShowProfileSuccess(false), 3000);
       } catch (error) {
@@ -69,6 +126,17 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
           setPasswordError("Failed to update password. Please try again.");
       } finally {
           setSavingPassword(false);
+      }
+  };
+
+  const handleDowngrade = async () => {
+      if (window.confirm("Are you sure you want to downgrade to the Free plan? You will lose access to unlimited features.")) {
+          try {
+              await downgradeToFree();
+              alert("Plan downgraded to Hobby Farm.");
+          } catch (e) {
+              alert("Failed to downgrade plan.");
+          }
       }
   };
 
@@ -168,23 +236,70 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Profile Information</h3>
                     
                     <div className="grid gap-6">
+                        {/* Image Well */}
+                        <div className="flex items-center gap-6">
+                            <div 
+                                onClick={() => fileInputRef.current?.click()}
+                                className="relative w-24 h-24 rounded-full border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center cursor-pointer hover:border-green-500 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all overflow-hidden group"
+                            >
+                                {imageUrl ? (
+                                    <img src={imageUrl} alt="Profile" className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="text-3xl">🧑‍🌾</span>
+                                )}
+                                
+                                {savingProfile && (
+                                    <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
+                                        <div className="animate-spin h-5 w-5 border-2 border-green-500 rounded-full border-t-transparent"></div>
+                                    </div>
+                                )}
+                                
+                                {!savingProfile && (
+                                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="flex-1">
+                                <h4 className="text-sm font-bold text-gray-900 dark:text-white">Profile Photo</h4>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-2">Click to upload a new avatar. Autosaves on selection.</p>
+                                <button 
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="text-xs font-semibold text-green-600 hover:text-green-700 dark:text-green-400"
+                                >
+                                    Change Photo
+                                </button>
+                            </div>
+                            <input 
+                                type="file" 
+                                ref={fileInputRef} 
+                                className="hidden" 
+                                accept="image/png, image/jpeg, image/jpg"
+                                onChange={handleImageUpload} 
+                            />
+                        </div>
+
                         <div>
                             <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Display Name</label>
-                            <div className="flex gap-3">
+                            <div className="relative">
                                 <input 
                                     type="text" 
                                     value={name} 
                                     onChange={(e) => setName(e.target.value)}
-                                    className="block w-full rounded-lg border border-gray-200 bg-gray-50 text-gray-900 shadow-sm px-4 py-2.5 focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all"
+                                    onBlur={handleAutoSaveName}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.currentTarget.blur();
+                                        }
+                                    }}
+                                    className="block w-full rounded-lg border border-gray-200 bg-gray-50 text-gray-900 shadow-sm px-4 py-2.5 focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all pr-10"
+                                    placeholder="Enter your name"
                                 />
-                                <button 
-                                    onClick={handleUpdateProfile}
-                                    disabled={savingProfile || name === user?.name}
-                                    style={{ backfaceVisibility: 'hidden', WebkitFontSmoothing: 'subpixel-antialiased' }}
-                                    className="px-5 py-2.5 bg-white dark:bg-gray-800 text-green-600 border border-green-200 dark:border-green-800 rounded-lg font-bold hover:bg-green-600 hover:text-white disabled:opacity-50 disabled:bg-gray-50 disabled:border-gray-200 disabled:text-gray-400 transition-colors duration-300 ease-in-out shadow-sm"
-                                >
-                                    {savingProfile ? 'Saving...' : 'Update'}
-                                </button>
+                                {savingProfile && (
+                                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                        <div className="animate-spin h-4 w-4 border-2 border-green-500 rounded-full border-t-transparent"></div>
+                                    </div>
+                                )}
                             </div>
                             {showProfileSuccess && <p className="text-sm text-green-600 mt-2 font-medium animate-pulse">Profile updated successfully!</p>}
                         </div>
@@ -278,7 +393,7 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
                         <div>
                             <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-1">Current Plan</p>
                             <h4 className="text-3xl font-extrabold text-green-700 dark:text-green-400 capitalize flex items-center gap-2">
-                                {user?.plan} Plan
+                                {user?.plan === 'pro' ? 'Unlimited Farm' : user?.plan} Plan
                                 {user?.plan === 'pro' && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full border border-green-200">ACTIVE</span>}
                             </h4>
                             <p className="text-sm text-gray-500 mt-2">
@@ -292,12 +407,17 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
                                 className="bg-white dark:bg-gray-800 text-green-600 border border-green-200 dark:border-green-800 px-8 py-3 rounded-xl font-bold hover:bg-green-600 hover:text-white dark:hover:bg-green-500 dark:hover:border-green-500 transition-colors duration-300 ease-in-out flex items-center gap-2 shadow-sm"
                             >
                                 <svg className="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-                                Upgrade to Pro
+                                Upgrade to Unlimited Farm
                             </button>
                         ) : (
                             <div className="text-right">
-                                <p className="text-sm font-semibold text-gray-600 dark:text-gray-300">Renews Monthly</p>
-                                <button className="text-xs text-red-500 hover:underline mt-1">Manage Subscription</button>
+                                <p className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">Renews Monthly</p>
+                                <button 
+                                    onClick={handleDowngrade}
+                                    className="text-xs font-bold text-red-500 hover:text-red-600 hover:underline px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                                >
+                                    Downgrade to Free Plan
+                                </button>
                             </div>
                         )}
                     </div>

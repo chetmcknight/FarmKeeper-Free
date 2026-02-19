@@ -14,6 +14,7 @@ export interface User {
   name: string;
   email: string;
   plan: 'free' | 'pro';
+  imageUrl?: string;
 }
 
 export interface FieldRecord {

@@ -21,7 +21,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const paypalRef = useRef<HTMLDivElement>(null);
 
-  const price = billingCycle === 'monthly' ? '9.99' : '99.99';
+  const price = billingCycle === 'monthly' ? '4.99' : '49.99';
 
   useEffect(() => {
     let mounted = true;
@@ -48,7 +48,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
                     createOrder: (data: any, actions: any) => {
                         return actions.order.create({
                             purchase_units: [{
-                                description: `FarmKeeper Pro Upgrade - ${billingCycle}`,
+                                description: `FarmKeeper Unlimited Farm - ${billingCycle}`,
                                 amount: { value: price }
                             }]
                         });
@@ -115,7 +115,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-extrabold text-gray-900 mb-2">You're a Pro!</h3>
+              <h3 className="text-2xl font-extrabold text-gray-900 mb-2">You're Subscribed!</h3>
               <p className="text-gray-500 mb-6">Thank you for upgrading. Your account now has access to all premium features.</p>
               
               <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-8">
@@ -139,7 +139,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
                         <div className="inline-block p-2 rounded-full bg-gray-800 mb-2 shadow-xl">
                             <span className="text-2xl">🚀</span>
                         </div>
-                        <h3 className="text-xl font-extrabold text-white">Upgrade to Pro</h3>
+                        <h3 className="text-xl font-extrabold text-white">Upgrade to Unlimited Farm</h3>
                         <p className="text-gray-400 mt-1 text-xs sm:text-sm">Unlock full potential with AI tools.</p>
                    </div>
               </div>
@@ -185,6 +185,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ onClose }) => {
                     <li className="flex items-center text-sm text-gray-600">
                         <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                         Unlimited Crop & Livestock entries
+                    </li>
+                    <li className="flex items-center text-sm text-gray-600">
+                        <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                        Unlimited Farmhands
                     </li>
                     <li className="flex items-center text-sm text-gray-600">
                         <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>

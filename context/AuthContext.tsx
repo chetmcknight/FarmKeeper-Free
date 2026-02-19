@@ -10,7 +10,8 @@ interface AuthContextType {
   logout: () => Promise<void>;
   deleteAccount: () => Promise<void>;
   upgradeToPro: () => Promise<void>;
-  updateProfile: (name: string) => Promise<void>;
+  downgradeToFree: () => Promise<void>;
+  updateProfile: (updates: { name?: string; imageUrl?: string }) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
   isLoading: boolean;
 }
@@ -93,9 +94,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(updatedUser);
   };
 
-  const updateProfile = async (name: string) => {
+  const downgradeToFree = async () => {
     if (!user) return;
-    const updatedUser = await backend.updateUser(user.id, { name });
+    const updatedUser = await backend.downgradePlan(user.id);
+    setUser(updatedUser);
+  };
+
+  const updateProfile = async (updates: { name?: string; imageUrl?: string }) => {
+    if (!user) return;
+    const updatedUser = await backend.updateUser(user.id, updates);
     setUser(updatedUser);
   };
 
@@ -105,7 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, deleteAccount, upgradeToPro, updateProfile, updatePassword, isLoading }}>
+    <AuthContext.Provider value={{ user, login, signup, logout, deleteAccount, upgradeToPro, downgradeToFree, updateProfile, updatePassword, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

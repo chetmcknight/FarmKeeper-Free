@@ -1,14 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Farmhand } from '../types';
 import { backend } from '../services/mockBackend';
+import { useAuth } from '../context/AuthContext';
+import { PaymentModal } from './PaymentModal';
 
 export const FarmhandManager: React.FC = () => {
+  const { user } = useAuth();
   const [hands, setHands] = useState<Farmhand[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedHand, setSelectedHand] = useState<Farmhand | null>(null);
   
   // Modal State
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -29,6 +33,8 @@ export const FarmhandManager: React.FC = () => {
   const coverInputRef = useRef<HTMLInputElement>(null);
   const editFileInputRef = useRef<HTMLInputElement>(null);
   const editCoverInputRef = useRef<HTMLInputElement>(null);
+
+  const FREE_HAND_LIMIT = 3;
 
   useEffect(() => {
     loadHands();
@@ -161,7 +167,7 @@ export const FarmhandManager: React.FC = () => {
   // --- Detail View ---
   if (selectedHand) {
       return (
-        <div className="p-6 md:p-10 pb-32 md:pb-12 animate-fade-in">
+        <div className="p-6 pt-28 md:p-10 md:pt-12 pb-32 md:pb-12 animate-fade-in">
             <button 
                 onClick={() => setSelectedHand(null)}
                 className="mb-6 group flex items-center text-gray-500 hover:text-green-700 font-semibold transition-colors px-3 py-2 rounded-lg hover:bg-green-50 w-fit"
@@ -379,14 +385,21 @@ export const FarmhandManager: React.FC = () => {
 
   // --- List View ---
   return (
-    <div className="p-6 md:p-10 pb-32 md:pb-12 animate-fade-in">
+    <div className="p-6 pt-28 md:p-10 md:pt-12 pb-32 md:pb-12 animate-fade-in">
         <div className="flex justify-between items-center mb-10">
             <div>
                 <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Farmhands</h2>
                 <p className="text-gray-500 font-medium mt-1">Manage your team and local contacts.</p>
             </div>
             <button 
-                onClick={() => { resetForm(); setShowAddModal(true); }}
+                onClick={() => { 
+                    if (user?.plan === 'free' && hands.length >= FREE_HAND_LIMIT) {
+                        setShowUpgradeModal(true);
+                    } else {
+                        resetForm(); 
+                        setShowAddModal(true); 
+                    }
+                }}
                 className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0"
             >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
@@ -463,7 +476,7 @@ export const FarmhandManager: React.FC = () => {
 
         {/* Modal */}
         {showAddModal && (
-            <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all">
+            <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-start justify-center z-50 p-4 pt-24 md:pt-36">
                 <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] m-4 flex flex-col relative">
                     {/* Glass Morphism Close */}
                     <button 
@@ -600,6 +613,8 @@ export const FarmhandManager: React.FC = () => {
                 </div>
             </div>
         )}
+        
+        {showUpgradeModal && <PaymentModal onClose={() => setShowUpgradeModal(false)} />}
     </div>
   );
 };
