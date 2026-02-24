@@ -43,7 +43,11 @@ const FormattedText: React.FC<{ text: string }> = ({ text }) => {
   );
 };
 
-export const ChatWidget: React.FC = () => {
+interface ChatWidgetProps {
+  isHidden?: boolean;
+}
+
+export const ChatWidget: React.FC<ChatWidgetProps> = ({ isHidden = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     { 
@@ -153,12 +157,13 @@ export const ChatWidget: React.FC = () => {
     }
   };
 
-  // Hidden on mobile (hidden), visible on md screens (md:flex)
+  // Hidden on mobile (hidden), visible on md screens (md:flex), hidden when isHidden prop is true
+  if (isHidden) return null;
   return (
-    <div className="hidden md:flex fixed bottom-6 right-6 z-50 flex-col items-end pointer-events-none font-sans">
+    <div className="hidden md:flex fixed bottom-10 right-6 z-50 flex-col items-end pointer-events-none font-sans">
       {/* Chat Window */}
       <div 
-        className={`pointer-events-auto bg-white w-80 sm:w-96 rounded-2xl shadow-2xl border border-green-100 flex flex-col transition-all duration-300 ease-in-out transform origin-bottom-right mb-6 mr-2 overflow-hidden
+        className={`pointer-events-auto bg-white w-80 sm:w-96 rounded-2xl shadow-2xl border border-green-100 flex flex-col transition-all duration-300 ease-in-out transform origin-bottom-right mb-10 mr-2 overflow-hidden
         ${isOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-10 pointer-events-none h-0'}`}
         style={{ maxHeight: '600px', height: '70vh' }}
       >
@@ -247,18 +252,6 @@ export const ChatWidget: React.FC = () => {
 
       {/* Toggle Button Container */}
       <div className="relative pointer-events-auto flex items-center justify-end">
-        {/* Helper Tooltip */}
-        {!isOpen && (
-           <div className="hidden md:flex absolute right-full mr-4 top-1/2 transform -translate-y-1/2 items-center">
-             <div className="bg-white px-4 py-2 rounded-xl shadow-lg border border-green-100 whitespace-nowrap">
-                 <p className="text-sm font-bold text-gray-800">Need advice?</p>
-                 <p className="text-xs text-green-600 font-medium">Ask your farm keeper</p>
-             </div>
-             {/* Arrow pointing right */}
-             <div className="w-3 h-3 bg-white transform rotate-45 border-r border-t border-green-100 -ml-1.5 shadow-sm"></div>
-           </div>
-        )}
-
         <button 
             onClick={() => setIsOpen(!isOpen)}
             className={`w-16 h-16 md:w-20 md:h-20 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.15)] flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 border-4 border-white

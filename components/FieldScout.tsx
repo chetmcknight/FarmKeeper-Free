@@ -189,7 +189,7 @@ export const FieldScout: React.FC = () => {
                             className="bg-black/50 text-white px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-md hover:bg-black/70 transition-colors flex items-center gap-1"
                         >
                             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                            Retake
+                            Back
                         </button>
                     </div>
                 </div>
@@ -215,8 +215,8 @@ export const FieldScout: React.FC = () => {
                          <p className="text-gray-500">Click below to identify the subject and diagnose health.</p>
                          <button 
                             onClick={handleDiagnose}
-                            style={{ backfaceVisibility: 'hidden', WebkitFontSmoothing: 'subpixel-antialiased' }}
-                            className="w-full py-4 bg-white text-green-600 border border-green-200 hover:bg-green-600 hover:text-white rounded-2xl font-bold text-lg shadow-sm hover:shadow-lg transition-colors duration-300 ease-in-out transform hover:-translate-y-1"
+                            style={{ backfaceVisibility: 'hidden', WebkitFontSmoothing: 'subpixel-antialiased', pointerEvents: 'auto' }}
+                            className="w-full py-4 bg-white text-green-600 border border-green-200 hover:bg-green-600 hover:text-white rounded-2xl font-bold text-lg shadow-sm hover:shadow-lg transition-all duration-300 ease-in-out active:scale-95 cursor-pointer"
                         >
                             Run Health Check
                          </button>
@@ -243,21 +243,23 @@ export const FieldScout: React.FC = () => {
                         <div className="flex items-start justify-between">
                             <div>
                                 <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold mb-2 
-                                    ${result.diseaseName.toLowerCase().includes('healthy') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                    {result.diseaseName.toLowerCase().includes('healthy') ? 'Healthy' : 'Health Issue Detected'}
+                                    ${(result.diseaseName || '').toLowerCase().includes('healthy') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                    {(result.diseaseName || '').toLowerCase().includes('healthy') ? 'Healthy' : 'Health Issue Detected'}
                                 </span>
-                                <h3 className="text-3xl font-extrabold text-gray-900 leading-tight">{result.diseaseName}</h3>
+                                <h3 className="text-3xl font-extrabold text-gray-900 leading-tight">{result.diseaseName || 'Analysis Complete'}</h3>
                             </div>
                             <div className="text-center">
-                                <div className={`text-sm font-bold ${result.confidence.toLowerCase().includes('high') ? 'text-green-600' : 'text-yellow-600'}`}>
-                                    {result.confidence} Match
+                                <div className={`text-sm font-bold ${(result.confidence || 'Medium').toLowerCase().includes('high') ? 'text-green-600' : 'text-yellow-600'}`}>
+                                    {result.confidence || 'Medium'} Match
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                             <p className="text-gray-700 leading-relaxed">{result.description}</p>
-                        </div>
+                        {result.description && (
+                            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                                 <p className="text-gray-700 leading-relaxed">{result.description}</p>
+                            </div>
+                        )}
 
                         <div>
                             <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
@@ -265,7 +267,7 @@ export const FieldScout: React.FC = () => {
                                 Recommended Action
                             </h4>
                             <ul className="space-y-3">
-                                {result.treatment.map((step, idx) => (
+                                {(result.treatment || []).map((step, idx) => (
                                     <li key={idx} className="flex gap-3 text-sm text-gray-600 bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
                                         <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold text-xs">{idx + 1}</span>
                                         <span className="pt-0.5">{step}</span>

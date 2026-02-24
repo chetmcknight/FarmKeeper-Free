@@ -17,17 +17,7 @@ const localBackend = {
     const usersDbJson = localStorage.getItem(KEYS.USERS_DB);
     let usersDb: User[] = usersDbJson ? JSON.parse(usersDbJson) : [];
     
-    // Auto-seed Demo User if requested and missing
-    if (email === 'demo@farmkeeper.com' && !usersDb.find(u => u.email === email)) {
-        const demoUser: User = {
-            id: 'demo_user',
-            email: 'demo@farmkeeper.com',
-            name: 'Demo Farmer',
-            plan: 'pro',
-        };
-        usersDb.push(demoUser);
-        localStorage.setItem(KEYS.USERS_DB, JSON.stringify(usersDb));
-    }
+    // No automatic demo user seeding — users must explicitly register.
     
     const foundUser = usersDb.find(u => u.email === email);
     
@@ -117,6 +107,31 @@ const localBackend = {
   async getCurrentUser(): Promise<User | null> {
     const stored = localStorage.getItem(KEYS.USER);
     return stored ? JSON.parse(stored) : null;
+  },
+
+  async removeDemoAccounts(): Promise<void> {
+    try {
+      // Remove any demo user sessions
+      const stored = localStorage.getItem(KEYS.USER);
+      if (stored) {
+        const user = JSON.parse(stored);
+        if (user && user.email === 'demo@farmkeeper.com') {
+          localStorage.removeItem(KEYS.USER);
+        }
+      }
+
+      // Remove demo entries from users DB
+      const usersDbJson = localStorage.getItem(KEYS.USERS_DB);
+      if (usersDbJson) {
+        let usersDb: User[] = JSON.parse(usersDbJson);
+        const filtered = usersDb.filter(u => u.email !== 'demo@farmkeeper.com');
+        if (filtered.length !== usersDb.length) {
+          localStorage.setItem(KEYS.USERS_DB, JSON.stringify(filtered));
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to remove demo accounts', e);
+    }
   },
 
   async upgradePlan(userId: string): Promise<User> {
@@ -341,6 +356,11 @@ const supabaseBackend = {
   async getCurrentUser(): Promise<User | null> {
     const { data } = await supabase!.auth.getUser();
     return data.user ? this.mapUser(data.user) : null;
+  },
+
+  // No-op for Supabase: demo cleanup should be performed manually on the server if needed.
+  async removeDemoAccounts(): Promise<void> {
+    return Promise.resolve();
   },
 
   async upgradePlan(userId: string): Promise<User> {

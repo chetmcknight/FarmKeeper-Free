@@ -26,6 +26,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Check for existing session on load
     const initAuth = async () => {
       try {
+        // Ensure any accidental demo data is removed before initializing auth
+        try {
+          if ((backend as any).removeDemoAccounts) await (backend as any).removeDemoAccounts();
+        } catch (cleanErr) { console.warn('Demo cleanup failed', cleanErr); }
+
         const currentUser = await backend.getCurrentUser();
         setUser(currentUser);
       } catch (error) {

@@ -98,7 +98,7 @@ const AuthenticatedLayout: React.FC = () => {
            {renderPage()}
         </div>
       </main>
-      <ChatWidget />
+      <ChatWidget isHidden={currentPage === Page.ADVISOR} />
     </div>
   );
 };

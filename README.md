@@ -52,19 +52,25 @@ FarmKeeper Pro is a comprehensive agricultural management platform empowered by 
    ```
 
 3. **Environment Configuration**
-   Create a `.env` file in the root directory. You must provide a Gemini API Key.
+   Create a `.env` file in the root directory (or copy `.env.example`). Vite only exposes vars prefixed with `VITE_` to the client — use the `VITE_API_KEY` variable for Gemini.
    
+   Example `.env` (use `.env.local` or keep `.env` out of git):
+
    ```env
-   # Required
-   API_KEY=your_gemini_api_key_here
+   # Required (available to browser code as import.meta.env.VITE_API_KEY)
+   VITE_API_KEY=your_gemini_api_key_here
 
-   # Optional (for Cloud Sync)
-   SUPABASE_URL=your_supabase_project_url
-   SUPABASE_KEY=your_supabase_anon_key
+   # Optional (for Cloud Sync - client-side values use VITE_ prefix)
+   VITE_SUPABASE_URL=your_supabase_project_url
+   VITE_SUPABASE_KEY=your_supabase_anon_key
 
-   # Optional (for Payments)
-   PAYPAL_CLIENT_ID=your_paypal_client_id
+   # Optional (payments)
+   VITE_PAYPAL_CLIENT_ID=your_paypal_client_id
    ```
+
+   Notes:
+   - The app reads `import.meta.env.VITE_API_KEY` in development. If you run server-side code that requires `process.env.API_KEY`, set that in your CI or server environment separately.
+   - Copy `.env.example` to `.env` and fill the values.
 
 4. **Run Development Server**
    ```bash
