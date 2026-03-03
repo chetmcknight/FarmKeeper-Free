@@ -81,8 +81,8 @@ export const diagnoseHealth = async (base64Image: string): Promise<DiagnosisResu
   
   // Fallback to client-side SDK for development
   try {
-    // gemini-3.1-pro-preview supports multimodal inputs and structured output (JSON mode)
-    const modelId = "gemini-3.1-pro-preview";
+    // gemini-3.1-pro supports multimodal inputs and structured output (JSON mode)
+    const modelId = "gemini-3.1-pro";
     
     const ai = await getAI();
     // Use imported Type directly
@@ -179,7 +179,7 @@ export const getFarmingAdvice = async (
         body: JSON.stringify({
           action: 'createChat',
           payload: {
-            model: 'gemini-3.1-pro-preview',
+            model: 'gemini-3.1-pro',
             firstMessage: prompt,
             config: {
               tools: [{ googleSearch: {} }],
@@ -214,7 +214,7 @@ export const getFarmingAdvice = async (
     const ai = await getAI();
 
     const chat = ai.chats.create({
-      model: "gemini-3.1-pro-preview",
+      model: "gemini-3.1-pro",
       config: {
         tools: [{ googleSearch: {} }],
         systemInstruction: systemInstruction,
@@ -280,7 +280,7 @@ export const getWeatherInsight = async (location: string) => {
     const ai = await getAI();
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
+      model: "gemini-3.1-pro",
       contents: `Get the current weather and a brief 3-day farming forecast for ${location}.
       Format output as JSON: { "current": "Temp/Condition", "forecast": "Short summary" }`,
       config: {
@@ -311,7 +311,7 @@ export const getMarketPrices = async (commodities: string[], storeName: string =
     const ai = await getAI();
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
+      model: "gemini-3.1-pro",
       contents: `Current price of ${commoditiesList} at ${storeName} in Sequim/Port Angeles WA area.
       Return JSON array only: [ { "name": "Item", "price": "$X.XX" } ]`,
       config: {
@@ -360,7 +360,7 @@ export const getDailyTip = async () => {
     const ai = await getAI();
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
+      model: "gemini-3.1-pro",
       contents: `Provide a "dailyTip" which is a useful, practical, and scientific piece of advice for farmers regarding crops or livestock for the current season.
       Format output as JSON: { "title": "Short Title", "content": "1-2 sentences", "category": "Crops|Livestock|General" }`,
       config: {
