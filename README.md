@@ -93,3 +93,7 @@ A `Dockerfile` and `nginx.conf` are included for containerized deployment.
 docker build -t farmkeeper-pro .
 docker run -p 8080:80 farmkeeper-pro
 ```
+
+## Deployment Status
+
+This project is configured for continuous deployment via Google Cloud Build to Cloud Run.
