@@ -46,7 +46,7 @@ npm run preview
 
 - **Authentication:** Works automatically with Supabase Auth when configured.
 - **Database:** Uses Supabase tables defined in `schema.sql`.
-- **AI Features:** Requires `VITE_API_KEY`. The chatbot uses `gemini-3-flash-preview` which supports Google Search Grounding.
+- **AI Features:** Requires `VITE_API_KEY`. The chatbot uses `gemini-3.1-pro-preview` which supports Google Search Grounding.
 - **Payment:** The current payment UI is a prototype/mock. For real payments, integrate a backend implementation for PayPal/Stripe.
 
 Your FarmKeeper Pro is now ready! 🚀
