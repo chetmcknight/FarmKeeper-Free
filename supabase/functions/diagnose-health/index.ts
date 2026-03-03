@@ -59,7 +59,7 @@ serve(async (req: Request) => {
 
     // Call Gemini Vision with structured JSON output
     const response = await (client as any).models.generateContent({
-      model: "gemini-3.1-pro",
+      model: "gemini-3.1-pro-preview",
       contents: {
         parts: [
           {

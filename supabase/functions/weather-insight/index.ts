@@ -39,7 +39,7 @@ serve(async (req: Request) => {
     }
 
     const response = await (client as any).models.generateContent({
-      model: "gemini-3.1-pro",
+      model: "gemini-3.1-pro-preview",
       contents: `Get the current weather and a brief 3-day farming forecast for ${location}.
       Format output as JSON: { "current": "Temp/Condition", "forecast": "Short summary" }`,
       config: {
