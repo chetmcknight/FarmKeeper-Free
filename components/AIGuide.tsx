@@ -60,8 +60,10 @@ export const AIGuide: React.FC = () => {
   useEffect(() => {
     const loadContext = async () => {
         try {
-            const crops = await backend.getCrops();
-            const animals = await backend.getAnimals();
+            const [crops, animals] = await Promise.all([
+                backend.getCrops(),
+                backend.getAnimals()
+            ]);
             
             let contextStr = "";
             if (crops.length > 0) {

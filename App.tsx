@@ -1,16 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Navigation } from './components/Navigation';
-import { Dashboard } from './components/Dashboard';
-import { CropManager } from './components/CropManager';
-import { AnimalManager } from './components/AnimalManager';
-import { FarmhandManager } from './components/FarmhandManager';
-import { FieldScout } from './components/FieldScout';
-import { AIGuide } from './components/AIGuide';
-import { Settings } from './components/Settings';
-import { AuthScreen } from './components/AuthScreen';
-import { ChatWidget } from './components/ChatWidget';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Page } from './types';
+
+// Lazy load components for code splitting
+const Dashboard = lazy(() => import('./components/Dashboard').then(module => ({ default: module.Dashboard })));
+const CropManager = lazy(() => import('./components/CropManager').then(module => ({ default: module.CropManager })));
+const AnimalManager = lazy(() => import('./components/AnimalManager').then(module => ({ default: module.AnimalManager })));
+const FarmhandManager = lazy(() => import('./components/FarmhandManager').then(module => ({ default: module.FarmhandManager })));
+const FieldScout = lazy(() => import('./components/FieldScout').then(module => ({ default: module.FieldScout })));
+const AIGuide = lazy(() => import('./components/AIGuide').then(module => ({ default: module.AIGuide })));
+const Settings = lazy(() => import('./components/Settings').then(module => ({ default: module.Settings })));
+const AuthScreen = lazy(() => import('./components/AuthScreen').then(module => ({ default: module.AuthScreen })));
+const ChatWidget = lazy(() => import('./components/ChatWidget').then(module => ({ default: module.ChatWidget })));
+
+// Loading Spinner Component
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center h-full min-h-[50vh]">
+    <div className="animate-spin h-10 w-10 border-4 border-green-600 rounded-full border-t-transparent"></div>
+  </div>
+);
 
 // The Main Layout for authenticated users. 
 const AuthenticatedLayout: React.FC = () => {
@@ -92,10 +101,12 @@ const AuthenticatedLayout: React.FC = () => {
         isCollapsed={isSidebarCollapsed}
         toggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
-      {/* Added pb-20 for mobile nav clearance */}
+          {/* Added pb-20 for mobile nav clearance */}
       <main className="flex-1 h-screen overflow-y-auto no-scrollbar pb-20 md:pb-0 md:p-6 relative">
         <div className="max-w-7xl mx-auto h-full">
-           {renderPage()}
+           <Suspense fallback={<LoadingSpinner />}>
+             {renderPage()}
+           </Suspense>
         </div>
       </main>
       <ChatWidget isHidden={currentPage === Page.ADVISOR} />

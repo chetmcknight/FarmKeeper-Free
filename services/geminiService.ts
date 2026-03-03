@@ -1,23 +1,17 @@
 import { DiagnosisResult } from "../types";
+// @ts-ignore
+import { GoogleGenAI, Type } from "@google/genai";
 
-// Lazily load @google/genai from the ESM CDN at runtime. This avoids requiring
-// an npm package so the dev server can start; the browser will fetch the
-// module when these functions run.
-let _genaiModule: any = null;
+// Lazily load @google/genai (now installed locally)
 let _aiClient: any = null;
-
-const loadGenAI = async () => {
-  if (_genaiModule) return _genaiModule;
-  _genaiModule = await import("https://esm.sh/@google/genai@1.40.0");
-  return _genaiModule;
-};
 
 const getAI = async () => {
   if (_aiClient) return _aiClient;
-  const mod = await loadGenAI();
-  const GoogleGenAI = mod.GoogleGenAI || (mod.default && mod.default.GoogleGenAI) || mod;
+  
   const apiKey = (typeof process !== 'undefined' && process.env && process.env.API_KEY)
     || (typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env.VITE_API_KEY);
+  
+  // Initialize client using the installed package
   _aiClient = new GoogleGenAI({ apiKey });
   return _aiClient;
 };
@@ -65,29 +59,22 @@ export const diagnoseHealth = async (base64Image: string): Promise<DiagnosisResu
   // Use Edge Function if Supabase is configured (recommended for production)
   if (supabaseUrl) {
     try {
-      console.log(`[diagnoseHealth] Calling Edge Function: ${supabaseUrl}/functions/v1/diagnose-health`);
-      console.log(`[diagnoseHealth] Image data length: ${base64Image.length} characters`);
-      
       const response = await fetch(`${supabaseUrl}/functions/v1/diagnose-health`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ base64Image }),
       });
       
-      console.log(`[diagnoseHealth] Response status: ${response.status}`);
       const responseText = await response.text();
-      console.log(`[diagnoseHealth] Response body: ${responseText.substring(0, 200)}`);
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${responseText}`);
       }
       
       const result = JSON.parse(responseText);
-      console.log("[diagnoseHealth] Success:", result);
       return result;
     } catch (error) {
-      console.error("Edge Function diagnoseHealth error:", error);
-      console.log("[diagnoseHealth] Falling back to client-side SDK");
+      console.error("Edge Function diagnoseHealth error (falling back to client SDK):", error);
       // Fall through to client-side implementation below
     }
   }
@@ -98,8 +85,7 @@ export const diagnoseHealth = async (base64Image: string): Promise<DiagnosisResu
     const modelId = "gemini-3-flash-preview";
     
     const ai = await getAI();
-    const genai = await loadGenAI();
-    const Type = genai.Type;
+    // Use imported Type directly
 
     const response = await ai.models.generateContent({
       model: modelId,
@@ -241,9 +227,9 @@ export const getFarmingAdvice = async (
     // Extract grounding metadata if available
     const groundingChunks = result.candidates?.[0]?.groundingMetadata?.groundingChunks;
     const sources = groundingChunks
-      ?.map((chunk) => chunk.web)
-      .filter((web) => web !== undefined)
-      .map((web) => ({ title: web.title, uri: web.uri }));
+      ?.map((chunk: any) => chunk.web)
+      .filter((web: any) => web !== undefined)
+      .map((web: any) => ({ title: web.title, uri: web.uri }));
 
     return {
       text: result.text || "I couldn't generate a response.",

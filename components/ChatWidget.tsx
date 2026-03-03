@@ -76,9 +76,11 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ isHidden = false }) => {
 
   const loadContext = async () => {
     try {
-        const crops = await backend.getCrops();
-        const animals = await backend.getAnimals();
-        const farmhands = await backend.getFarmhands();
+        const [crops, animals, farmhands] = await Promise.all([
+            backend.getCrops(),
+            backend.getAnimals(),
+            backend.getFarmhands()
+        ]);
         
         let contextStr = "";
         if (crops.length > 0) {
