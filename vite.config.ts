@@ -5,7 +5,9 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   define: {
-    'process.env': process.env
+    // Safely polyfill process for libraries that expect it, 
+    // but prefer import.meta.env in application code.
+    'process.env': {}
   },
   build: {
     rollupOptions: {

@@ -102,17 +102,19 @@ const AuthenticatedLayout: React.FC = () => {
         toggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
           {/* Added pb-20 for mobile nav clearance */}
-      <main className="flex-1 h-screen overflow-y-auto no-scrollbar pb-20 md:pb-0 md:p-6 relative">
-        <div className="max-w-7xl mx-auto h-full">
-           <Suspense fallback={<LoadingSpinner />}>
-             {renderPage()}
-           </Suspense>
+          <main className="flex-1 h-screen overflow-y-auto no-scrollbar pb-20 md:pb-0 md:p-6 relative">
+            <div className="max-w-7xl mx-auto h-full">
+               <Suspense fallback={<LoadingSpinner />}>
+                 {renderPage()}
+               </Suspense>
+            </div>
+          </main>
+          <Suspense fallback={null}>
+            <ChatWidget isHidden={currentPage === Page.ADVISOR} />
+          </Suspense>
         </div>
-      </main>
-      <ChatWidget isHidden={currentPage === Page.ADVISOR} />
-    </div>
-  );
-};
+      );
+    };
 
 // Wrapper to handle Auth state
 const AppContent: React.FC = () => {

@@ -2,8 +2,23 @@
 export const loadPaypalScript = async (): Promise<any> => {
   if (window.paypal) return window.paypal;
 
-  const getEnv = (key: string) => {
-    try { return process.env[key]; } catch (e) { return undefined; }
+const getEnv = (key: string) => {
+    // 1. Try Vite's import.meta.env (VITE_ prefix usually required for client exposure)
+    if (typeof import.meta !== 'undefined' && (import.meta as any).env) {
+      const viteKey = key.startsWith('VITE_') ? key : `VITE_${key}`;
+      if ((import.meta as any).env[viteKey]) return (import.meta as any).env[viteKey];
+    }
+    
+    // 2. Try process.env (Node.js / Polyfilled environments)
+    try {
+      if (typeof process !== 'undefined' && process.env) {
+        return process.env[key];
+      }
+    } catch (e) {
+      // Ignore ReferenceError if process is not defined
+    }
+    
+    return undefined;
   };
 
   // Defaults to 'test' if env var is missing to prevent crash, but logs warning
