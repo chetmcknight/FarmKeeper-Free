@@ -134,7 +134,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
       <header className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 pr-2 md:pr-0">
         <div>
           <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">{getGreeting()}, {user?.name || 'Farmer'}.</h2>
-          <p className="text-gray-500 dark:text-gray-400 font-medium mt-1">Here's what's happening on your farm today.</p>
+          {stats.cropsTotal === 0 && stats.animalsTotal === 0 ? (
+             <p className="text-green-600 dark:text-green-400 font-bold mt-1">Welcome! Let's get your farm set up by adding your first crop or animal.</p>
+          ) : (
+             <p className="text-gray-500 dark:text-gray-400 font-medium mt-1">Here's what's happening on your farm today.</p>
+          )}
         </div>
         
         {/* Location & Theme Toggle Container */}
@@ -220,7 +224,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
       </div>
 
       {/* Insights Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         {/* Weather Card */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 p-6 relative overflow-hidden group min-h-[180px]">
           <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
@@ -243,66 +247,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
           )}
         </div>
 
-        {/* Markets Card (Now Local Prices) */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 p-6 relative overflow-hidden group min-h-[180px]">
-          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
-            <svg className="w-32 h-32 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zm6-4a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zm6-3a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" /></svg>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 relative z-10 gap-2">
-            <h3 className="text-lg font-bold text-gray-800 dark:text-white">Local Prices</h3>
-            <select 
-                value={selectedStore}
-                onChange={(e) => setSelectedStore(e.target.value)}
-                className="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 text-xs font-semibold rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-green-500 max-w-[200px]"
-            >
-                {STORE_OPTIONS.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-            </select>
-          </div>
-          
-          <div className="space-y-3 relative z-10">
-            {selectedCommodities.map((item, index) => {
-              const marketItem = getMarketItem(item);
-              const isLoadingItem = loadingMarkets;
-
-              return (
-                <div key={index} className="flex justify-between items-center bg-gray-50/80 dark:bg-gray-700/50 backdrop-blur-sm p-3 rounded-xl border border-gray-100 dark:border-gray-600 hover:border-green-200 dark:hover:border-green-500 transition-colors">
-                  <select 
-                    value={item}
-                    onChange={(e) => handleCommodityChange(index, e.target.value)}
-                    className="bg-transparent border-none text-gray-700 dark:text-gray-300 text-sm font-semibold focus:ring-0 cursor-pointer w-32 md:w-36 outline-none py-0 pl-0"
-                    disabled={isLoadingItem}
-                  >
-                    {COMMODITY_OPTIONS.map(opt => (
-                      <option key={opt} value={opt} className="text-gray-900 bg-white dark:bg-gray-800 dark:text-white">{opt}</option>
-                    ))}
-                  </select>
-                  <div className="text-right">
-                    {isLoadingItem ? (
-                        <div className="h-4 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse"></div>
-                    ) : (
-                        <>
-                            <span className="font-bold text-sm block text-green-700 dark:text-green-400 animate-fade-in">
-                            {marketItem?.price || '--'}
-                            </span>
-                            {marketItem?.sourceUrl && (
-                                <a href={marketItem.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium block truncate max-w-[80px] text-right ml-auto">
-                                    {marketItem.sourceName || 'Source'} &rarr;
-                                </a>
-                            )}
-                        </>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Expert Insight / Daily Tip */}
+        {/* Expert Insight / Daily Tip */}
       <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 min-h-[200px]">
         <div className="flex items-center gap-3 mb-6">
             <div className="bg-indigo-100 dark:bg-indigo-900/30 p-2 rounded-lg text-indigo-600 dark:text-indigo-400">
@@ -362,6 +307,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
              </div>
         )}
       </div>
+    </div>
     </div>
   );
 };

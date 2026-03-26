@@ -323,7 +323,8 @@ const supabaseBackend = {
         }
     });
     if (error) throw error;
-    if (!data.user) throw new Error("Signup failed. Please check your email for confirmation.");
+    if (!data.user) throw new Error("Signup failed. Please try again.");
+    if (data.user && !data.session) throw new Error("Success! Please check your email to verify your account before logging in.");
     return this.mapUser(data.user);
   },
 

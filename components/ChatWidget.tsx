@@ -53,7 +53,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ isHidden = false }) => {
     { 
       id: 'init', 
       role: 'model', 
-      text: 'Hi there! 👋 I\'m your farm assistant. Ask me anything about your crops, livestock, farmhands, or the weather!', 
+      text: "Hi there! 👋 I'm here to help!", 
       timestamp: Date.now() 
     }
   ]);
