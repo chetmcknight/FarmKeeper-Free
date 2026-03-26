@@ -130,7 +130,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
   };
 
   return (
-    <div className="p-6 pt-20 md:p-8 md:pt-8 space-y-8 pb-32 md:pb-8 animate-fade-in">
+    <div className="p-6 md:p-8 space-y-8 animate-fade-in">
       <header className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 pr-2 md:pr-0">
         <div>
           <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">{getGreeting()}, {user?.name || 'Farmer'}.</h2>

@@ -358,7 +358,7 @@ export const AnimalManager: React.FC = () => {
     const isHistoryLimited = user?.plan === 'free' && selectedAnimal.medicalHistory.length >= FREE_HISTORY_LIMIT;
 
     return (
-        <div className="p-6 pt-28 md:p-10 md:pt-12 pb-24 md:pb-12 animate-fade-in">
+        <div className="p-6 md:p-10 animate-fade-in">
             {/* Back Button */}
             <button 
                 onClick={() => setSelectedAnimal(null)}
@@ -824,7 +824,7 @@ export const AnimalManager: React.FC = () => {
 
   // --- List View ---
   return (
-    <div className="p-6 pt-28 md:p-10 md:pt-12 pb-32 md:pb-12 animate-fade-in">
+    <div className="p-6 md:p-10 animate-fade-in">
        {/* Header */}
        <div className="flex justify-between items-center mb-10">
         <div>

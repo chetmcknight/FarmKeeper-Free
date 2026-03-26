@@ -167,7 +167,7 @@ export const FarmhandManager: React.FC = () => {
   // --- Detail View ---
   if (selectedHand) {
       return (
-        <div className="p-6 pt-28 md:p-10 md:pt-12 pb-32 md:pb-12 animate-fade-in">
+        <div className="p-6 md:p-10 animate-fade-in">
             <button 
                 onClick={() => setSelectedHand(null)}
                 className="mb-6 group flex items-center text-gray-500 hover:text-green-700 font-semibold transition-colors px-3 py-2 rounded-lg hover:bg-green-50 w-fit"
@@ -385,7 +385,7 @@ export const FarmhandManager: React.FC = () => {
 
   // --- List View ---
   return (
-    <div className="p-6 pt-28 md:p-10 md:pt-12 pb-32 md:pb-12 animate-fade-in">
+    <div className="p-6 md:p-10 animate-fade-in">
         <div className="flex justify-between items-center mb-10">
             <div>
                 <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Farmhands</h2>

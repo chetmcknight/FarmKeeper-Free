@@ -91,11 +91,15 @@ alter table public.medical_records enable row level security;
 alter table public.scout_history enable row level security;
 alter table public.farmhands enable row level security;
 
--- Policy example (Open for all for prototype if userId matches)
--- In a real app, ensure you add "using (auth.uid()::text = userId)"
-create policy "Enable all access for users" on public.crops for all using (true);
-create policy "Enable all access for users" on public.field_records for all using (true);
-create policy "Enable all access for users" on public.animals for all using (true);
-create policy "Enable all access for users" on public.medical_records for all using (true);
-create policy "Enable all access for users" on public.scout_history for all using (true);
-create policy "Enable all access for users" on public.farmhands for all using (true);
+-- Production Policies: Only allow users to access their own data
+create policy "Users can manage their own crops" on public.crops for all using (auth.uid()::text = "userId");
+
+create policy "Users can manage their own crop records" on public.field_records for all using (exists (select 1 from public.crops where id = "cropId" and "userId" = auth.uid()::text));
+
+create policy "Users can manage their own animals" on public.animals for all using (auth.uid()::text = "userId");
+
+create policy "Users can manage their own animal records" on public.medical_records for all using (exists (select 1 from public.animals where id = "animalId" and "userId" = auth.uid()::text));
+
+create policy "Users can manage their own scout history" on public.scout_history for all using (auth.uid()::text = "userId");
+
+create policy "Users can manage their own farmhands" on public.farmhands for all using (auth.uid()::text = "userId");

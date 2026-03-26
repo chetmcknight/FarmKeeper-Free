@@ -7,12 +7,15 @@ This application is ready for deployment. It uses **Vite + React** for the front
 - A **Supabase** account (https://supabase.com)
 - A **Google AI Studio** API Key (https://aistudio.google.com/) for the Chatbot and Diagnosis features.
 
-## 2. Supabase Setup
+## 2. Supabase Setup (Clean Production Database)
 
 1. Create a new project in Supabase.
 2. Go to the **SQL Editor** in your Supabase dashboard.
 3. Open the file `supabase/schema.sql` from this repository.
-4. Copy the entire content and run it in the SQL Editor. This will create all necessary tables and security policies.
+4. Copy the entire content and run it in the SQL Editor. 
+   - *This script sets up a perfectly clean database schema.*
+   - *It enables Row Level Security (RLS) on all tables, ensuring user data is strictly isolated (users can only access their own crops, animals, etc).*
+   - *This setup is 100% ready for real customers in a production environment.*
 
 ## 3. Environment Variables
 

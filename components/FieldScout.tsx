@@ -143,7 +143,7 @@ export const FieldScout: React.FC = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 pb-32 md:pb-8 max-w-6xl mx-auto animate-fade-in">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto animate-fade-in">
       
       {/* Friendly Header */}
       <div className="text-center mb-10">

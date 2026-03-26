@@ -199,7 +199,7 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
   };
 
   return (
-    <div className="p-4 md:p-8 pb-32 md:pb-8 animate-fade-in max-w-4xl mx-auto">
+    <div className="p-4 md:p-8 animate-fade-in max-w-4xl mx-auto">
       <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2">Settings</h2>
       <p className="text-gray-500 dark:text-gray-400 mb-8">Manage your account preferences and farm data.</p>
 
