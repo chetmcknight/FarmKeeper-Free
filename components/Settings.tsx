@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { backend } from '../services/mockBackend';
 
 interface SettingsProps {
   toggleDarkMode: () => void;
@@ -9,8 +8,7 @@ interface SettingsProps {
 
 export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }) => {
   const { user, deleteAccount, updateProfile, updatePassword } = useAuth();
-  const [loadingExport, setLoadingExport] = useState(false);
-  const [activeTab, setActiveTab] = useState<'general' | 'data' | 'storage'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'storage'>('general');
 
   const [name, setName] = useState(user?.name || '');
   const [imageUrl, setImageUrl] = useState(user?.imageUrl || '');
@@ -28,16 +26,20 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteInput, setDeleteInput] = useState('');
 
-  // Google Sheets config
-  const [gsSheetId, setGsSheetId] = useState(() => localStorage.getItem('gs_sheet_id') || '');
-  const [gsApiKey, setGsApiKey] = useState(() => localStorage.getItem('gs_api_key') || '');
-  const [gsScriptUrl, setGsScriptUrl] = useState(() => localStorage.getItem('gs_script_url') || '');
-  const [showGsSaved, setShowGsSaved] = useState(false);
-
   useEffect(() => {
     if (user?.name) setName(user.name);
     if (user?.imageUrl) setImageUrl(user.imageUrl);
   }, [user]);
+
+  useEffect(() => {
+    const env = typeof import.meta !== 'undefined' ? (import.meta as any).env : {};
+    const sheetId = env.VITE_GS_SHEET_ID;
+    const apiKey = env.VITE_GS_API_KEY;
+    const scriptUrl = env.VITE_GS_SCRIPT_URL;
+    if (sheetId) localStorage.setItem('gs_sheet_id', sheetId);
+    if (apiKey) localStorage.setItem('gs_api_key', apiKey);
+    if (scriptUrl) localStorage.setItem('gs_script_url', scriptUrl);
+  }, []);
 
   const compressImage = (file: File, maxWidth: number = 400): Promise<string> => {
     return new Promise((resolve) => {
@@ -126,64 +128,6 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
       }
   };
 
-  const handleSaveSheetsConfig = () => {
-    if (gsSheetId) localStorage.setItem('gs_sheet_id', gsSheetId);
-    if (gsApiKey) localStorage.setItem('gs_api_key', gsApiKey);
-    if (gsScriptUrl) localStorage.setItem('gs_script_url', gsScriptUrl);
-    setShowGsSaved(true);
-    setTimeout(() => setShowGsSaved(false), 3000);
-    alert('Google Sheets config saved! Reload the page to switch to Google Sheets storage.');
-  };
-
-  const handleExportData = async () => {
-    setLoadingExport(true);
-    try {
-      const crops = await backend.getCrops();
-      const animals = await backend.getAnimals();
-      const scout = await backend.getScoutHistory();
-      const farmhands = await backend.getFarmhands();
-      
-      const cleanAnimals = animals.map(a => {
-          const { imageUrl, coverUrl, ...rest } = a;
-          return rest;
-      });
-
-      const cleanScout = scout.map(s => {
-          const { imageBase64, ...rest } = s;
-          return rest;
-      });
-
-      const cleanFarmhands = farmhands.map(f => {
-          const { imageUrl, ...rest } = f;
-          return rest;
-      });
-      
-      const exportData = {
-        user: { name: user?.name, email: user?.email },
-        exportedAt: new Date().toISOString(),
-        crops,
-        animals: cleanAnimals,
-        scoutHistory: cleanScout,
-        farmhands: cleanFarmhands
-      };
-
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `farmkeeper-data-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (e) {
-      console.error(e);
-      alert("Failed to export data");
-    } finally {
-      setLoadingExport(false);
-    }
-  };
-
   const handleDeleteAccount = async () => {
     if (deleteInput === 'DELETE') {
       await deleteAccount();
@@ -204,12 +148,6 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
             className={`px-4 py-3 rounded-xl text-left font-semibold transition-all whitespace-nowrap ${activeTab === 'general' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'}`}
           >
             General & Appearance
-          </button>
-          <button 
-            onClick={() => setActiveTab('data')}
-            className={`px-4 py-3 rounded-xl text-left font-semibold transition-all whitespace-nowrap ${activeTab === 'data' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'}`}
-          >
-            Data & Storage
           </button>
           <button 
             onClick={() => setActiveTab('storage')}
@@ -344,82 +282,7 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
                 </div>
             </div>
           )}
-
-          {activeTab === 'data' && (
-             <div className="space-y-6">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Your Farm Data</h3>
-                  
-                  <div className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-xl p-6 border border-indigo-100 dark:border-indigo-900/40 flex flex-col md:flex-row items-center justify-between gap-6">
-                     <div className="flex items-center gap-4">
-                         <div className="w-16 h-16 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center text-3xl shadow-md text-indigo-500">
-                             💾
-                         </div>
-                         <div>
-                           <h4 className="font-bold text-gray-900 dark:text-white text-lg">Export Full Backup</h4>
-                           <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                               Download a JSON file containing your crops, livestock, and farmhands data (images excluded).
-                           </p>
-                         </div>
-                     </div>
-                     <button 
-                       onClick={handleExportData}
-                       disabled={loadingExport}
-                       className="flex-shrink-0 bg-white dark:bg-gray-800 text-indigo-600 border border-indigo-200 dark:border-indigo-800 px-6 py-3 rounded-xl font-bold hover:bg-indigo-600 hover:text-white hover:border-indigo-600 dark:hover:bg-indigo-500 dark:hover:border-indigo-500 transition-all shadow-sm flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-                     >
-                       {loadingExport ? 'Generating JSON...' : 'Download JSON'}
-                     </button>
-                  </div>
-                </div>
-
-                <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Google Sheets Sync</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                    Configure to use Google Sheets as your database. Create a sheet with tabs: <strong>Users</strong>, <strong>Crops</strong>, <strong>Animals</strong>, <strong>Farmhands</strong>, <strong>ScoutHistory</strong>.
-                  </p>
-                  <div className="space-y-4 max-w-lg">
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Spreadsheet ID</label>
-                      <input 
-                        type="text" 
-                        value={gsSheetId}
-                        onChange={(e) => setGsSheetId(e.target.value)}
-                        placeholder="1aBaMvRAzlAmhbjNHNq6lQsNtKSKHV3KFvVrtmyz8188"
-                        className="block w-full rounded-lg border border-gray-200 bg-gray-50 text-gray-900 shadow-sm px-4 py-2.5 focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">API Key</label>
-                      <input 
-                        type="text" 
-                        value={gsApiKey}
-                        onChange={(e) => setGsApiKey(e.target.value)}
-                        placeholder="Your Google Sheets API key"
-                        className="block w-full rounded-lg border border-gray-200 bg-gray-50 text-gray-900 shadow-sm px-4 py-2.5 focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Apps Script URL</label>
-                      <input 
-                        type="url" 
-                        value={gsScriptUrl}
-                        onChange={(e) => setGsScriptUrl(e.target.value)}
-                        placeholder="https://script.google.com/macros/s/.../exec"
-                        className="block w-full rounded-lg border border-gray-200 bg-gray-50 text-gray-900 shadow-sm px-4 py-2.5 focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all"
-                      />
-                    </div>
-                    <button 
-                      onClick={handleSaveSheetsConfig}
-                      className="px-6 py-2.5 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition-colors shadow-sm"
-                    >
-                      Save &amp; Reload with Sheets
-                    </button>
-                    {showGsSaved && <p className="text-sm text-green-600 font-medium">Saved!</p>}
-                  </div>
-                </div>
-             </div>
-          )}
-
+          
           {activeTab === 'storage' && (
             <div className="space-y-6">
                 <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-red-100 dark:border-red-900/30">
