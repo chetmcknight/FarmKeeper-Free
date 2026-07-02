@@ -1,18 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Farmhand } from '../types';
 import { backend } from '../services/mockBackend';
-import { useAuth } from '../context/AuthContext';
-import { PaymentModal } from './PaymentModal';
+
 
 export const FarmhandManager: React.FC = () => {
-  const { user } = useAuth();
   const [hands, setHands] = useState<Farmhand[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedHand, setSelectedHand] = useState<Farmhand | null>(null);
   
   // Modal State
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -33,8 +30,6 @@ export const FarmhandManager: React.FC = () => {
   const coverInputRef = useRef<HTMLInputElement>(null);
   const editFileInputRef = useRef<HTMLInputElement>(null);
   const editCoverInputRef = useRef<HTMLInputElement>(null);
-
-  const FREE_HAND_LIMIT = 3;
 
   useEffect(() => {
     loadHands();
@@ -393,12 +388,8 @@ export const FarmhandManager: React.FC = () => {
             </div>
             <button 
                 onClick={() => { 
-                    if (user?.plan === 'free' && hands.length >= FREE_HAND_LIMIT) {
-                        setShowUpgradeModal(true);
-                    } else {
-                        resetForm(); 
-                        setShowAddModal(true); 
-                    }
+                    resetForm(); 
+                    setShowAddModal(true); 
                 }}
                 className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0"
             >
@@ -614,7 +605,6 @@ export const FarmhandManager: React.FC = () => {
             </div>
         )}
         
-        {showUpgradeModal && <PaymentModal onClose={() => setShowUpgradeModal(false)} />}
     </div>
   );
 };

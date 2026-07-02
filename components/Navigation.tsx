@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Page } from '../types';
 import { useAuth } from '../context/AuthContext';
-import { PaymentModal } from './PaymentModal';
 
 interface NavigationProps {
   currentPage: Page;
@@ -12,9 +11,7 @@ interface NavigationProps {
 
 export const Navigation: React.FC<NavigationProps> = ({ currentPage, setPage, isCollapsed, toggleCollapse }) => {
   const { user, logout } = useAuth();
-  const [showPayment, setShowPayment] = useState(false);
 
-  // Helper to determine active state classes
   const getMobileClasses = (isActive: boolean) => 
     `flex flex-col items-center justify-center w-full h-full transition-all duration-200 active:scale-95 ${
       isActive 
@@ -51,7 +48,6 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, setPage, is
         ${isCollapsed ? 'md:w-20' : 'md:w-72'}`}
       >
         <div>
-          {/* Header / Logo Area - Desktop Only */}
           <div className="hidden md:flex items-center justify-between p-4 mb-2">
              <div 
                 className={`cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-3 ${isCollapsed ? 'justify-center w-full' : ''}`}
@@ -64,7 +60,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, setPage, is
                 </div>
                 {!isCollapsed && (
                   <h1 className="text-xl font-black text-green-800 dark:text-green-400 tracking-tight whitespace-nowrap">
-                    FarmKeeper Pro
+                    FarmKeeper Free
                   </h1>
                 )}
             </div>
@@ -92,7 +88,6 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, setPage, is
              </div>
           )}
 
-          {/* Navigation Links - Mobile (Bottom Bar) */}
           <div className="flex md:hidden justify-around items-center px-2 h-[60px] pb-1">
             {navItems.filter(item => item.id !== Page.ADVISOR).map((item) => (
               <button
@@ -110,7 +105,6 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, setPage, is
             ))}
           </div>
 
-          {/* Navigation Links - Desktop (Sidebar) */}
           <div className="hidden md:flex flex-col space-y-1 px-3">
             {navItems.map((item) => (
               <button
@@ -136,7 +130,6 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, setPage, is
           </div>
         </div>
 
-        {/* User Profile Section - Desktop */}
         <div className={`hidden md:block p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50 ${isCollapsed ? 'px-2' : 'px-6'}`}>
           <div 
              onClick={() => setPage(Page.SETTINGS)}
@@ -161,21 +154,12 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, setPage, is
               <>
                 <div className="overflow-hidden flex-1">
                   <p className="text-sm font-bold text-gray-800 dark:text-gray-200 truncate">{user?.name}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">{user?.plan === 'pro' ? 'Unlimited Farm' : user?.plan} Plan</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Free Plan</p>
                 </div>
                 <svg className="w-5 h-5 text-gray-400 hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
               </>
             )}
           </div>
-          
-          {!isCollapsed && user?.plan === 'free' && (
-            <button 
-              onClick={() => setShowPayment(true)}
-              className="w-full mb-3 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold py-2.5 rounded-lg shadow-sm hover:shadow-md hover:scale-[1.02] transition-all transform"
-            >
-              Upgrade to Unlimited Farm
-            </button>
-          )}
 
           {!isCollapsed && (
             <button 
@@ -188,8 +172,6 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, setPage, is
           )}
         </div>
       </nav>
-
-      {showPayment && <PaymentModal onClose={() => setShowPayment(false)} />}
     </>
   );
 };

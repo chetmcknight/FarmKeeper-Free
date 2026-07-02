@@ -1,9 +1,10 @@
 {
-  "name": "FarmKeeper Pro",
-  "description": "An intelligent agricultural assistant helping farmers manage crops, diagnose plant diseases, and access real-time farming advice using Gemini AI.",
-  "requestFramePermissions": [
-    "camera",
-    "microphone",
-    "geolocation"
-  ]
+  "name": "FarmKeeper Free",
+  "short_name": "FarmKeeper Free",
+  "description": "FarmKeeper Free - Intelligent farm management made easy.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f0fdf4",
+  "theme_color": "#f0fdf4",
+  "icons": []
 }

@@ -3,7 +3,6 @@ import { getFarmingAdvice } from '../services/geminiService';
 import { ChatMessage } from '../types';
 import { backend } from '../services/mockBackend';
 
-// Shared formatter (ideally moved to a util file, but kept here for stability)
 const FormattedText: React.FC<{ text: string }> = ({ text }) => {
   if (!text) return null;
   const paragraphs = text.split('\n');
@@ -42,7 +41,7 @@ const FormattedText: React.FC<{ text: string }> = ({ text }) => {
 export const AIGuide: React.FC = () => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: '0', role: 'model', text: "Hello, I'm your farm keeper. How can I help you today?", timestamp: Date.now() }
+    { id: '0', role: 'model', text: "Hello, I'm your farm assistant. How can I help you today?", timestamp: Date.now() }
   ]);
   const [loading, setLoading] = useState(false);
   const [farmContext, setFarmContext] = useState<string>('');
@@ -56,7 +55,6 @@ export const AIGuide: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Load farm data for context
   useEffect(() => {
     const loadContext = async () => {
         try {
@@ -106,7 +104,6 @@ export const AIGuide: React.FC = () => {
     setLoading(true);
 
     try {
-      // Prepare history for Gemini
       const history = messages.map(m => ({
         role: m.role,
         parts: [{ text: m.text }]
@@ -136,19 +133,14 @@ export const AIGuide: React.FC = () => {
   };
 
   return (
-    // Height calculation: 100vh - (Mobile Nav Height ~80px) on mobile, Full height on Desktop
-    // Mobile Nav is typically 5rem (20 * 0.25rem = 5rem). 
-    // We use calc(100dvh - 5rem) to ensure it fits exactly in the viewport above the nav.
     <div className="flex flex-col bg-white md:rounded-xl md:shadow-sm md:border md:border-gray-200 overflow-hidden h-[calc(100dvh-5rem)] md:h-full">
-      {/* Header */}
       <div className="p-4 border-b border-gray-100 bg-green-50 shrink-0">
         <h2 className="text-lg font-bold text-green-900 flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-          FarmKeeper Pro
+          FarmKeeper Free
         </h2>
       </div>
 
-      {/* Chat Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/30">
         {messages.map((msg) => (
           <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -159,7 +151,6 @@ export const AIGuide: React.FC = () => {
             }`}>
               <FormattedText text={msg.text} />
               
-              {/* Sources if available */}
               {msg.sources && msg.sources.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-gray-100">
                   <p className="text-xs font-semibold text-gray-500 mb-1">Sources:</p>
@@ -193,7 +184,6 @@ export const AIGuide: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
       <div className="p-4 border-t border-gray-100 bg-white shrink-0">
         <div className="flex gap-2">
           <input

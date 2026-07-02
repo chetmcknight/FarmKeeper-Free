@@ -1,99 +1,225 @@
-# FarmKeeper Pro 🧑‍🌾
+<div align="center">
+  <br/>
+  <h1>🧑‍🌾 FarmKeeper Free</h1>
+  <p><strong>Intelligent farm management powered by Google Gemini AI</strong></p>
+  <p>
+    <img src="https://img.shields.io/badge/react-18.3-61DAFB?logo=react&style=flat-square" alt="React 18"/>
+    <img src="https://img.shields.io/badge/typescript-5.4-3178C6?logo=typescript&style=flat-square" alt="TypeScript"/>
+    <img src="https://img.shields.io/badge/vite-5.4-646CFF?logo=vite&style=flat-square" alt="Vite"/>
+    <img src="https://img.shields.io/badge/tailwind-3.4-06B6D4?logo=tailwindcss&style=flat-square" alt="Tailwind CSS"/>
+    <img src="https://img.shields.io/badge/gemini-ai-8E75B2?logo=google&style=flat-square" alt="Gemini AI"/>
+  </p>
+  <br/>
+</div>
 
-FarmKeeper Pro is a comprehensive agricultural management platform empowered by Google's Gemini AI. It helps farmers track their fields, manage livestock health, diagnose crop diseases via computer vision, and access real-time farming advice.
+## 📸 Screenshots
 
-## Features
+| Auth Screen | Dashboard | Crop Manager |
+|:---:|:---:|:---:|
+| ![Login](screenshots/login.png) | *(add your own)* | *(add your own)* |
+
+> **Tip:** Run the app at `localhost:5173`, press `Cmd+Shift+4` and capture the browser window to add your own screenshots.
+
+---
+
+## ✨ Features
 
 ### 📊 Command Center
-- **Smart Dashboard:** Real-time weather updates, location-based forecasts, and live commodity market prices (Corn, Soybeans, Wheat, etc.).
-- **Daily Insights:** AI-generated daily farming tips and expert insights based on your region.
-- **Status Overview:** At-a-glance metrics for crop health and livestock alerts.
+- **Smart Dashboard** — Real-time overview of your farm's health, crop status, and livestock alerts
+- **Weather & Market Data** — Get location-based forecasts and commodity prices
+- **Daily AI Insights** — Gemini-powered farming tips tailored to your region
 
 ### 🌽 Crop Manager
-- **Field Tracking:** Log planting dates, varieties, and acreage for infinite fields.
-- **Growth Monitoring:** Track growth days and estimated harvest dates.
-- **Field Operations:** Maintain a detailed history of spraying, fertilizing, scouting, and harvesting events.
+- **Field Tracking** — Log planting dates, varieties, acreage, and growth stages
+- **Growth Monitoring** — Track days since planting and estimate harvest dates
+- **Field History** — Spraying, fertilizing, scouting, and harvesting event logs
 
 ### 🐄 Livestock Manager
-- **Digital Herd Book:** Manage detailed profiles for Cattle, Pigs, Sheep, Poultry, and more.
-- **Medical History:** Specific logs for vaccinations, illnesses, injuries, and vet checkups.
-- **Health Status:** Visual tagging for sick, pregnant, lactating, or quarantined animals.
-- **Care Timeline:** Chronological view of all care activities per animal.
+- **Digital Herd Book** — Detailed profiles for cattle, pigs, sheep, poultry, and more
+- **Medical History** — Vaccinations, illnesses, injuries, and vet checkups
+- **Health Status** — Visual tags for sick, pregnant, lactating, or quarantined
 
 ### 📸 Field Scout AI
-- **Visual Diagnosis:** Take or upload photos of crops and animals.
-- **AI Analysis:** Uses Gemini Vision (Multimodal) to identify pests, diseases, and nutrient deficiencies.
-- **Actionable Advice:** Receives immediate confidence scores, symptom descriptions, and treatment recommendations.
+- **Visual Diagnosis** — Snap or upload photos of crops and livestock
+- **AI Analysis** — Gemini Vision identifies pests, diseases, and nutrient deficiencies
+- **Actionable Advice** — Confidence scores, symptom descriptions, and treatments
 
 ### 🤖 AI Farm Advisor
-- **Chat Interface:** Natural language conversation with an expert agricultural AI.
-- **Search Grounding:** Integrated with Google Search to provide up-to-date answers on weather, regulations, and market trends with citations.
+- **Chat Interface** — Natural language Q&A with an expert agricultural AI
+- **Search Grounding** — Google Search integration for up-to-date answers on weather, regulations, and market trends
 
-## Technology Stack
+### ☁️ Google Sheets Sync
+- **Cloud Storage** — All data synced to a Google Sheet you control
+- **No Lock-In** — Your data lives in a plain spreadsheet, accessible anytime
+- **Free Forever** — No subscriptions, no paywalls, no limits
 
-- **Frontend:** React 18, TypeScript, Vite
-- **Styling:** Tailwind CSS
-- **AI Integration:** Google Gemini API (`@google/genai`)
-- **State/Backend:** 
-  - Default: Local Storage (Offline capable prototype)
-  - Optional: Supabase (PostgreSQL + Auth) for cloud sync
+---
 
-## Setup & Installation
+## 🚀 Quick Start
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/your-repo/farmkeeper-pro.git
-   cd farmkeeper-pro
-   ```
+### 1. Clone & Install
 
-2. **Install Dependencies**
-   ```bash
-   npm install
-   ```
+```bash
+git clone https://github.com/chetmcknight/FarmKeeper-Free.git
+cd FarmKeeper-Free
+npm install
+```
 
-3. **Environment Configuration**
-   Create a `.env` file in the root directory (or copy `.env.example`). Vite only exposes vars prefixed with `VITE_` to the client — use the `VITE_API_KEY` variable for Gemini.
-   
-   Example `.env` (use `.env.local` or keep `.env` out of git):
+### 2. Environment Setup
 
-   ```env
-   # Required (available to browser code as import.meta.env.VITE_API_KEY)
-   VITE_API_KEY=your_gemini_api_key_here
+Create a `.env` file:
 
-   # Optional (for Cloud Sync - client-side values use VITE_ prefix)
-   VITE_SUPABASE_URL=your_supabase_project_url
-   VITE_SUPABASE_KEY=your_supabase_anon_key
+```env
+VITE_API_KEY=your_gemini_api_key_here
+```
 
-   # Optional (payments)
-   VITE_PAYPAL_CLIENT_ID=your_paypal_client_id
-   ```
+Get a Gemini API key at [Google AI Studio](https://aistudio.google.com/).
 
-   Notes:
-   - The app reads `import.meta.env.VITE_API_KEY` in development. If you run server-side code that requires `process.env.API_KEY`, set that in your CI or server environment separately.
-   - Copy `.env.example` to `.env` and fill the values.
+### 3. Run the App
 
-4. **Run Development Server**
-   ```bash
-   npm run dev
-   ```
+```bash
+npm run dev
+```
 
-## Building for Production
+Open **http://localhost:5173** in your browser.
 
-To build the app for production (generating static files in `dist/`):
+---
+
+## ☁️ Google Sheets Setup
+
+FarmKeeper Free uses Google Sheets as its cloud database. No server, no subscriptions.
+
+### Step 1: Create the Sheet
+
+1. Create a new Google Sheet at [sheets.new](https://sheets.new)
+2. Rename the default tab to `Users`
+3. Add 4 more tabs: `Crops`, `Animals`, `Farmhands`, `ScoutHistory`
+4. Add header rows to each tab:
+
+| Tab | Headers |
+|:---|:---|
+| **Users** | `id`, `email`, `name`, `imageUrl` |
+| **Crops** | `id`, `name`, `variety`, `plantedDate`, `harvestDate`, `status`, `area`, `imageUrl`, `coverUrl`, `history_json` |
+| **Animals** | `id`, `name`, `type`, `breed`, `birthDate`, `deathDate`, `status`, `weight`, `gender`, `imageUrl`, `coverUrl`, `medicalHistory_json` |
+| **Farmhands** | `id`, `name`, `role`, `phone`, `email`, `status`, `notes`, `startDate`, `imageUrl`, `coverUrl` |
+| **ScoutHistory** | `id`, `date`, `imageBase64`, `result_json` |
+
+### Step 2: Share Publicly
+
+Click **Share** → set to **"Anyone with the link can edit"**.
+
+### Step 3: Enable the Sheets API
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/dashboard)
+2. Select your project (or create one)
+3. Enable the **Google Sheets API**
+4. Go to **Credentials** → **Create Credentials** → **API Key**
+5. (Recommended) Restrict the key to HTTP referrers and the Sheets API only
+
+### Step 4: Deploy the Apps Script
+
+1. In your sheet, go to **Extensions → Apps Script**
+2. Replace the default code with the contents of [`apps-script/Code.gs`](apps-script/Code.gs)
+3. Click **Deploy → New Deployment**
+   - **Type:** Web app
+   - **Execute as:** Me
+   - **Access:** Anyone
+4. Copy the deployment URL (ends in `/exec`)
+
+### Step 5: Configure the App
+
+1. Open FarmKeeper Free at **http://localhost:5173**
+2. Go to **Settings → Data & Storage**
+3. Enter:
+   - **Spreadsheet ID** — from your sheet URL (the long string between `/d/` and `/edit`)
+   - **API Key** — from Google Cloud Console
+   - **Apps Script URL** — the deployment URL from Step 4
+4. Click **Save & Reload with Sheets**
+
+Your data now syncs to Google Sheets automatically!
+
+---
+
+## 🧑‍🌾 Local Storage (Default)
+
+Out of the box, FarmKeeper Free uses **localStorage** in your browser. No setup required — just run the app and go. Data persists in your browser until you clear it.
+
+Switch to Google Sheets whenever you want by following the setup above.
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|:---|:---|
+| **Framework** | React 18 + TypeScript |
+| **Build Tool** | Vite 5 |
+| **Styling** | Tailwind CSS 3 |
+| **AI** | Google Gemini API (`@google/genai`) |
+| **Cloud Sync** | Google Sheets REST API + Apps Script |
+| **Auth** | Built-in (email/password, localStorage-backed) |
+
+---
+
+## 📦 Production Build
 
 ```bash
 npm run build
 ```
 
-## Docker Support
+Output goes to `dist/`. Deploy with any static host (Vercel, Netlify, Cloud Run, etc.).
 
-A `Dockerfile` and `nginx.conf` are included for containerized deployment.
+---
+
+## 🐳 Docker
 
 ```bash
-docker build -t farmkeeper-pro .
-docker run -p 8080:80 farmkeeper-pro
+docker build -t farmkeeper-free .
+docker run -p 8080:80 farmkeeper-free
 ```
 
-## Deployment Status
+---
 
-This project is configured for continuous deployment via Google Cloud Build to Cloud Run.
+## 📁 Project Structure
+
+```
+FarmKeeper-Free/
+├── apps-script/
+│   └── Code.gs              # Google Apps Script (write proxy)
+├── components/
+│   ├── AIGuide.tsx           # AI chat advisor
+│   ├── AnimalManager.tsx     # Livestock management
+│   ├── AuthScreen.tsx        # Login / Register
+│   ├── ChatWidget.tsx        # Floating AI chat
+│   ├── CropManager.tsx       # Crop / field tracking
+│   ├── Dashboard.tsx         # Main dashboard
+│   ├── FarmhandManager.tsx   # Team management
+│   ├── FieldScout.tsx        # AI visual diagnosis
+│   ├── Navigation.tsx        # Sidebar navigation
+│   └── Settings.tsx          # App settings + Sheets config
+├── context/
+│   └── AuthContext.tsx       # Auth provider
+├── services/
+│   ├── geminiService.ts      # Gemini AI integration
+│   ├── googleSheetsService.ts # Sheets API + Apps Script client
+│   └── mockBackend.ts        # Backend selector (local vs sheets)
+├── types.ts                  # Shared TypeScript types
+├── App.tsx                   # Root component
+├── index.tsx                 # Entry point
+└── index.html                # HTML shell
+```
+
+---
+
+## 📄 License
+
+MIT — free to use, modify, and distribute.
+
+---
+
+<div align="center">
+  <p>Built with ❤️ for farmers everywhere</p>
+  <p>
+    <a href="https://github.com/chetmcknight/FarmKeeper-Free">GitHub</a>
+  </p>
+</div>

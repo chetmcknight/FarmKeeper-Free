@@ -1,55 +1,39 @@
-# FarmKeeper Pro Deployment Guide
+# FarmKeeper Free Deployment Guide
 
-This application is ready for deployment. It uses **Vite + React** for the frontend and **Supabase** for the backend (Authentication & Database).
+This application uses **Vite + React** for the frontend and **Google Sheets** for cloud sync.
 
 ## 1. Prerequisites
 
-- A **Supabase** account (https://supabase.com)
-- A **Google AI Studio** API Key (https://aistudio.google.com/) for the Chatbot and Diagnosis features.
+- A **Gemini API key** from Google AI Studio (https://aistudio.google.com/)
+- A **Google Cloud project** with the Sheets API enabled and an API key
 
-## 2. Supabase Setup (Clean Production Database)
+## 2. Environment Variables
 
-1. Create a new project in Supabase.
-2. Go to the **SQL Editor** in your Supabase dashboard.
-3. Open the file `supabase/schema.sql` from this repository.
-4. Copy the entire content and run it in the SQL Editor. 
-   - *This script sets up a perfectly clean database schema.*
-   - *It enables Row Level Security (RLS) on all tables, ensuring user data is strictly isolated (users can only access their own crops, animals, etc).*
-   - *This setup is 100% ready for real customers in a production environment.*
-
-## 3. Environment Variables
-
-Create a `.env` file in the root of your project (or set these variables in your hosting provider like Vercel/Netlify):
+Create a `.env` file in the root of your project:
 
 ```env
-VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_KEY=your_supabase_anon_key
 VITE_API_KEY=your_google_gemini_api_key
 ```
 
-> **Note:** The application automatically detects these variables. If they are present, it switches from "Mock Mode" (local storage) to "Production Mode" (Supabase).
-
-## 4. Build & Deploy
+## 3. Build & Deploy
 
 ### Local Build Test
-Run the following to verify the build locally:
-
 ```bash
 npm run build
 npm run preview
 ```
 
-### Hosting (Vercel / Netlify)
-1. Connect your repository to Vercel or Netlify.
-2. The build command is `npm run build`.
-3. The output directory is `dist`.
-4. **Important:** Add the Environment Variables from Step 3 in your hosting dashboard settings.
+### Hosting (Vercel / Netlify / Cloud Run)
+1. Connect your repository to your hosting provider.
+2. Build command: `npm run build`
+3. Output directory: `dist`
+4. Set the `VITE_API_KEY` environment variable in your hosting dashboard.
 
-## 5. Features Notes
+## 4. Google Sheets Setup
 
-- **Authentication:** Works automatically with Supabase Auth when configured.
-- **Database:** Uses Supabase tables defined in `schema.sql`.
-- **AI Features:** Requires `VITE_API_KEY`. The chatbot uses `gemini-3.1-pro-preview` which supports Google Search Grounding.
-- **Payment:** The current payment UI is a prototype/mock. For real payments, integrate a backend implementation for PayPal/Stripe.
+1. Create a Google Sheet with 5 tabs: `Users`, `Crops`, `Animals`, `Farmhands`, `ScoutHistory`
+2. Share it publicly: **Anyone with the link can edit**
+3. Deploy the **Google Apps Script** (see `apps-script/` directory) as a web app
+4. In the app's **Settings** page, enter the Sheet ID, API key, and Apps Script URL
 
-Your FarmKeeper Pro is now ready! 🚀
+Your FarmKeeper Free is now ready! 🚀

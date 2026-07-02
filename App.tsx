@@ -104,7 +104,7 @@ const AuthenticatedLayout: React.FC = () => {
                </svg>
             </div>
             <h1 className="text-lg font-black text-green-800 dark:text-green-400 tracking-tight">
-              FarmKeeper Pro
+              FarmKeeper Free
             </h1>
          </div>
          <button onClick={() => setCurrentPage(Page.SETTINGS)} className="p-1 rounded-full border border-transparent focus:outline-none">

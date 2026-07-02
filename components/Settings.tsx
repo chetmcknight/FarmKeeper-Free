@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { backend } from '../services/mockBackend';
-import { PaymentModal } from './PaymentModal';
 
 interface SettingsProps {
   toggleDarkMode: () => void;
@@ -9,12 +8,10 @@ interface SettingsProps {
 }
 
 export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }) => {
-  const { user, deleteAccount, updateProfile, updatePassword, downgradeToFree } = useAuth();
+  const { user, deleteAccount, updateProfile, updatePassword } = useAuth();
   const [loadingExport, setLoadingExport] = useState(false);
-  const [showPayment, setShowPayment] = useState(false);
-  const [activeTab, setActiveTab] = useState<'general' | 'data' | 'account'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'data' | 'storage'>('general');
 
-  // Profile Edit State
   const [name, setName] = useState(user?.name || '');
   const [imageUrl, setImageUrl] = useState(user?.imageUrl || '');
   const [savingProfile, setSavingProfile] = useState(false);
@@ -22,23 +19,26 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Password State
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [savingPassword, setSavingPassword] = useState(false);
   const [showPasswordSuccess, setShowPasswordSuccess] = useState(false);
 
-  // Delete Account State
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteInput, setDeleteInput] = useState('');
+
+  // Google Sheets config
+  const [gsSheetId, setGsSheetId] = useState(() => localStorage.getItem('gs_sheet_id') || '');
+  const [gsApiKey, setGsApiKey] = useState(() => localStorage.getItem('gs_api_key') || '');
+  const [gsScriptUrl, setGsScriptUrl] = useState(() => localStorage.getItem('gs_script_url') || '');
+  const [showGsSaved, setShowGsSaved] = useState(false);
 
   useEffect(() => {
     if (user?.name) setName(user.name);
     if (user?.imageUrl) setImageUrl(user.imageUrl);
   }, [user]);
 
-  // Image Compression Helper
   const compressImage = (file: File, maxWidth: number = 400): Promise<string> => {
     return new Promise((resolve) => {
         const reader = new FileReader();
@@ -73,8 +73,6 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
               setSavingProfile(true);
               const resized = await compressImage(file);
               setImageUrl(resized);
-              
-              // Automatically save the profile update
               await updateProfile({ imageUrl: resized });
               setShowProfileSuccess(true);
               setTimeout(() => setShowProfileSuccess(false), 3000);
@@ -87,9 +85,8 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
       }
   };
 
-  // Called automatically on blur or enter
   const handleAutoSaveName = async () => {
-      if (name === user?.name) return; // No change
+      if (name === user?.name) return;
       if (!name.trim()) return;
 
       setSavingProfile(true);
@@ -129,15 +126,13 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
       }
   };
 
-  const handleDowngrade = async () => {
-      if (window.confirm("Are you sure you want to downgrade to the Free plan? You will lose access to unlimited features.")) {
-          try {
-              await downgradeToFree();
-              alert("Plan downgraded to Hobby Farm.");
-          } catch (e) {
-              alert("Failed to downgrade plan.");
-          }
-      }
+  const handleSaveSheetsConfig = () => {
+    if (gsSheetId) localStorage.setItem('gs_sheet_id', gsSheetId);
+    if (gsApiKey) localStorage.setItem('gs_api_key', gsApiKey);
+    if (gsScriptUrl) localStorage.setItem('gs_script_url', gsScriptUrl);
+    setShowGsSaved(true);
+    setTimeout(() => setShowGsSaved(false), 3000);
+    alert('Google Sheets config saved! Reload the page to switch to Google Sheets storage.');
   };
 
   const handleExportData = async () => {
@@ -146,9 +141,8 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
       const crops = await backend.getCrops();
       const animals = await backend.getAnimals();
       const scout = await backend.getScoutHistory();
-      const farmhands = await backend.getFarmhands(); // Include farmhands if available
+      const farmhands = await backend.getFarmhands();
       
-      // Strip images to keep JSON light
       const cleanAnimals = animals.map(a => {
           const { imageUrl, coverUrl, ...rest } = a;
           return rest;
@@ -165,7 +159,7 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
       });
       
       const exportData = {
-        user: { name: user?.name, email: user?.email, plan: user?.plan },
+        user: { name: user?.name, email: user?.email },
         exportedAt: new Date().toISOString(),
         crops,
         animals: cleanAnimals,
@@ -204,7 +198,6 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
       <p className="text-gray-500 dark:text-gray-400 mb-8">Manage your account preferences and farm data.</p>
 
       <div className="flex flex-col md:flex-row gap-8">
-        {/* Sidebar Tabs */}
         <div className="w-full md:w-64 flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-visible pb-2 md:pb-0 scrollbar-hide">
           <button 
             onClick={() => setActiveTab('general')}
@@ -216,27 +209,24 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
             onClick={() => setActiveTab('data')}
             className={`px-4 py-3 rounded-xl text-left font-semibold transition-all whitespace-nowrap ${activeTab === 'data' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'}`}
           >
-            Data Management
+            Data & Storage
           </button>
           <button 
-            onClick={() => setActiveTab('account')}
-            className={`px-4 py-3 rounded-xl text-left font-semibold transition-all whitespace-nowrap ${activeTab === 'account' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'}`}
+            onClick={() => setActiveTab('storage')}
+            className={`px-4 py-3 rounded-xl text-left font-semibold transition-all whitespace-nowrap ${activeTab === 'storage' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'}`}
           >
-            Account & Subscription
+            Account
           </button>
         </div>
 
-        {/* Content Area */}
         <div className="flex-1 space-y-6">
           
-          {/* General Tab */}
           {activeTab === 'general' && (
             <div className="space-y-6">
                 <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Profile Information</h3>
                     
                     <div className="grid gap-6">
-                        {/* Image Well */}
                         <div className="flex items-center gap-6">
                             <div 
                                 onClick={() => fileInputRef.current?.click()}
@@ -355,74 +345,83 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
             </div>
           )}
 
-          {/* Data Tab */}
           {activeTab === 'data' && (
-             <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
-               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Your Farm Data</h3>
-               
-               <div className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-xl p-6 border border-indigo-100 dark:border-indigo-900/40 flex flex-col md:flex-row items-center justify-between gap-6">
-                  <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center text-3xl shadow-md text-indigo-500">
-                          💾
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-gray-900 dark:text-white text-lg">Export Full Backup</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                            Download a JSON file containing your crops, livestock, and farmhands data (images excluded).
-                        </p>
-                      </div>
+             <div className="space-y-6">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Your Farm Data</h3>
+                  
+                  <div className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-xl p-6 border border-indigo-100 dark:border-indigo-900/40 flex flex-col md:flex-row items-center justify-between gap-6">
+                     <div className="flex items-center gap-4">
+                         <div className="w-16 h-16 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center text-3xl shadow-md text-indigo-500">
+                             💾
+                         </div>
+                         <div>
+                           <h4 className="font-bold text-gray-900 dark:text-white text-lg">Export Full Backup</h4>
+                           <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                               Download a JSON file containing your crops, livestock, and farmhands data (images excluded).
+                           </p>
+                         </div>
+                     </div>
+                     <button 
+                       onClick={handleExportData}
+                       disabled={loadingExport}
+                       className="flex-shrink-0 bg-white dark:bg-gray-800 text-indigo-600 border border-indigo-200 dark:border-indigo-800 px-6 py-3 rounded-xl font-bold hover:bg-indigo-600 hover:text-white hover:border-indigo-600 dark:hover:bg-indigo-500 dark:hover:border-indigo-500 transition-all shadow-sm flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                     >
+                       {loadingExport ? 'Generating JSON...' : 'Download JSON'}
+                     </button>
                   </div>
-                  <button 
-                    onClick={handleExportData}
-                    disabled={loadingExport}
-                    className="flex-shrink-0 bg-white dark:bg-gray-800 text-indigo-600 border border-indigo-200 dark:border-indigo-800 px-6 py-3 rounded-xl font-bold hover:bg-indigo-600 hover:text-white hover:border-indigo-600 dark:hover:bg-indigo-500 dark:hover:border-indigo-500 transition-all shadow-sm flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {loadingExport ? 'Generating JSON...' : 'Download JSON'}
-                  </button>
-               </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Google Sheets Sync</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                    Configure to use Google Sheets as your database. Create a sheet with tabs: <strong>Users</strong>, <strong>Crops</strong>, <strong>Animals</strong>, <strong>Farmhands</strong>, <strong>ScoutHistory</strong>.
+                  </p>
+                  <div className="space-y-4 max-w-lg">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Spreadsheet ID</label>
+                      <input 
+                        type="text" 
+                        value={gsSheetId}
+                        onChange={(e) => setGsSheetId(e.target.value)}
+                        placeholder="1aBaMvRAzlAmhbjNHNq6lQsNtKSKHV3KFvVrtmyz8188"
+                        className="block w-full rounded-lg border border-gray-200 bg-gray-50 text-gray-900 shadow-sm px-4 py-2.5 focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">API Key</label>
+                      <input 
+                        type="text" 
+                        value={gsApiKey}
+                        onChange={(e) => setGsApiKey(e.target.value)}
+                        placeholder="Your Google Sheets API key"
+                        className="block w-full rounded-lg border border-gray-200 bg-gray-50 text-gray-900 shadow-sm px-4 py-2.5 focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Apps Script URL</label>
+                      <input 
+                        type="url" 
+                        value={gsScriptUrl}
+                        onChange={(e) => setGsScriptUrl(e.target.value)}
+                        placeholder="https://script.google.com/macros/s/.../exec"
+                        className="block w-full rounded-lg border border-gray-200 bg-gray-50 text-gray-900 shadow-sm px-4 py-2.5 focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all"
+                      />
+                    </div>
+                    <button 
+                      onClick={handleSaveSheetsConfig}
+                      className="px-6 py-2.5 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition-colors shadow-sm"
+                    >
+                      Save &amp; Reload with Sheets
+                    </button>
+                    {showGsSaved && <p className="text-sm text-green-600 font-medium">Saved!</p>}
+                  </div>
+                </div>
              </div>
           )}
 
-          {/* Account Tab */}
-          {activeTab === 'account' && (
+          {activeTab === 'storage' && (
             <div className="space-y-6">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Subscription Plan</h3>
-                    
-                    <div className="flex items-center justify-between p-6 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600">
-                        <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-1">Current Plan</p>
-                            <h4 className="text-3xl font-extrabold text-green-700 dark:text-green-400 capitalize flex items-center gap-2">
-                                {user?.plan === 'pro' ? 'Unlimited Farm' : user?.plan} Plan
-                                {user?.plan === 'pro' && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full border border-green-200">ACTIVE</span>}
-                            </h4>
-                            <p className="text-sm text-gray-500 mt-2">
-                                {user?.plan === 'free' ? 'Limited access to features.' : 'Unlimited access to all premium features.'}
-                            </p>
-                        </div>
-                        {user?.plan === 'free' ? (
-                            <button 
-                                onClick={() => setShowPayment(true)}
-                                style={{ backfaceVisibility: 'hidden', WebkitFontSmoothing: 'subpixel-antialiased' }}
-                                className="bg-white dark:bg-gray-800 text-green-600 border border-green-200 dark:border-green-800 px-8 py-3 rounded-xl font-bold hover:bg-green-600 hover:text-white dark:hover:bg-green-500 dark:hover:border-green-500 transition-colors duration-300 ease-in-out flex items-center gap-2 shadow-sm"
-                            >
-                                <svg className="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-                                Upgrade to Unlimited Farm
-                            </button>
-                        ) : (
-                            <div className="text-right">
-                                <p className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">Renews Monthly</p>
-                                <button 
-                                    onClick={handleDowngrade}
-                                    className="text-xs font-bold text-red-500 hover:text-red-600 hover:underline px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
-                                >
-                                    Downgrade to Free Plan
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
                 <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-red-100 dark:border-red-900/30">
                     <h3 className="text-xl font-bold text-red-600 mb-6 flex items-center gap-2">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
@@ -479,8 +478,6 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
           )}
         </div>
       </div>
-      
-      {showPayment && <PaymentModal onClose={() => setShowPayment(false)} />}
     </div>
   );
 };

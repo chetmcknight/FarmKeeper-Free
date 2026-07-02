@@ -1,26 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Animal, MedicalRecord } from '../types';
 import { backend } from '../services/mockBackend';
-import { useAuth } from '../context/AuthContext';
-import { PaymentModal } from './PaymentModal';
 
 export const AnimalManager: React.FC = () => {
-  const { user } = useAuth();
   const [animals, setAnimals] = useState<Animal[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
   
-  // Edit Profile State
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<Animal | null>(null);
 
-  // Add/Edit Record State
   const [showRecordModal, setShowRecordModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
   
-  // Add Animal Form State
   const [newAnimal, setNewAnimal] = useState<Partial<Animal>>({
       name: '',
       type: 'Cattle',
@@ -44,9 +37,6 @@ export const AnimalManager: React.FC = () => {
   const fileInputRefCover = useRef<HTMLInputElement>(null);
   const addFileInputRefProfile = useRef<HTMLInputElement>(null);
   const addFileInputRefCover = useRef<HTMLInputElement>(null);
-
-  const FREE_ANIMAL_LIMIT = 6;
-  const FREE_HISTORY_LIMIT = 5;
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -78,7 +68,6 @@ export const AnimalManager: React.FC = () => {
       }
   };
 
-  // Helper to compress image
   const compressImage = (file: File, maxWidth: number = 800): Promise<string> => {
     return new Promise((resolve) => {
         const reader = new FileReader();
@@ -100,7 +89,6 @@ export const AnimalManager: React.FC = () => {
                 canvas.height = height;
                 const ctx = canvas.getContext('2d');
                 ctx?.drawImage(img, 0, 0, width, height);
-                // Compress to JPEG at 0.7 quality
                 resolve(canvas.toDataURL('image/jpeg', 0.7));
             };
         };
@@ -111,7 +99,6 @@ export const AnimalManager: React.FC = () => {
       const file = e.target.files?.[0];
       if (file) {
           try {
-              // Resize to max 600px for profile/cover to save LocalStorage space
               const resizedBase64 = await compressImage(file, 600);
               
               if (isAddMode) {
@@ -121,7 +108,6 @@ export const AnimalManager: React.FC = () => {
               }
           } catch (error) {
               console.error("Image processing failed", error);
-              // Fail silently or log to console to avoid annoying alerts
           }
       }
   };
@@ -132,22 +118,16 @@ export const AnimalManager: React.FC = () => {
         await backend.updateAnimal(editForm);
         setSelectedAnimal(editForm);
         setIsEditing(false);
-        loadAnimals(); // Refresh main list
+        loadAnimals();
     } catch (e: any) {
         console.error("Update failed", e);
-        // Suppress storage full alert, just log it
     }
   };
 
   const openAddRecordModal = () => {
-      if (user?.plan === 'free' && selectedAnimal && selectedAnimal.medicalHistory.length >= FREE_HISTORY_LIMIT) {
-          setShowUpgradeModal(true);
-          return;
-      }
-
       setRecordForm({
         type: 'Checkup',
-        date: today, // Default to today, but user can pick future
+        date: today,
         title: '',
         notes: '',
         veterinarian: '',
@@ -190,17 +170,10 @@ export const AnimalManager: React.FC = () => {
 
   const handleSaveRecord = async () => {
     if (!selectedAnimal || !recordForm.title) return;
-    
-    // Check limit again just in case
-    if (!editingRecordId && user?.plan === 'free' && selectedAnimal.medicalHistory.length >= FREE_HISTORY_LIMIT) {
-        setShowUpgradeModal(true);
-        return;
-    }
 
     let updatedHistory = [...selectedAnimal.medicalHistory];
 
     if (editingRecordId) {
-        // Update existing record
         updatedHistory = updatedHistory.map(r => r.id === editingRecordId ? {
             ...r,
             date: recordForm.date!,
@@ -212,7 +185,6 @@ export const AnimalManager: React.FC = () => {
             cost: recordForm.cost
         } : r);
     } else {
-        // Add new record
         const newRecord: MedicalRecord = {
             id: Date.now().toString(),
             date: recordForm.date!,
@@ -248,8 +220,6 @@ export const AnimalManager: React.FC = () => {
     const now = new Date();
     
     if (isNaN(birth.getTime())) return '--';
-    
-    // Future date check
     if (birth > now) return 'Not born yet';
 
     const diffTime = Math.abs(now.getTime() - birth.getTime());
@@ -297,7 +267,6 @@ export const AnimalManager: React.FC = () => {
           loadAnimals();
       } catch (e: any) {
           console.error(e);
-          // Suppressed annoying alert for QuotaExceededError
       }
   };
 
@@ -345,7 +314,6 @@ export const AnimalManager: React.FC = () => {
     return <div className="p-8 flex justify-center"><div className="animate-spin h-8 w-8 border-4 border-green-500 rounded-full border-t-transparent"></div></div>;
   }
 
-  // --- Detail View ---
   if (selectedAnimal) {
     const upcomingEvents = selectedAnimal.medicalHistory
         .filter(r => r.date > today)
@@ -355,11 +323,8 @@ export const AnimalManager: React.FC = () => {
         .filter(r => r.date <= today)
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-    const isHistoryLimited = user?.plan === 'free' && selectedAnimal.medicalHistory.length >= FREE_HISTORY_LIMIT;
-
     return (
         <div className="p-6 md:p-10 animate-fade-in">
-            {/* Back Button */}
             <button 
                 onClick={() => setSelectedAnimal(null)}
                 className="mb-6 flex items-center text-gray-500 hover:text-green-600 font-medium transition-colors w-fit group"
@@ -371,10 +336,8 @@ export const AnimalManager: React.FC = () => {
             </button>
 
             <div className="flex flex-col lg:flex-row gap-6">
-                {/* Profile Card - Keeping consistent look */}
                 <div className="lg:w-1/3">
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden relative">
-                        {/* Poster/Cover Image */}
                         <div className="h-32 bg-green-50 relative">
                              {(isEditing && editForm?.coverUrl) || (!isEditing && selectedAnimal.coverUrl) ? (
                                 <img 
@@ -395,7 +358,6 @@ export const AnimalManager: React.FC = () => {
                              )}
                         </div>
 
-                        {/* Edit Toggle Button */}
                         <button 
                           onClick={() => {
                               if (isEditing) {
@@ -416,7 +378,6 @@ export const AnimalManager: React.FC = () => {
                            )}
                         </button>
                         
-                        {/* Hidden Inputs for Uploads */}
                         <input type="file" ref={fileInputRefProfile} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'imageUrl')} />
                         <input type="file" ref={fileInputRefCover} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'coverUrl')} />
 
@@ -472,9 +433,7 @@ export const AnimalManager: React.FC = () => {
                                 </span>
                             )}
                         </div>
-                        {/* ... Profile Fields ... */}
                         <div className="px-6 pb-6 space-y-4">
-                            {/* ... same grid as before ... */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <span className="text-xs text-gray-400 uppercase font-semibold">Breed</span>
@@ -511,7 +470,6 @@ export const AnimalManager: React.FC = () => {
                                         <p className="text-gray-700 font-medium">{selectedAnimal.type}</p>
                                     )}
                                 </div>
-                                {/* ... other fields ... */}
                                 <div>
                                     <span className="text-xs text-gray-400 uppercase font-semibold">Gender</span>
                                     {isEditing ? (
@@ -580,10 +538,8 @@ export const AnimalManager: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Timeline / Care History - Unchanged structure from previous turn */}
                 <div className="lg:w-2/3">
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 min-h-[500px]">
-                        {/* Timeline Content */}
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-lg font-bold text-gray-800">Care Timeline</h3>
                             <button 
@@ -595,15 +551,7 @@ export const AnimalManager: React.FC = () => {
                             </button>
                         </div>
                         
-                        {/* Timeline List */}
-                        {isHistoryLimited && (
-                            <div className="mb-4 bg-yellow-50 text-yellow-800 px-4 py-2 rounded-lg text-sm border border-yellow-100 flex justify-between items-center">
-                                <span>Free plan limit reached ({selectedAnimal.medicalHistory.length}/{FREE_HISTORY_LIMIT} records).</span>
-                                <button onClick={() => setShowUpgradeModal(true)} className="text-yellow-900 underline font-semibold">Upgrade</button>
-                            </div>
-                        )}
                         <div className="space-y-8">
-                            {/* Upcoming Schedule */}
                             {upcomingEvents.length > 0 && (
                                 <div className="mb-8 border-b border-gray-100 pb-6">
                                      <h4 className="text-md font-bold text-gray-700 mb-4 flex items-center gap-2">
@@ -647,7 +595,6 @@ export const AnimalManager: React.FC = () => {
                                      </div>
                                 </div>
                             )}
-                            {/* Past History */}
                             <div>
                                 <h4 className="text-md font-bold text-gray-700 mb-4 flex items-center gap-2">
                                     <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -704,12 +651,9 @@ export const AnimalManager: React.FC = () => {
                 </div>
             </div>
 
-            {/* Record Modal */}
-            {/* ... Modal code remains same ... */}
             {showRecordModal && (
                 <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4 pt-12">
                     <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden relative">
-                        {/* Glass Morphism Close */}
                         <button 
                             onClick={() => setShowRecordModal(false)}
                             className="absolute top-4 right-4 p-2 rounded-full bg-white/40 backdrop-blur-md border border-white/50 shadow-sm hover:bg-white/60 text-gray-600 transition-all z-10"
@@ -720,9 +664,7 @@ export const AnimalManager: React.FC = () => {
                         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                             <h3 className="text-lg font-bold text-gray-800">{editingRecordId ? 'Edit Medical Record' : 'Add Medical Record'}</h3>
                         </div>
-                        {/* ... Modal form ... */}
                         <div className="p-6 space-y-4">
-                            {/* ... Form inputs ... */}
                              <div className="grid grid-cols-2 gap-4">
                                 <div className="col-span-1">
                                     <label className="block text-xs font-medium text-gray-700 mb-1">Date</label>
@@ -733,7 +675,6 @@ export const AnimalManager: React.FC = () => {
                                         className="w-full border border-gray-300 bg-white text-gray-900 rounded-lg px-3 py-2 text-sm"
                                     />
                                 </div>
-                                {/* ... rest of form ... */}
                                 <div className="col-span-1">
                                     <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
                                     <select 
@@ -816,29 +757,19 @@ export const AnimalManager: React.FC = () => {
                     </div>
                 </div>
             )}
-            
-            {showUpgradeModal && <PaymentModal onClose={() => setShowUpgradeModal(false)} />}
         </div>
     );
   }
 
-  // --- List View ---
   return (
     <div className="p-6 md:p-10 animate-fade-in">
-       {/* Header */}
        <div className="flex justify-between items-center mb-10">
         <div>
             <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">My Livestock</h2>
             <p className="text-gray-500 font-medium mt-1">Manage your herd and health records.</p>
         </div>
         <button 
-          onClick={() => {
-              if (user?.plan === 'free' && animals.length >= FREE_ANIMAL_LIMIT) {
-                  setShowUpgradeModal(true);
-              } else {
-                  setShowAddModal(true);
-              }
-          }}
+          onClick={() => setShowAddModal(true)}
           className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
@@ -846,11 +777,9 @@ export const AnimalManager: React.FC = () => {
         </button>
       </div>
 
-       {/* Grid - Standardized to match Crop Card */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {animals.map((animal) => (
           <div key={animal.id} onClick={() => handleSelectAnimal(animal)} className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:border-green-200 transition-all cursor-pointer relative group duration-300 overflow-hidden">
-            {/* Delete Button - Uniform Style */}
             <button 
                 onClick={(e) => handleDeleteAnimal(e, animal.id, animal.name)}
                 className="absolute top-2 right-2 p-2.5 bg-white/80 backdrop-blur-sm text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all z-20 shadow-md border border-white/50"
@@ -912,162 +841,155 @@ export const AnimalManager: React.FC = () => {
           </div>
       )}
 
-      {/* Add Animal Modal (Glass close button included) */}
        {showAddModal && (
-                <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-start justify-center z-50 p-4 pt-24 md:pt-36">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[85vh] m-4 flex flex-col relative">
-                        {/* Glass Morphism Close */}
-                        <button 
-                            onClick={() => setShowAddModal(false)}
-                            className="absolute top-4 right-4 p-2 rounded-full bg-white/40 backdrop-blur-md border border-white/50 shadow-sm hover:bg-white/60 text-gray-600 transition-all z-10"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
+            <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-start justify-center z-50 p-4 pt-24 md:pt-36">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[85vh] m-4 flex flex-col relative">
+                    <button 
+                        onClick={() => setShowAddModal(false)}
+                        className="absolute top-4 right-4 p-2 rounded-full bg-white/40 backdrop-blur-md border border-white/50 shadow-sm hover:bg-white/60 text-gray-600 transition-all z-10"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
 
-                        <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                            <h3 className="text-lg font-bold text-gray-800">Add New Animal</h3>
-                        </div>
-                        <div className="p-6 md:p-8 space-y-6 overflow-y-auto">
-                             {/* ... Form Content ... */}
-                             {/* Image Uploads */}
-                             <div className="flex gap-6 items-center justify-center mb-2">
-                                <div 
-                                    onClick={() => addFileInputRefProfile.current?.click()}
-                                    className="w-20 h-20 rounded-full bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-green-500 hover:bg-green-50 transition-all overflow-hidden relative group"
-                                >
-                                    {newAnimal.imageUrl ? (
-                                        <img src={newAnimal.imageUrl} alt="Preview" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="text-center group-hover:scale-105 transition-transform">
-                                            <span className="text-[10px] text-gray-400 font-bold uppercase block mb-1">Profile</span>
-                                            <svg className="w-6 h-6 text-gray-300 mx-auto group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                        </div>
-                                    )}
-                                </div>
-                                <div 
-                                    onClick={() => addFileInputRefCover.current?.click()}
-                                    className="w-32 h-20 rounded-xl bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-green-500 hover:bg-green-50 transition-all overflow-hidden relative group"
-                                >
-                                     {newAnimal.coverUrl ? (
-                                        <img src={newAnimal.coverUrl} alt="Cover Preview" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="text-center group-hover:scale-105 transition-transform">
-                                            <span className="text-[10px] text-gray-400 font-bold uppercase block mb-1">Cover</span>
-                                            <svg className="w-6 h-6 text-gray-300 mx-auto group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                        </div>
-                                    )}
-                                </div>
-                                <input type="file" ref={addFileInputRefProfile} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'imageUrl', true)} />
-                                <input type="file" ref={addFileInputRefCover} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'coverUrl', true)} />
-                             </div>
+                    <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                        <h3 className="text-lg font-bold text-gray-800">Add New Animal</h3>
+                    </div>
+                    <div className="p-6 md:p-8 space-y-6 overflow-y-auto">
+                         <div className="flex gap-6 items-center justify-center mb-2">
+                            <div 
+                                onClick={() => addFileInputRefProfile.current?.click()}
+                                className="w-20 h-20 rounded-full bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-green-500 hover:bg-green-50 transition-all overflow-hidden relative group"
+                            >
+                                {newAnimal.imageUrl ? (
+                                    <img src={newAnimal.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="text-center group-hover:scale-105 transition-transform">
+                                        <span className="text-[10px] text-gray-400 font-bold uppercase block mb-1">Profile</span>
+                                        <svg className="w-6 h-6 text-gray-300 mx-auto group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                    </div>
+                                )}
+                            </div>
+                            <div 
+                                onClick={() => addFileInputRefCover.current?.click()}
+                                className="w-32 h-20 rounded-xl bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-green-500 hover:bg-green-50 transition-all overflow-hidden relative group"
+                            >
+                                 {newAnimal.coverUrl ? (
+                                    <img src={newAnimal.coverUrl} alt="Cover Preview" className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="text-center group-hover:scale-105 transition-transform">
+                                        <span className="text-[10px] text-gray-400 font-bold uppercase block mb-1">Cover</span>
+                                        <svg className="w-6 h-6 text-gray-300 mx-auto group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                    </div>
+                                )}
+                            </div>
+                            <input type="file" ref={addFileInputRefProfile} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'imageUrl', true)} />
+                            <input type="file" ref={addFileInputRefCover} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'coverUrl', true)} />
+                         </div>
 
-                            {/* UPDATED INPUT STYLES TO BG-WHITE */}
-                            <div className="grid grid-cols-2 gap-5">
-                                <div className="col-span-2">
-                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Name</label>
-                                    <input 
-                                        type="text" 
-                                        placeholder="e.g. Bessie"
-                                        value={newAnimal.name}
-                                        onChange={(e) => setNewAnimal({...newAnimal, name: e.target.value})}
-                                        className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all placeholder-gray-400"
-                                    />
-                                </div>
-                                <div className="col-span-1">
-                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Type</label>
-                                    <select 
-                                        value={newAnimal.type}
-                                        onChange={(e) => setNewAnimal({...newAnimal, type: e.target.value})}
-                                        className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
-                                    >
-                                        <option value="Cattle">Cattle</option>
-                                        <option value="Pig">Pig</option>
-                                        <option value="Sheep">Sheep</option>
-                                        <option value="Chicken">Chicken</option>
-                                        <option value="Goat">Goat</option>
-                                        <option value="Horse">Horse</option>
-                                        <option value="Dog">Dog</option>
-                                        <option value="Llama">Llama</option>
-                                        <option value="Donkey">Donkey</option>
-                                        <option value="Cat">Cat/Kitten</option>
-                                    </select>
-                                </div>
-                                <div className="col-span-1">
-                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Breed</label>
-                                    <input 
-                                        type="text" 
-                                        value={newAnimal.breed}
-                                        onChange={(e) => setNewAnimal({...newAnimal, breed: e.target.value})}
-                                        className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
-                                    />
-                                </div>
-                                <div className="col-span-1">
-                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Gender</label>
-                                    <select 
-                                        value={newAnimal.gender}
-                                        onChange={(e) => setNewAnimal({...newAnimal, gender: e.target.value as any})}
-                                        className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
-                                    >
-                                        <option value="Female">Female</option>
-                                        <option value="Male">Male</option>
-                                    </select>
-                                </div>
-                                <div className="col-span-1">
-                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Status</label>
-                                    <select 
-                                        value={newAnimal.status}
-                                        onChange={(e) => setNewAnimal({...newAnimal, status: e.target.value as any})}
-                                        className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
-                                    >
-                                        <option value="Healthy">Healthy</option>
-                                        <option value="Sick">Sick</option>
-                                        <option value="Vet Check Required">Vet Check Required</option>
-                                        <option value="Pregnant">Pregnant</option>
-                                        <option value="Lactating">Lactating</option>
-                                        <option value="Deceased">Deceased</option>
-                                    </select>
-                                </div>
-                                <div className="col-span-1">
-                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Birth Date</label>
-                                    <input 
-                                        type="date" 
-                                        value={newAnimal.birthDate}
-                                        onChange={(e) => setNewAnimal({...newAnimal, birthDate: e.target.value})}
-                                        className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-gray-600"
-                                    />
-                                </div>
-                                <div className="col-span-1">
-                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Weight</label>
-                                    <input 
-                                        type="text" 
-                                        placeholder="e.g. 150 lbs"
-                                        value={newAnimal.weight}
-                                        onChange={(e) => setNewAnimal({...newAnimal, weight: e.target.value})}
-                                        className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
-                                    />
-                                </div>
+                        <div className="grid grid-cols-2 gap-5">
+                            <div className="col-span-2">
+                                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Name</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="e.g. Bessie"
+                                    value={newAnimal.name}
+                                    onChange={(e) => setNewAnimal({...newAnimal, name: e.target.value})}
+                                    className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all placeholder-gray-400"
+                                />
+                            </div>
+                            <div className="col-span-1">
+                                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Type</label>
+                                <select 
+                                    value={newAnimal.type}
+                                    onChange={(e) => setNewAnimal({...newAnimal, type: e.target.value})}
+                                    className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                >
+                                    <option value="Cattle">Cattle</option>
+                                    <option value="Pig">Pig</option>
+                                    <option value="Sheep">Sheep</option>
+                                    <option value="Chicken">Chicken</option>
+                                    <option value="Goat">Goat</option>
+                                    <option value="Horse">Horse</option>
+                                    <option value="Dog">Dog</option>
+                                    <option value="Llama">Llama</option>
+                                    <option value="Donkey">Donkey</option>
+                                    <option value="Cat">Cat/Kitten</option>
+                                </select>
+                            </div>
+                            <div className="col-span-1">
+                                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Breed</label>
+                                <input 
+                                    type="text" 
+                                    value={newAnimal.breed}
+                                    onChange={(e) => setNewAnimal({...newAnimal, breed: e.target.value})}
+                                    className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                />
+                            </div>
+                            <div className="col-span-1">
+                                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Gender</label>
+                                <select 
+                                    value={newAnimal.gender}
+                                    onChange={(e) => setNewAnimal({...newAnimal, gender: e.target.value as any})}
+                                    className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                >
+                                    <option value="Female">Female</option>
+                                    <option value="Male">Male</option>
+                                </select>
+                            </div>
+                            <div className="col-span-1">
+                                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Status</label>
+                                <select 
+                                    value={newAnimal.status}
+                                    onChange={(e) => setNewAnimal({...newAnimal, status: e.target.value as any})}
+                                    className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                >
+                                    <option value="Healthy">Healthy</option>
+                                    <option value="Sick">Sick</option>
+                                    <option value="Vet Check Required">Vet Check Required</option>
+                                    <option value="Pregnant">Pregnant</option>
+                                    <option value="Lactating">Lactating</option>
+                                    <option value="Deceased">Deceased</option>
+                                </select>
+                            </div>
+                            <div className="col-span-1">
+                                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Birth Date</label>
+                                <input 
+                                    type="date" 
+                                    value={newAnimal.birthDate}
+                                    onChange={(e) => setNewAnimal({...newAnimal, birthDate: e.target.value})}
+                                    className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all text-gray-600"
+                                />
+                            </div>
+                            <div className="col-span-1">
+                                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Weight</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="e.g. 150 lbs"
+                                    value={newAnimal.weight}
+                                    onChange={(e) => setNewAnimal({...newAnimal, weight: e.target.value})}
+                                    className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                                />
                             </div>
                         </div>
-                        <div className="px-8 py-6 bg-gray-50 flex justify-end gap-3 border-t border-gray-100 mt-auto">
-                            <button 
-                                onClick={() => setShowAddModal(false)}
-                                className="px-6 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-700 hover:bg-white transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button 
-                                onClick={handleCreateAnimal}
-                                disabled={!newAnimal.name}
-                                className="px-6 py-2.5 bg-green-600 rounded-xl text-sm font-bold text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg transition-all"
-                            >
-                                Add Animal
-                            </button>
-                        </div>
+                    </div>
+                    <div className="px-8 py-6 bg-gray-50 flex justify-end gap-3 border-t border-gray-100 mt-auto">
+                        <button 
+                            onClick={() => setShowAddModal(false)}
+                            className="px-6 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-700 hover:bg-white transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            onClick={handleCreateAnimal}
+                            disabled={!newAnimal.name}
+                            className="px-6 py-2.5 bg-green-600 rounded-xl text-sm font-bold text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg transition-all"
+                        >
+                            Add Animal
+                        </button>
                     </div>
                 </div>
-            )}
-      
-      {showUpgradeModal && <PaymentModal onClose={() => setShowUpgradeModal(false)} />}
+            </div>
+        )}
     </div>
   );
 };

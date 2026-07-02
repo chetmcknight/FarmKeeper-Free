@@ -1,22 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Crop, FieldRecord } from '../types';
 import { backend } from '../services/mockBackend';
-import { useAuth } from '../context/AuthContext';
-import { PaymentModal } from './PaymentModal';
 
 export const CropManager: React.FC = () => {
-  const { user } = useAuth();
   const [crops, setCrops] = useState<Crop[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCrop, setSelectedCrop] = useState<Crop | null>(null);
 
-  // Edit State
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<Crop | null>(null);
 
-  // Add State
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [newCrop, setNewCrop] = useState<Partial<Crop>>({
       name: '',
       variety: '',
@@ -32,8 +26,6 @@ export const CropManager: React.FC = () => {
   const coverInputRef = useRef<HTMLInputElement>(null);
   const editFileInputRef = useRef<HTMLInputElement>(null);
   const editCoverInputRef = useRef<HTMLInputElement>(null);
-
-  const FREE_CROP_LIMIT = 4;
 
   useEffect(() => {
     loadCrops();
@@ -75,7 +67,6 @@ export const CropManager: React.FC = () => {
     return diffDays;
   };
 
-  // Compress image helper
   const compressImage = (file: File, maxWidth: number = 600): Promise<string> => {
     return new Promise((resolve) => {
         const reader = new FileReader();
@@ -212,7 +203,6 @@ export const CropManager: React.FC = () => {
      return <div className="min-h-[50vh] flex justify-center items-center"><div className="animate-spin h-10 w-10 border-4 border-green-500 rounded-full border-t-transparent"></div></div>;
   }
 
-  // --- Detail View ---
   if (selectedCrop) {
     const sortedHistory = [...selectedCrop.history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
@@ -229,10 +219,8 @@ export const CropManager: React.FC = () => {
             </button>
 
             <div className="flex flex-col lg:flex-row gap-8">
-                {/* Profile Card */}
                 <div className="lg:w-1/3">
                     <div className="bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden relative">
-                         {/* Edit Toggle Button */}
                          <button 
                           onClick={() => {
                               if (isEditing) {
@@ -253,7 +241,6 @@ export const CropManager: React.FC = () => {
                            )}
                         </button>
 
-                        {/* Cover Image */}
                         <div className="h-32 bg-gray-100 relative">
                              {(isEditing && editForm?.coverUrl) || (!isEditing && selectedCrop.coverUrl) ? (
                                 <img 
@@ -296,7 +283,6 @@ export const CropManager: React.FC = () => {
                                 )}
                             </div>
 
-                            {/* Hidden Inputs for Edit */}
                             <input type="file" ref={editFileInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'imageUrl', true)} />
                             <input type="file" ref={editCoverInputRef} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'coverUrl', true)} />
                             
@@ -410,15 +396,10 @@ export const CropManager: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Timeline / Operations History */}
                 <div className="lg:w-2/3">
                     <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 p-8 min-h-[500px]">
                         <div className="flex justify-between items-center mb-8">
                             <h3 className="text-xl font-bold text-gray-900">Field Operations</h3>
-                            {/* History Add Button */}
-                            <button className="text-sm bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-medium shadow-sm transition-all hover:scale-105 active:scale-95 opacity-50 cursor-not-allowed">
-                                + Add Event (Pro)
-                            </button>
                         </div>
 
                         <div className="relative border-l-2 border-gray-100 ml-3.5 space-y-10">
@@ -470,7 +451,6 @@ export const CropManager: React.FC = () => {
     );
   }
 
-  // --- List View ---
   return (
     <div className="p-6 md:p-10 animate-fade-in">
         <div className="flex justify-between items-center mb-10">
@@ -480,21 +460,17 @@ export const CropManager: React.FC = () => {
             </div>
             <button 
                 onClick={() => {
-                    if (user?.plan === 'free' && crops.length >= FREE_CROP_LIMIT) {
-                        setShowUpgradeModal(true);
-                    } else {
-                        setNewCrop({
-                            name: '',
-                            variety: '',
-                            plantedDate: new Date().toISOString().split('T')[0],
-                            harvestDate: '',
-                            status: 'Healthy',
-                            area: '',
-                            imageUrl: '',
-                            coverUrl: ''
-                        });
-                        setShowAddModal(true);
-                    }
+                    setNewCrop({
+                        name: '',
+                        variety: '',
+                        plantedDate: new Date().toISOString().split('T')[0],
+                        harvestDate: '',
+                        status: 'Healthy',
+                        area: '',
+                        imageUrl: '',
+                        coverUrl: ''
+                    });
+                    setShowAddModal(true);
                 }}
                 className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0"
             >
@@ -506,7 +482,6 @@ export const CropManager: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {crops.map((crop) => (
                 <div key={crop.id} onClick={() => handleSelectCrop(crop)} className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:border-green-200 transition-all cursor-pointer relative group duration-300 overflow-hidden">
-                    {/* Delete Button - Uniform Style */}
                     <button 
                         onClick={(e) => handleDeleteCrop(e, crop.id, crop.name)}
                         className="absolute top-2 right-2 p-2.5 bg-white/80 backdrop-blur-sm text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all z-20 shadow-md border border-white/50"
@@ -568,11 +543,9 @@ export const CropManager: React.FC = () => {
             </div>
         )}
 
-        {/* Add Modal */}
         {showAddModal && (
             <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-start justify-center z-50 p-4 pt-24 md:pt-36">
                 <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[85vh] flex flex-col relative">
-                    {/* Glass Morphism Close Button */}
                     <button 
                         onClick={() => setShowAddModal(false)}
                         className="absolute top-4 right-4 p-2 rounded-full bg-white/40 backdrop-blur-md border border-white/50 shadow-sm hover:bg-white/60 text-gray-600 transition-all z-10"
@@ -586,7 +559,6 @@ export const CropManager: React.FC = () => {
                     
                     <div className="p-6 md:p-8 space-y-6 overflow-y-auto">
                         <div className="flex gap-6 justify-center mb-4">
-                             {/* Profile Icon Upload */}
                              <div 
                                 onClick={() => fileInputRef.current?.click()}
                                 className="w-24 h-24 rounded-full bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-green-500 hover:bg-green-50 transition-all overflow-hidden relative group"
@@ -601,7 +573,6 @@ export const CropManager: React.FC = () => {
                                 )}
                             </div>
                             
-                            {/* Cover Image Upload - Newly Added */}
                             <div 
                                 onClick={() => coverInputRef.current?.click()}
                                 className="w-32 h-24 rounded-xl bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-green-500 hover:bg-green-50 transition-all overflow-hidden relative group"
@@ -694,8 +665,6 @@ export const CropManager: React.FC = () => {
                 </div>
             </div>
         )}
-        
-        {showUpgradeModal && <PaymentModal onClose={() => setShowUpgradeModal(false)} />}
     </div>
   );
 };

@@ -1,16 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '../types';
 import { backend } from '../services/mockBackend';
-import { supabase } from '../services/supabaseClient';
 
 interface AuthContextType {
   user: User | null;
   login: (email: string, password?: string) => Promise<void>;
-  signup: (email: string, password?: string, plan?: 'free' | 'pro') => Promise<void>;
+  signup: (email: string, password?: string) => Promise<void>;
   logout: () => Promise<void>;
   deleteAccount: () => Promise<void>;
-  upgradeToPro: () => Promise<void>;
-  downgradeToFree: () => Promise<void>;
   updateProfile: (updates: { name?: string; imageUrl?: string }) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
   isLoading: boolean;
@@ -23,14 +20,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session on load
     const initAuth = async () => {
       try {
-        // Ensure any accidental demo data is removed before initializing auth
-        try {
-          if ((backend as any).removeDemoAccounts) await (backend as any).removeDemoAccounts();
-        } catch (cleanErr) { console.warn('Demo cleanup failed', cleanErr); }
-
         const currentUser = await backend.getCurrentUser();
         setUser(currentUser);
       } catch (error) {
@@ -40,21 +31,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     };
     initAuth();
-
-    // Set up Supabase Auth Listener if using Supabase
-    if (supabase) {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
-           const currentUser = await backend.getCurrentUser();
-           setUser(currentUser);
-           setIsLoading(false);
-        } else if (event === 'SIGNED_OUT') {
-           setUser(null);
-           setIsLoading(false);
-        }
-      });
-      return () => subscription.unsubscribe();
-    }
   }, []);
 
   const login = async (email: string, password?: string) => {
@@ -70,10 +46,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signup = async (email: string, password?: string, plan: 'free' | 'pro' = 'free') => {
+  const signup = async (email: string, password?: string) => {
     setIsLoading(true);
     try {
-      const newUser = await backend.signup(email, password, plan);
+      const newUser = await backend.signup(email, password);
       setUser(newUser);
     } catch (error) {
        console.error(error);
@@ -93,18 +69,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
   };
 
-  const upgradeToPro = async () => {
-    if (!user) return;
-    const updatedUser = await backend.upgradePlan(user.id);
-    setUser(updatedUser);
-  };
-
-  const downgradeToFree = async () => {
-    if (!user) return;
-    const updatedUser = await backend.downgradePlan(user.id);
-    setUser(updatedUser);
-  };
-
   const updateProfile = async (updates: { name?: string; imageUrl?: string }) => {
     if (!user) return;
     const updatedUser = await backend.updateUser(user.id, updates);
@@ -117,7 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, deleteAccount, upgradeToPro, downgradeToFree, updateProfile, updatePassword, isLoading }}>
+    <AuthContext.Provider value={{ user, login, signup, logout, deleteAccount, updateProfile, updatePassword, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

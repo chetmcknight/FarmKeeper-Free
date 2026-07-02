@@ -176,7 +176,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ isHidden = false }) => {
               🧑‍🌾
             </div>
             <div>
-              <h3 className="text-white font-bold text-base">FarmKeeper Pro</h3>
+              <h3 className="text-white font-bold text-base">FarmKeeper Free</h3>
               <div className="flex items-center gap-1.5">
                  <span className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></span>
                  <span className="text-green-50 text-xs font-medium">Advisor Online</span>

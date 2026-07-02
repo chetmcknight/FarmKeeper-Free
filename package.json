@@ -1,5 +1,5 @@
 {
-  "name": "farmkeeper-pro",
+  "name": "farmkeeper-free",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -11,7 +11,6 @@
   "dependencies": {
     "@google/genai": "^1.43.0",
     "@google/generative-ai": "^0.24.1",
-    "@supabase/supabase-js": "^2.43.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
