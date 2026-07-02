@@ -42,6 +42,17 @@ const AuthenticatedLayout: React.FC = () => {
     }
   }, []);
 
+  // Auto-configure Google Sheets from env vars (VITE_GS_*) on every mount
+  useEffect(() => {
+    const env = typeof import.meta !== 'undefined' ? (import.meta as any).env : {};
+    const sheetId = env.VITE_GS_SHEET_ID;
+    const apiKey = env.VITE_GS_API_KEY;
+    const scriptUrl = env.VITE_GS_SCRIPT_URL;
+    if (sheetId) localStorage.setItem('gs_sheet_id', sheetId);
+    if (apiKey) localStorage.setItem('gs_api_key', apiKey);
+    if (scriptUrl) localStorage.setItem('gs_script_url', scriptUrl);
+  }, []);
+
   const toggleDarkMode = () => {
     if (isDarkMode) {
       document.documentElement.classList.remove('dark');
