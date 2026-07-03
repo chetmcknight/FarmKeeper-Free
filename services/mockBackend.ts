@@ -10,6 +10,12 @@ const KEYS = {
   FARMHANDS: 'farmhand_workers',
 };
 
+function currentUserId(): string {
+  const stored = localStorage.getItem(KEYS.USER);
+  if (!stored) return '';
+  try { return JSON.parse(stored).id || ''; } catch { return ''; }
+}
+
 const localBackend = {
   async login(email: string, password?: string): Promise<User> {
     const usersDbJson = localStorage.getItem(KEYS.USERS_DB);
@@ -96,101 +102,117 @@ const localBackend = {
   
   // Crops
   async getCrops(): Promise<Crop[]> {
+    const uid = currentUserId();
     const stored = localStorage.getItem(KEYS.CROPS);
-    return stored ? JSON.parse(stored) : [];
+    const all: Crop[] = stored ? JSON.parse(stored) : [];
+    return all.filter(c => !c.userId || c.userId === uid);
   },
-  async addCrop(crop: Omit<Crop, 'id'>): Promise<Crop> {
-    const crops = await this.getCrops();
-    const newCrop: Crop = { ...crop, id: Date.now().toString() };
-    const updated = [...crops, newCrop];
-    localStorage.setItem(KEYS.CROPS, JSON.stringify(updated));
+  async addCrop(crop: Omit<Crop, 'id' | 'userId'>): Promise<Crop> {
+    const uid = currentUserId();
+    const stored = localStorage.getItem(KEYS.CROPS);
+    const all: Crop[] = stored ? JSON.parse(stored) : [];
+    const newCrop: Crop = { ...crop, id: Date.now().toString(), userId: uid };
+    localStorage.setItem(KEYS.CROPS, JSON.stringify([...all, newCrop]));
     return newCrop;
   },
   async updateCrop(updatedCrop: Crop): Promise<Crop> {
-    const crops = await this.getCrops();
-    const index = crops.findIndex(c => c.id === updatedCrop.id);
+    const stored = localStorage.getItem(KEYS.CROPS);
+    const all: Crop[] = stored ? JSON.parse(stored) : [];
+    const index = all.findIndex(c => c.id === updatedCrop.id);
     if (index !== -1) {
-      crops[index] = updatedCrop;
-      localStorage.setItem(KEYS.CROPS, JSON.stringify(crops));
+      all[index] = updatedCrop;
+      localStorage.setItem(KEYS.CROPS, JSON.stringify(all));
       return updatedCrop;
     }
     throw new Error("Crop not found");
   },
   async deleteCrop(id: string): Promise<void> {
-    const crops = await this.getCrops();
-    const updated = crops.filter(c => c.id !== id);
-    localStorage.setItem(KEYS.CROPS, JSON.stringify(updated));
+    const stored = localStorage.getItem(KEYS.CROPS);
+    const all: Crop[] = stored ? JSON.parse(stored) : [];
+    localStorage.setItem(KEYS.CROPS, JSON.stringify(all.filter(c => c.id !== id)));
   },
   // Animals
   async getAnimals(): Promise<Animal[]> {
+    const uid = currentUserId();
     const stored = localStorage.getItem(KEYS.ANIMALS);
-    return stored ? JSON.parse(stored) : [];
+    const all: Animal[] = stored ? JSON.parse(stored) : [];
+    return all.filter(a => !a.userId || a.userId === uid);
   },
-  async addAnimal(animal: Omit<Animal, 'id'>): Promise<Animal> {
-    const animals = await this.getAnimals();
-    const newAnimal: Animal = { ...animal, id: Date.now().toString() };
-    const updated = [...animals, newAnimal];
-    localStorage.setItem(KEYS.ANIMALS, JSON.stringify(updated));
+  async addAnimal(animal: Omit<Animal, 'id' | 'userId'>): Promise<Animal> {
+    const uid = currentUserId();
+    const stored = localStorage.getItem(KEYS.ANIMALS);
+    const all: Animal[] = stored ? JSON.parse(stored) : [];
+    const newAnimal: Animal = { ...animal, id: Date.now().toString(), userId: uid };
+    localStorage.setItem(KEYS.ANIMALS, JSON.stringify([...all, newAnimal]));
     return newAnimal;
   },
   async updateAnimal(updatedAnimal: Animal): Promise<Animal> {
-    const animals = await this.getAnimals();
-    const index = animals.findIndex(a => a.id === updatedAnimal.id);
+    const stored = localStorage.getItem(KEYS.ANIMALS);
+    const all: Animal[] = stored ? JSON.parse(stored) : [];
+    const index = all.findIndex(a => a.id === updatedAnimal.id);
     if (index !== -1) {
-      animals[index] = updatedAnimal;
-      localStorage.setItem(KEYS.ANIMALS, JSON.stringify(animals));
+      all[index] = updatedAnimal;
+      localStorage.setItem(KEYS.ANIMALS, JSON.stringify(all));
       return updatedAnimal;
     }
     throw new Error("Animal not found");
   },
   async deleteAnimal(id: string): Promise<void> {
-    const animals = await this.getAnimals();
-    const updated = animals.filter(a => a.id !== id);
-    localStorage.setItem(KEYS.ANIMALS, JSON.stringify(updated));
+    const stored = localStorage.getItem(KEYS.ANIMALS);
+    const all: Animal[] = stored ? JSON.parse(stored) : [];
+    localStorage.setItem(KEYS.ANIMALS, JSON.stringify(all.filter(a => a.id !== id)));
   },
   // Farmhands
   async getFarmhands(): Promise<Farmhand[]> {
+    const uid = currentUserId();
     const stored = localStorage.getItem(KEYS.FARMHANDS);
-    return stored ? JSON.parse(stored) : [];
+    const all: Farmhand[] = stored ? JSON.parse(stored) : [];
+    return all.filter(f => !f.userId || f.userId === uid);
   },
-  async addFarmhand(farmhand: Omit<Farmhand, 'id'>): Promise<Farmhand> {
-    const hands = await this.getFarmhands();
-    const newHand: Farmhand = { ...farmhand, id: Date.now().toString() };
-    const updated = [...hands, newHand];
-    localStorage.setItem(KEYS.FARMHANDS, JSON.stringify(updated));
+  async addFarmhand(farmhand: Omit<Farmhand, 'id' | 'userId'>): Promise<Farmhand> {
+    const uid = currentUserId();
+    const stored = localStorage.getItem(KEYS.FARMHANDS);
+    const all: Farmhand[] = stored ? JSON.parse(stored) : [];
+    const newHand: Farmhand = { ...farmhand, id: Date.now().toString(), userId: uid };
+    localStorage.setItem(KEYS.FARMHANDS, JSON.stringify([...all, newHand]));
     return newHand;
   },
   async updateFarmhand(updatedHand: Farmhand): Promise<Farmhand> {
-    const hands = await this.getFarmhands();
-    const index = hands.findIndex(h => h.id === updatedHand.id);
+    const stored = localStorage.getItem(KEYS.FARMHANDS);
+    const all: Farmhand[] = stored ? JSON.parse(stored) : [];
+    const index = all.findIndex(h => h.id === updatedHand.id);
     if (index !== -1) {
-      hands[index] = updatedHand;
-      localStorage.setItem(KEYS.FARMHANDS, JSON.stringify(hands));
+      all[index] = updatedHand;
+      localStorage.setItem(KEYS.FARMHANDS, JSON.stringify(all));
       return updatedHand;
     }
     throw new Error("Farmhand not found");
   },
   async deleteFarmhand(id: string): Promise<void> {
-    const hands = await this.getFarmhands();
-    const updated = hands.filter(h => h.id !== id);
-    localStorage.setItem(KEYS.FARMHANDS, JSON.stringify(updated));
+    const stored = localStorage.getItem(KEYS.FARMHANDS);
+    const all: Farmhand[] = stored ? JSON.parse(stored) : [];
+    localStorage.setItem(KEYS.FARMHANDS, JSON.stringify(all.filter(h => h.id !== id)));
   },
   // Scout
   async getScoutHistory(): Promise<ScoutRecord[]> {
+    const uid = currentUserId();
     const stored = localStorage.getItem(KEYS.SCOUT_HISTORY);
-    return stored ? JSON.parse(stored) : [];
+    const all: ScoutRecord[] = stored ? JSON.parse(stored) : [];
+    return all.filter(s => !s.userId || s.userId === uid);
   },
-  async addScoutRecord(record: Omit<ScoutRecord, 'id'>): Promise<ScoutRecord> {
-    const history = await this.getScoutHistory();
-    const newRecord = { ...record, id: Date.now().toString() };
-    const updated = [newRecord, ...history].slice(0, 5); 
+  async addScoutRecord(record: Omit<ScoutRecord, 'id' | 'userId'>): Promise<ScoutRecord> {
+    const uid = currentUserId();
+    const stored = localStorage.getItem(KEYS.SCOUT_HISTORY);
+    const all: ScoutRecord[] = stored ? JSON.parse(stored) : [];
+    const newRecord = { ...record, id: Date.now().toString(), userId: uid };
+    const updated = [newRecord, ...all].slice(0, 5);
     localStorage.setItem(KEYS.SCOUT_HISTORY, JSON.stringify(updated));
     return newRecord;
   },
   async deleteScoutRecord(id: string): Promise<void> {
-    const history = await this.getScoutHistory();
-    const updated = history.filter(r => r.id !== id);
-    localStorage.setItem(KEYS.SCOUT_HISTORY, JSON.stringify(updated));
+    const stored = localStorage.getItem(KEYS.SCOUT_HISTORY);
+    const all: ScoutRecord[] = stored ? JSON.parse(stored) : [];
+    localStorage.setItem(KEYS.SCOUT_HISTORY, JSON.stringify(all.filter(r => r.id !== id)));
   }
 };
 

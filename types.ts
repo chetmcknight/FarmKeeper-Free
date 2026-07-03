@@ -29,6 +29,7 @@ export interface FieldRecord {
 
 export interface Crop {
   id: string;
+  userId: string;
   name: string;
   variety: string;
   plantedDate: string;
@@ -55,6 +56,7 @@ export interface MedicalRecord {
 
 export interface Animal {
   id: string;
+  userId: string;
   name: string;
   type: string;
   breed: string;
@@ -70,6 +72,7 @@ export interface Animal {
 
 export interface Farmhand {
   id: string;
+  userId: string;
   name: string;
   role: string;
   phone: string;
@@ -110,6 +113,7 @@ export interface DiagnosisResult {
 
 export interface ScoutRecord {
   id: string;
+  userId: string;
   date: number;
   imageBase64: string;
   result: DiagnosisResult;

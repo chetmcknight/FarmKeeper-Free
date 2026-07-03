@@ -279,16 +279,25 @@ export const getWeatherInsight = async (location: string) => {
   try {
     const ai = await getAI();
 
+    // Note: responseMimeType: "application/json" cannot be used together with
+    // tools (googleSearch). We request JSON in the prompt and parse it manually.
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
       contents: `Get the current weather and a brief 3-day farming forecast for ${location}.
-      Format output as JSON: { "current": "Temp/Condition", "forecast": "Short summary" }`,
+      You MUST respond ONLY with a JSON object in this exact format, no other text:
+      { "current": "Temperature and condition, e.g. 72°F Partly Cloudy", "forecast": "Brief 3-day farming-relevant forecast summary" }`,
       config: {
         tools: [{ googleSearch: {} }],
-        responseMimeType: "application/json",
       },
     });
-    const data = JSON.parse(response.text || "{}");
+
+    let text = response.text || "";
+    // Strip markdown code fences if present
+    if (text.includes('```')) {
+      text = text.replace(/```(?:json)?\s*/g, '').replace(/```/g, '').trim();
+    }
+
+    const data = JSON.parse(text || "{}");
     setCachedData(cacheKey, data);
     return data;
   } catch (error) {
@@ -310,17 +319,25 @@ export const getMarketPrices = async (commodities: string[], storeName: string =
     
     const ai = await getAI();
 
+    // Note: responseMimeType: "application/json" cannot be used together with
+    // tools (googleSearch). We request JSON in the prompt and parse it manually.
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
       contents: `Current price of ${commoditiesList} at ${storeName} in Sequim/Port Angeles WA area.
-      Return JSON array only: [ { "name": "Item", "price": "$X.XX" } ]`,
+      You MUST respond ONLY with a JSON array in this exact format, no other text:
+      [ { "name": "Item", "price": "$X.XX" } ]`,
       config: {
         tools: [{ googleSearch: {} }],
-        responseMimeType: "application/json",
       },
     });
     
-    const data = JSON.parse(response.text || "[]");
+    let text = response.text || "";
+    // Strip markdown code fences if present
+    if (text.includes('```')) {
+      text = text.replace(/```(?:json)?\s*/g, '').replace(/```/g, '').trim();
+    }
+
+    const data = JSON.parse(text || "[]");
     
     let url = "https://www.tractorsupply.com/tsc/store_Portangeles-WA-98362_2636";
     let displaySource = "Tractor Supply";
