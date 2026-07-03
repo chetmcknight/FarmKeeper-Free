@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { compressImage } from '../utils/imageUtils';
 
 interface SettingsProps {
   toggleDarkMode: () => void;
@@ -31,39 +32,12 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
     if (user?.imageUrl) setImageUrl(user.imageUrl);
   }, [user]);
 
-  const compressImage = (file: File, maxWidth: number = 400): Promise<string> => {
-    return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (event) => {
-            const img = new Image();
-            img.src = event.target?.result as string;
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                let width = img.width;
-                let height = img.height;
-
-                if (width > maxWidth) {
-                    height *= maxWidth / width;
-                    width = maxWidth;
-                }
-
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx?.drawImage(img, 0, 0, width, height);
-                resolve(canvas.toDataURL('image/jpeg', 0.8));
-            };
-        };
-    });
-  };
-
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (file) {
           try {
               setSavingProfile(true);
-              const resized = await compressImage(file);
+              const resized = await compressImage(file, 400, 0.8);
               setImageUrl(resized);
               await updateProfile({ imageUrl: resized });
               setShowProfileSuccess(true);

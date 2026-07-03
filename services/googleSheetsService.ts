@@ -157,8 +157,12 @@ export const sheetsBackend = {
   },
 
   async updateUser(id: string, updates: Partial<User>): Promise<User> {
-    await scriptPost({ action: 'update', entity: 'user', id, ...updates });
-    return { id, ...updates } as User;
+    const stored = localStorage.getItem('farmhand_user');
+    const current = stored ? JSON.parse(stored) : {};
+    const merged = { ...current, ...updates };
+    await scriptPost({ action: 'update', entity: 'user', id, ...merged });
+    localStorage.setItem('farmhand_user', JSON.stringify(merged));
+    return merged as User;
   },
 
   async updatePassword(_password: string): Promise<void> {

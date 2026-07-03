@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Animal, MedicalRecord } from '../types';
 import { backend } from '../services/mockBackend';
+import { compressImage } from '../utils/imageUtils';
 
 export const AnimalManager: React.FC = () => {
   const [animals, setAnimals] = useState<Animal[]>([]);
@@ -73,33 +74,6 @@ export const AnimalManager: React.FC = () => {
       }
   };
 
-  const compressImage = (file: File, maxWidth: number = 800): Promise<string> => {
-    return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (event) => {
-            const img = new Image();
-            img.src = event.target?.result as string;
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                let width = img.width;
-                let height = img.height;
-
-                if (width > maxWidth) {
-                    height *= maxWidth / width;
-                    width = maxWidth;
-                }
-
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx?.drawImage(img, 0, 0, width, height);
-                resolve(canvas.toDataURL('image/jpeg', 0.7));
-            };
-        };
-    });
-  };
-
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'imageUrl' | 'coverUrl', isAddMode: boolean = false) => {
       const file = e.target.files?.[0];
       if (file) {
@@ -126,6 +100,7 @@ export const AnimalManager: React.FC = () => {
         loadAnimals();
     } catch (e: any) {
         console.error("Update failed", e);
+        alert("Failed to update animal. Try again.");
     }
   };
 
@@ -520,7 +495,7 @@ export const AnimalManager: React.FC = () => {
                                             className="w-full text-sm text-gray-900 bg-white border border-gray-300 rounded px-2 py-1" 
                                         />
                                     ) : (
-                                        <p className="text-gray-700 font-medium">{new Date(selectedAnimal.birthDate).toLocaleDateString()}</p>
+                                        <p className="text-gray-700 font-medium">{selectedAnimal.birthDate ? new Date(selectedAnimal.birthDate).toLocaleDateString() : '--'}</p>
                                     )}
                                 </div>
                                 <div>

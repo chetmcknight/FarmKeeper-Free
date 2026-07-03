@@ -74,7 +74,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
         setLoadingTip(true);
 
         // Fetch Weather
-        getWeatherInsight("Sequim, WA 98382").then(data => {
+        getWeatherInsight(location).then(data => {
             if(mounted) {
                 setWeatherData(data);
                 setLoadingWeather(false);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Farmhand } from '../types';
 import { backend } from '../services/mockBackend';
-
+import { compressImage } from '../utils/imageUtils';
 
 export const FarmhandManager: React.FC = () => {
   const [hands, setHands] = useState<Farmhand[]>([]);
@@ -89,34 +89,6 @@ export const FarmhandManager: React.FC = () => {
       } catch (e) {
           alert("Failed to update farmhand");
       }
-  };
-
-  // Compress image helper (reused logic)
-  const compressImage = (file: File, maxWidth: number = 600): Promise<string> => {
-    return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (event) => {
-            const img = new Image();
-            img.src = event.target?.result as string;
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                let width = img.width;
-                let height = img.height;
-
-                if (width > maxWidth) {
-                    height *= maxWidth / width;
-                    width = maxWidth;
-                }
-
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx?.drawImage(img, 0, 0, width, height);
-                resolve(canvas.toDataURL('image/jpeg', 0.7));
-            };
-        };
-    });
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'imageUrl' | 'coverUrl', isEdit: boolean = false) => {
