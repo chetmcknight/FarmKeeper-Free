@@ -37,9 +37,9 @@ async function readRange(range: string): Promise<string[][]> {
 
 async function scriptPost(body: Record<string, any>): Promise<any> {
   const { scriptUrl } = getConfig();
-  if (!scriptUrl) throw new Error('Apps Script URL not configured in Settings');
+  if (!scriptUrl) throw new Error('Google Sheets sync not configured. Set VITE_GS_SCRIPT_URL.');
 
-  // Use GET with query params to avoid CORS preflight and 302-method-change issues
+  // Use GET with query params to avoid CORS issues with Apps Script
   const params = new URLSearchParams();
   for (const [key, val] of Object.entries(body)) {
     params.set(key, typeof val === 'object' ? JSON.stringify(val) : String(val));
@@ -47,8 +47,13 @@ async function scriptPost(body: Record<string, any>): Promise<any> {
   const url = scriptUrl + '?' + params.toString();
 
   const res = await fetch(url);
+  const ct = res.headers.get('content-type') || '';
+  if (!ct.includes('json')) {
+    const text = await res.text();
+    throw new Error('Sync server returned an error. Check that your Apps Script is deployed and set to "Anyone" access.');
+  }
   const data = await res.json();
-  if (!data.success) throw new Error(data.error || 'Apps Script error');
+  if (!data.success) throw new Error(data.error || 'Google Sheets sync error');
   return data;
 }
 
@@ -137,21 +142,39 @@ function toSheetRow(obj: Record<string, any>, columns: string[]): string[] {
   });
 }
 
+function userFromRow(row: string[]): User | null {
+  const id = row[0] || '';
+  if (!id) return null;
+  return {
+    id,
+    email: row[1] || '',
+    name: row[2] || '',
+    imageUrl: row[3] || undefined,
+  };
+}
+
 export const sheetsBackend = {
   async login(email: string, _password?: string): Promise<User> {
-    const data = await scriptPost({ action: 'findUser', entity: 'user', email });
-    localStorage.setItem('farmhand_user', JSON.stringify(data.user));
-    return data.user;
+    const rows = await readRange(USERS_RANGE);
+    const users = rows.slice(1).map(userFromRow).filter((u): u is User => u !== null);
+    const found = users.find(u => u.email === email);
+    if (!found) throw new Error('No account found with that email. Please sign up first.');
+    localStorage.setItem('farmhand_user', JSON.stringify(found));
+    return found;
   },
 
   async signup(email: string, _password?: string): Promise<User> {
+    const rows = await readRange(USERS_RANGE);
+    const users = rows.slice(1).map(userFromRow).filter((u): u is User => u !== null);
+    if (users.some(u => u.email === email)) throw new Error('Account already exists. Please log in.');
+
     const newUser: User = {
       id: 'u_' + Math.random().toString(36).substr(2, 9),
       email,
       name: email.split('@')[0],
     };
     const payload = Object.fromEntries(USERS_COLS.map(col => [col, (newUser as Record<string, any>)[col] || '']));
-    await scriptPost({ action: 'register', entity: 'user', ...payload });
+    await scriptPost({ action: 'append', entity: 'user', ...payload });
     localStorage.setItem('farmhand_user', JSON.stringify(newUser));
     return newUser;
   },
