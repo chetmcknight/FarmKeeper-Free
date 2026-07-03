@@ -8,7 +8,7 @@ interface SettingsProps {
 
 export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }) => {
   const { user, deleteAccount, updateProfile, updatePassword } = useAuth();
-  const [activeTab, setActiveTab] = useState<'general' | 'data' | 'storage'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'account'>('general');
 
   const [name, setName] = useState(user?.name || '');
   const [imageUrl, setImageUrl] = useState(user?.imageUrl || '');
@@ -25,12 +25,6 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteInput, setDeleteInput] = useState('');
-
-  // Google Sheets config
-  const [gsSheetId, setGsSheetId] = useState(() => localStorage.getItem('gs_sheet_id') || '');
-  const [gsApiKey, setGsApiKey] = useState(() => localStorage.getItem('gs_api_key') || '');
-  const [gsScriptUrl, setGsScriptUrl] = useState(() => localStorage.getItem('gs_script_url') || '');
-  const [showGsSaved, setShowGsSaved] = useState(false);
 
   useEffect(() => {
     if (user?.name) setName(user.name);
@@ -124,15 +118,6 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
       }
   };
 
-  const handleSaveSheetsConfig = () => {
-    if (gsSheetId) localStorage.setItem('gs_sheet_id', gsSheetId);
-    if (gsApiKey) localStorage.setItem('gs_api_key', gsApiKey);
-    if (gsScriptUrl) localStorage.setItem('gs_script_url', gsScriptUrl);
-    setShowGsSaved(true);
-    setTimeout(() => setShowGsSaved(false), 3000);
-    alert('Google Sheets config saved! Reload the page to switch to Google Sheets storage.');
-  };
-
   const handleDeleteAccount = async () => {
     if (deleteInput === 'DELETE') {
       await deleteAccount();
@@ -155,14 +140,8 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
             General & Appearance
           </button>
           <button 
-            onClick={() => setActiveTab('data')}
-            className={`px-4 py-3 rounded-xl text-left font-semibold transition-all whitespace-nowrap ${activeTab === 'data' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'}`}
-          >
-            Data & Storage
-          </button>
-          <button 
-            onClick={() => setActiveTab('storage')}
-            className={`px-4 py-3 rounded-xl text-left font-semibold transition-all whitespace-nowrap ${activeTab === 'storage' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'}`}
+            onClick={() => setActiveTab('account')}
+            className={`px-4 py-3 rounded-xl text-left font-semibold transition-all whitespace-nowrap ${activeTab === 'account' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'}`}
           >
             Account
           </button>
@@ -294,73 +273,7 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
             </div>
           )}
           
-          {activeTab === 'data' && (
-             <div className="space-y-6">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Google Sheets Sync</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                    Configure to use Google Sheets as your database. Create a sheet with tabs: <strong>Users</strong>, <strong>Crops</strong>, <strong>Animals</strong>, <strong>Farmhands</strong>, <strong>ScoutHistory</strong>.
-                  </p>
-                  <div className="space-y-4 max-w-lg">
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Spreadsheet ID</label>
-                      <input 
-                        type="text" 
-                        value={gsSheetId}
-                        onChange={(e) => setGsSheetId(e.target.value)}
-                        placeholder="1aBaMvRAzlAmhbjNHNq6lQsNtKSKHV3KFvVrtmyz8188"
-                        className="block w-full rounded-lg border border-gray-200 bg-gray-50 text-gray-900 shadow-sm px-4 py-2.5 focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">API Key</label>
-                      <input 
-                        type="text" 
-                        value={gsApiKey}
-                        onChange={(e) => setGsApiKey(e.target.value)}
-                        placeholder="Your Google Sheets API key"
-                        className="block w-full rounded-lg border border-gray-200 bg-gray-50 text-gray-900 shadow-sm px-4 py-2.5 focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Apps Script URL</label>
-                      <input 
-                        type="url" 
-                        value={gsScriptUrl}
-                        onChange={(e) => setGsScriptUrl(e.target.value)}
-                        placeholder="https://script.google.com/macros/s/.../exec"
-                        className="block w-full rounded-lg border border-gray-200 bg-gray-50 text-gray-900 shadow-sm px-4 py-2.5 focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all"
-                      />
-                    </div>
-                    <div className="flex gap-3 items-center">
-                      <button 
-                        onClick={handleSaveSheetsConfig}
-                        className="px-6 py-2.5 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition-colors shadow-sm"
-                      >
-                        Save & Reload with Sheets
-                      </button>
-                      <button 
-                        onClick={() => {
-                          localStorage.removeItem('gs_sheet_id');
-                          localStorage.removeItem('gs_api_key');
-                          localStorage.removeItem('gs_script_url');
-                          setGsSheetId('');
-                          setGsApiKey('');
-                          setGsScriptUrl('');
-                          alert('Google Sheets config cleared! Reload to use local storage.');
-                        }}
-                        className="px-4 py-2.5 border border-red-200 text-red-600 rounded-lg font-bold hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20 transition-colors"
-                      >
-                        Clear Config
-                      </button>
-                    </div>
-                    {showGsSaved && <p className="text-sm text-green-600 font-medium">Saved!</p>}
-                  </div>
-                </div>
-             </div>
-          )}
-
-          {activeTab === 'storage' && (
+          {activeTab === 'account' && (
             <div className="space-y-6">
                 <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-red-100 dark:border-red-900/30">
                     <h3 className="text-xl font-bold text-red-600 mb-6 flex items-center gap-2">

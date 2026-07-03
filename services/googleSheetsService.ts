@@ -3,10 +3,25 @@ import { User, Crop, Animal, ScoutRecord, Farmhand } from '../types';
 const SHEETS_API = 'https://sheets.googleapis.com/v4/spreadsheets';
 
 function getConfig() {
-  const sheetId = localStorage.getItem('gs_sheet_id') || '';
-  const apiKey = localStorage.getItem('gs_api_key') || '';
-  const scriptUrl = localStorage.getItem('gs_script_url') || '';
-  return { sheetId, apiKey, scriptUrl };
+  let sheetId = localStorage.getItem('gs_sheet_id');
+  let apiKey = localStorage.getItem('gs_api_key');
+  let scriptUrl = localStorage.getItem('gs_script_url');
+
+  if (!sheetId || !apiKey || !scriptUrl) {
+    try {
+      const env = typeof import.meta !== 'undefined' ? (import.meta as any).env : {};
+      sheetId = sheetId || env.VITE_GS_SHEET_ID || '';
+      apiKey = apiKey || env.VITE_GS_API_KEY || '';
+      scriptUrl = scriptUrl || env.VITE_GS_SCRIPT_URL || '';
+      if (sheetId && apiKey && scriptUrl) {
+        localStorage.setItem('gs_sheet_id', sheetId);
+        localStorage.setItem('gs_api_key', apiKey);
+        localStorage.setItem('gs_script_url', scriptUrl);
+      }
+    } catch {}
+  }
+
+  return { sheetId: sheetId || '', apiKey: apiKey || '', scriptUrl: scriptUrl || '' };
 }
 
 async function readRange(range: string): Promise<string[][]> {
@@ -125,6 +140,7 @@ function toSheetRow(obj: Record<string, any>, columns: string[]): string[] {
 export const sheetsBackend = {
   async login(email: string, _password?: string): Promise<User> {
     const data = await scriptPost({ action: 'findUser', entity: 'user', email });
+    localStorage.setItem('farmhand_user', JSON.stringify(data.user));
     return data.user;
   },
 
@@ -136,6 +152,7 @@ export const sheetsBackend = {
     };
     const payload = Object.fromEntries(USERS_COLS.map(col => [col, (newUser as Record<string, any>)[col] || '']));
     await scriptPost({ action: 'register', entity: 'user', ...payload });
+    localStorage.setItem('farmhand_user', JSON.stringify(newUser));
     return newUser;
   },
 
@@ -148,12 +165,17 @@ export const sheetsBackend = {
     return new Promise(resolve => setTimeout(resolve, 500));
   },
 
-  async logout() {},
+  async logout() {
+    localStorage.removeItem('farmhand_user');
+  },
 
-  async deleteAccount() {},
+  async deleteAccount() {
+    localStorage.removeItem('farmhand_user');
+  },
 
   async getCurrentUser(): Promise<User | null> {
-    return null;
+    const stored = localStorage.getItem('farmhand_user');
+    return stored ? JSON.parse(stored) : null;
   },
 
   // Crops

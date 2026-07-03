@@ -272,6 +272,11 @@ export const AnimalManager: React.FC = () => {
           loadAnimals();
       } catch (e: any) {
           console.error(e);
+          if (e.name === 'QuotaExceededError' || e.message?.includes('QuotaExceededError')) {
+              alert("Storage full! Please delete old records or remove large images.");
+          } else {
+              alert("Failed to save animal. Try again.");
+          }
       }
   };
 
@@ -343,7 +348,7 @@ export const AnimalManager: React.FC = () => {
             <div className="flex flex-col lg:flex-row gap-6">
                 <div className="lg:w-1/3">
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden relative">
-                        <div className="h-32 bg-green-50 relative">
+                        <div className="h-32 bg-green-50 relative overflow-hidden">
                              {(isEditing && editForm?.coverUrl) || (!isEditing && selectedAnimal.coverUrl) ? (
                                 <img 
                                     src={isEditing ? editForm?.coverUrl : selectedAnimal.coverUrl} 
@@ -354,12 +359,15 @@ export const AnimalManager: React.FC = () => {
                                 <div className="w-full h-full bg-gradient-to-br from-green-50 to-green-100"></div>
                              )}
                              {isEditing && (
-                                <button 
+                                <div 
                                     onClick={() => fileInputRefCover.current?.click()}
-                                    className="absolute top-2 left-2 bg-white/80 p-1.5 rounded-full text-gray-600 hover:text-green-600 text-xs font-bold shadow-sm"
+                                    className="absolute inset-0 bg-black/40 flex items-center justify-center text-white opacity-0 hover:opacity-100 cursor-pointer transition-opacity group"
                                 >
-                                    Change Poster
-                                </button>
+                                    <div className="flex flex-col items-center gap-1">
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /></svg>
+                                        <span className="text-xs font-bold">Change Poster</span>
+                                    </div>
+                                </div>
                              )}
                         </div>
 
@@ -383,8 +391,8 @@ export const AnimalManager: React.FC = () => {
                            )}
                         </button>
                         
-                        <input type="file" ref={fileInputRefProfile} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'imageUrl')} />
-                        <input type="file" ref={fileInputRefCover} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'coverUrl')} />
+                        <input type="file" ref={fileInputRefProfile} className="hidden" accept="image/png, image/jpeg, image/jpg" onChange={(e) => handleImageUpload(e, 'imageUrl')} />
+                        <input type="file" ref={fileInputRefCover} className="hidden" accept="image/png, image/jpeg, image/jpg" onChange={(e) => handleImageUpload(e, 'coverUrl')} />
 
                         <div className="px-6 pb-6 -mt-12 relative z-10 flex flex-col items-center">
                             <div className="w-24 h-24 bg-white rounded-full border-4 border-white flex items-center justify-center text-4xl shadow-md mb-3 overflow-hidden relative group">
@@ -449,7 +457,7 @@ export const AnimalManager: React.FC = () => {
                                             className="w-full text-sm text-gray-900 bg-white border border-gray-300 rounded px-2 py-1" 
                                         />
                                     ) : (
-                                        <p className="text-gray-700 font-medium">{selectedAnimal.breed}</p>
+                                        <p onClick={() => setIsEditing(true)} className="text-gray-700 font-medium cursor-pointer hover:text-green-600">{selectedAnimal.breed}</p>
                                     )}
                                 </div>
                                 <div>
@@ -499,7 +507,7 @@ export const AnimalManager: React.FC = () => {
                                             className="w-full text-sm text-gray-900 bg-white border border-gray-300 rounded px-2 py-1" 
                                         />
                                     ) : (
-                                        <p className="text-gray-700 font-medium">{selectedAnimal.weight}</p>
+                                        <p onClick={() => setIsEditing(true)} className="text-gray-700 font-medium cursor-pointer hover:text-green-600">{selectedAnimal.weight}</p>
                                     )}
                                 </div>
                                 <div>
@@ -859,7 +867,7 @@ export const AnimalManager: React.FC = () => {
                     <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                         <h3 className="text-lg font-bold text-gray-800">Add New Animal</h3>
                     </div>
-                    <div className="p-6 md:p-8 space-y-6 overflow-y-auto">
+                    <div className="p-6 md:p-8 space-y-6 overflow-y-auto flex-1 min-h-0">
                          <div className="flex gap-6 items-center justify-center mb-2">
                             <div 
                                 onClick={() => addFileInputRefProfile.current?.click()}
@@ -873,6 +881,9 @@ export const AnimalManager: React.FC = () => {
                                         <svg className="w-6 h-6 text-gray-300 mx-auto group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                     </div>
                                 )}
+                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /></svg>
+                                </div>
                             </div>
                             <div 
                                 onClick={() => addFileInputRefCover.current?.click()}
@@ -886,9 +897,12 @@ export const AnimalManager: React.FC = () => {
                                         <svg className="w-6 h-6 text-gray-300 mx-auto group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                     </div>
                                 )}
+                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity rounded-xl">
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /></svg>
+                                </div>
                             </div>
-                            <input type="file" ref={addFileInputRefProfile} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'imageUrl', true)} />
-                            <input type="file" ref={addFileInputRefCover} className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'coverUrl', true)} />
+                            <input type="file" ref={addFileInputRefProfile} className="hidden" accept="image/png, image/jpeg, image/jpg" onChange={(e) => handleImageUpload(e, 'imageUrl', true)} />
+                            <input type="file" ref={addFileInputRefCover} className="hidden" accept="image/png, image/jpeg, image/jpg" onChange={(e) => handleImageUpload(e, 'coverUrl', true)} />
                          </div>
 
                         <div className="grid grid-cols-2 gap-5">
