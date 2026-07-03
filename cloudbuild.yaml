@@ -1,11 +1,17 @@
 steps:
   # Build the Docker image using the Dockerfile
-  # We pass environment variables as build-args so Vite can use them
+  # Pass environment variables as build-args so Vite can embed them
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
       - '--build-arg'
       - 'VITE_API_KEY=${_API_KEY}'
+      - '--build-arg'
+      - 'VITE_GS_SHEET_ID=${_GS_SHEET_ID}'
+      - '--build-arg'
+      - 'VITE_GS_API_KEY=${_GS_API_KEY}'
+      - '--build-arg'
+      - 'VITE_GS_SCRIPT_URL=${_GS_SCRIPT_URL}'
       - '-t'
       - 'gcr.io/$PROJECT_ID/farmkeeper-free:$COMMIT_SHA'
       - '.'
@@ -28,6 +34,8 @@ steps:
       - '--platform'
       - 'managed'
       - '--allow-unauthenticated'
+      - '--memory'
+      - '256Mi'
 
 images:
   - 'gcr.io/$PROJECT_ID/farmkeeper-free:$COMMIT_SHA'
