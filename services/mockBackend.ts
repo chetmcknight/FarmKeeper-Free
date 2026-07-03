@@ -194,6 +194,6 @@ const localBackend = {
   }
 };
 
-const isSheetsConfigured = !!(typeof window !== 'undefined' && localStorage.getItem('gs_sheet_id') && localStorage.getItem('gs_api_key'));
+const isSheetsConfigured = !!(typeof window !== 'undefined' && localStorage.getItem('gs_sheet_id') && localStorage.getItem('gs_api_key') && localStorage.getItem('gs_script_url'));
 
 export const backend = isSheetsConfigured ? sheetsBackend : localBackend;

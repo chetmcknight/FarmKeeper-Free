@@ -408,12 +408,28 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
                         className="block w-full rounded-lg border border-gray-200 bg-gray-50 text-gray-900 shadow-sm px-4 py-2.5 focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all"
                       />
                     </div>
-                    <button 
-                      onClick={handleSaveSheetsConfig}
-                      className="px-6 py-2.5 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition-colors shadow-sm"
-                    >
-                      Save & Reload with Sheets
-                    </button>
+                    <div className="flex gap-3 items-center">
+                      <button 
+                        onClick={handleSaveSheetsConfig}
+                        className="px-6 py-2.5 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition-colors shadow-sm"
+                      >
+                        Save & Reload with Sheets
+                      </button>
+                      <button 
+                        onClick={() => {
+                          localStorage.removeItem('gs_sheet_id');
+                          localStorage.removeItem('gs_api_key');
+                          localStorage.removeItem('gs_script_url');
+                          setGsSheetId('');
+                          setGsApiKey('');
+                          setGsScriptUrl('');
+                          alert('Google Sheets config cleared! Reload to use local storage.');
+                        }}
+                        className="px-4 py-2.5 border border-red-200 text-red-600 rounded-lg font-bold hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20 transition-colors"
+                      >
+                        Clear Config
+                      </button>
+                    </div>
                     {showGsSaved && <p className="text-sm text-green-600 font-medium">Saved!</p>}
                   </div>
                 </div>
