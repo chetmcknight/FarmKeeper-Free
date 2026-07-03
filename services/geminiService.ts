@@ -47,8 +47,8 @@ const setCachedData = (key: string, data: any) => {
  */
 export const diagnoseHealth = async (base64Image: string): Promise<DiagnosisResult> => {
   try {
-    // gemini-2.0-flash supports multimodal inputs and structured output (JSON mode)
-    const modelId = "gemini-2.0-flash";
+    // gemini-2.5-flash supports multimodal inputs and structured output (JSON mode)
+    const modelId = "gemini-2.5-flash";
     
     const ai = await getAI();
     // Use imported Type directly
@@ -142,7 +142,7 @@ export const getFarmingAdvice = async (
     const ai = await getAI();
 
     const chat = ai.chats.create({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash",
       config: {
         tools: [{ googleSearch: {} }],
         systemInstruction: systemInstruction,
@@ -187,7 +187,7 @@ export const getWeatherInsight = async (location: string) => {
     // Note: responseMimeType: "application/json" cannot be used together with
     // tools (googleSearch). We request JSON in the prompt and parse it manually.
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash",
       contents: `Get the current weather and a brief 3-day farming forecast for ${location}.
       You MUST respond ONLY with a JSON object in this exact format, no other text:
       { "current": "Temperature and condition, e.g. 72°F Partly Cloudy", "forecast": "Brief 3-day farming-relevant forecast summary" }`,
@@ -227,7 +227,7 @@ export const getMarketPrices = async (commodities: string[], storeName: string =
     // Note: responseMimeType: "application/json" cannot be used together with
     // tools (googleSearch). We request JSON in the prompt and parse it manually.
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash",
       contents: `Current price of ${commoditiesList} at ${storeName} in Sequim/Port Angeles WA area.
       You MUST respond ONLY with a JSON array in this exact format, no other text:
       [ { "name": "Item", "price": "$X.XX" } ]`,
@@ -282,7 +282,7 @@ export const getDailyTip = async () => {
     const ai = await getAI();
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash",
       contents: `Provide a "dailyTip" which is a useful, practical, and scientific piece of advice for farmers regarding crops or livestock for the current season.
       Format output as JSON: { "title": "Short Title", "content": "1-2 sentences", "category": "Crops|Livestock|General" }`,
       config: {
