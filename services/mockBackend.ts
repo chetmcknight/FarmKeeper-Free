@@ -194,6 +194,28 @@ const localBackend = {
   }
 };
 
-const isSheetsConfigured = !!(typeof window !== 'undefined' && localStorage.getItem('gs_sheet_id') && localStorage.getItem('gs_api_key') && localStorage.getItem('gs_script_url'));
+function isSheetsConfigured() {
+  if (typeof window === 'undefined') return false;
 
-export const backend = isSheetsConfigured ? sheetsBackend : localBackend;
+  // Already in localStorage (set via Settings UI or previous run)
+  if (localStorage.getItem('gs_sheet_id') && localStorage.getItem('gs_api_key') && localStorage.getItem('gs_script_url')) {
+    return true;
+  }
+
+  // Check env vars embedded at build time
+  try {
+    const env = typeof import.meta !== 'undefined' ? (import.meta as any).env : {};
+    if (env.VITE_GS_SHEET_ID && env.VITE_GS_API_KEY && env.VITE_GS_SCRIPT_URL) {
+      localStorage.setItem('gs_sheet_id', env.VITE_GS_SHEET_ID);
+      localStorage.setItem('gs_api_key', env.VITE_GS_API_KEY);
+      localStorage.setItem('gs_script_url', env.VITE_GS_SCRIPT_URL);
+      return true;
+    }
+  } catch {}
+
+  return false;
+}
+
+const sheetsConfigured = isSheetsConfigured();
+
+export const backend = sheetsConfigured ? sheetsBackend : localBackend;
