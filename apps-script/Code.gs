@@ -1,8 +1,8 @@
 const SHEET_ID = '1aBaMvRAzlAmhbjNHNq6lQsNtKSKHV3KFvVrtmyz8188';
 
-function doPost(e) {
+function handleRequest(e) {
   try {
-    const data = JSON.parse(e.postData.contents);
+    const data = e.postData ? JSON.parse(e.postData.contents) : e.parameter;
     const { action, entity, ...payload } = data;
 
     const sheetName = entity === 'user' ? 'Users'
@@ -108,8 +108,10 @@ function doPost(e) {
   }
 }
 
+function doPost(e) {
+  return handleRequest(e);
+}
+
 function doGet(e) {
-  return ContentService
-    .createTextOutput(JSON.stringify({ error: 'Use POST' }))
-    .setMimeType(ContentService.MimeType.JSON);
+  return handleRequest(e);
 }

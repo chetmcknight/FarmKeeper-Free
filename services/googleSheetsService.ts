@@ -24,11 +24,14 @@ async function scriptPost(body: Record<string, any>): Promise<any> {
   const { scriptUrl } = getConfig();
   if (!scriptUrl) throw new Error('Apps Script URL not configured in Settings');
 
-  const res = await fetch(scriptUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
+  // Use GET with query params to avoid CORS preflight and 302-method-change issues
+  const params = new URLSearchParams();
+  for (const [key, val] of Object.entries(body)) {
+    params.set(key, typeof val === 'object' ? JSON.stringify(val) : String(val));
+  }
+  const url = scriptUrl + '?' + params.toString();
+
+  const res = await fetch(url);
   const data = await res.json();
   if (!data.success) throw new Error(data.error || 'Apps Script error');
   return data;
