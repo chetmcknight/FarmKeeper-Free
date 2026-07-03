@@ -10,14 +10,14 @@ interface AuthContextType {
   deleteAccount: () => Promise<void>;
   updateProfile: (updates: { name?: string; imageUrl?: string }) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
-  isLoading: boolean;
+  isInitializing: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
     const initAuth = async () => {
@@ -27,36 +27,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (error) {
         console.error("Auth init failed", error);
       } finally {
-        setIsLoading(false);
+        setIsInitializing(false);
       }
     };
     initAuth();
   }, []);
 
   const login = async (email: string, password?: string) => {
-    setIsLoading(true);
-    try {
-      const newUser = await backend.login(email, password);
-      setUser(newUser);
-    } catch (error) {
-       console.error(error);
-       throw error;
-    } finally {
-      setIsLoading(false);
-    }
+    const newUser = await backend.login(email, password);
+    setUser(newUser);
   };
 
   const signup = async (email: string, password?: string) => {
-    setIsLoading(true);
-    try {
-      const newUser = await backend.signup(email, password);
-      setUser(newUser);
-    } catch (error) {
-       console.error(error);
-       throw error;
-    } finally {
-      setIsLoading(false);
-    }
+    const newUser = await backend.signup(email, password);
+    setUser(newUser);
   };
 
   const logout = async () => {
@@ -81,7 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, deleteAccount, updateProfile, updatePassword, isLoading }}>
+    <AuthContext.Provider value={{ user, login, signup, logout, deleteAccount, updateProfile, updatePassword, isInitializing }}>
       {children}
     </AuthContext.Provider>
   );

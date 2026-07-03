@@ -135,9 +135,9 @@ const AuthenticatedLayout: React.FC = () => {
 
 // Wrapper to handle Auth state
 const AppContent: React.FC = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isInitializing } = useAuth();
 
-  if (isLoading) {
+  if (isInitializing) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-green-50 dark:bg-gray-900">
         <div className="animate-spin h-10 w-10 border-4 border-green-600 rounded-full border-t-transparent"></div>
