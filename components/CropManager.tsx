@@ -33,9 +33,14 @@ export const CropManager: React.FC = () => {
 
   const loadCrops = async () => {
     setLoading(true);
-    const data = await backend.getCrops();
-    setCrops(data);
-    setLoading(false);
+    try {
+      const data = await backend.getCrops();
+      setCrops(data);
+    } catch (e) {
+      console.error("Failed to load crops", e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSelectCrop = (crop: Crop) => {

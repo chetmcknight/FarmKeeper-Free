@@ -46,9 +46,14 @@ export const AnimalManager: React.FC = () => {
 
   const loadAnimals = async () => {
     setLoading(true);
-    const data = await backend.getAnimals();
-    setAnimals(data);
-    setLoading(false);
+    try {
+      const data = await backend.getAnimals();
+      setAnimals(data);
+    } catch (e) {
+      console.error("Failed to load animals", e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSelectAnimal = (animal: Animal) => {

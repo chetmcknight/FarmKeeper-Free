@@ -37,9 +37,14 @@ export const FarmhandManager: React.FC = () => {
 
   const loadHands = async () => {
     setLoading(true);
-    const data = await backend.getFarmhands();
-    setHands(data);
-    setLoading(false);
+    try {
+      const data = await backend.getFarmhands();
+      setHands(data);
+    } catch (e) {
+      console.error("Failed to load farmhands", e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSelectHand = (hand: Farmhand) => {
