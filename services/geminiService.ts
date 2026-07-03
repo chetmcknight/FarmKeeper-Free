@@ -15,12 +15,6 @@ const getAI = async () => {
   _aiClient = new GoogleGenAI({ apiKey });
   return _aiClient;
 };
-
-// Get Supabase URL for Edge Function calls (if available)
-const getSupabaseUrl = () => {
-  return (typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env.VITE_SUPABASE_URL) || null;
-};
-
 // --- Caching Helpers ---
 const CACHE_PREFIX = 'farmkeeper_cache_';
 const CACHE_DURATION = 1000 * 60 * 60; // 1 hour default
@@ -49,37 +43,9 @@ const setCachedData = (key: string, data: any) => {
 
 /**
  * Analyzes a field image (crop or livestock) using Gemini Vision.
- * 
- * Uses server-side Edge Function if VITE_SUPABASE_URL is set (recommended for production).
- * Falls back to client-side SDK for development (requires VITE_API_KEY).
+ * Uses client-side SDK with VITE_API_KEY.
  */
 export const diagnoseHealth = async (base64Image: string): Promise<DiagnosisResult> => {
-  const supabaseUrl = getSupabaseUrl();
-  
-  // Use Edge Function if Supabase is configured (recommended for production)
-  if (supabaseUrl) {
-    try {
-      const response = await fetch(`${supabaseUrl}/functions/v1/diagnose-health`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ base64Image }),
-      });
-      
-      const responseText = await response.text();
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${responseText}`);
-      }
-      
-      const result = JSON.parse(responseText);
-      return result;
-    } catch (error) {
-      console.error("Edge Function diagnoseHealth error (falling back to client SDK):", error);
-      // Fall through to client-side implementation below
-    }
-  }
-  
-  // Fallback to client-side SDK for development
   try {
     // gemini-2.0-flash supports multimodal inputs and structured output (JSON mode)
     const modelId = "gemini-2.0-flash";
@@ -159,51 +125,13 @@ export const diagnoseHealth = async (base64Image: string): Promise<DiagnosisResu
 
 /**
  * General Farming Advisor Chat with Google Search Grounding.
- * 
- * Uses server-side Edge Function if VITE_SUPABASE_URL is set.
- * Falls back to client-side SDK for development.
+ * Uses client-side SDK with VITE_API_KEY.
  */
 export const getFarmingAdvice = async (
   prompt: string, 
   history: { role: string; parts: { text: string }[] }[],
   farmContext?: string
 ) => {
-  const supabaseUrl = getSupabaseUrl();
-  
-  // Use Edge Function if available
-  if (supabaseUrl) {
-    try {
-      const response = await fetch(`${supabaseUrl}/functions/v1/gemini-proxy`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'createChat',
-          payload: {
-            model: 'gemini-2.0-flash',
-            firstMessage: prompt,
-            config: {
-              tools: [{ googleSearch: {} }],
-              systemInstruction: farmContext 
-                ? `You are FarmKeeper, an expert agricultural professional. Use the following farm data:\n${farmContext}`
-                : 'You are FarmKeeper, an expert agricultural professional.'
-            },
-            history
-          }
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error("Edge Function getFarmingAdvice error:", error);
-      throw error;
-    }
-  }
-
-  // Fallback to client-side
   try {
     let systemInstruction = "You are FarmKeeper, an expert agricultural and livestock professional. Provide concise, practical, and scientific advice to farmers regarding crops, animal husbandry, veterinary health, and farm management. If looking up weather or market prices, use the Google Search tool.";
     
@@ -246,36 +174,13 @@ export const getFarmingAdvice = async (
 
 /**
  * Get weather insights and farming forecasts.
- * 
- * Uses server-side Edge Function if VITE_SUPABASE_URL is set.
+ * Uses Gemini with Google Search grounding for real-time weather data.
  */
 export const getWeatherInsight = async (location: string) => {
   const cacheKey = `weather_${location.replace(/\s/g, '')}`;
   const cached = getCachedData(cacheKey);
   if (cached) return cached;
 
-  const supabaseUrl = getSupabaseUrl();
-  
-  if (supabaseUrl) {
-    try {
-      const response = await fetch(`${supabaseUrl}/functions/v1/weather-insight`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ location }),
-      });
-      
-      if (!response.ok) throw new Error(await response.text());
-      
-      const data = await response.json();
-      setCachedData(cacheKey, data);
-      return data;
-    } catch (error) {
-      console.error("Weather error:", error);
-      return { current: "--", forecast: "Unavailable" };
-    }
-  }
-
-  // Fallback to client-side
   try {
     const ai = await getAI();
 

@@ -137,6 +137,16 @@ function scoutFromRow(row: string[]): ScoutRecord | null {
   };
 }
 
+const IMAGE_FIELDS = new Set(['imageUrl', 'coverUrl', 'imageBase64']);
+
+function stripImages(payload: Record<string, any>): Record<string, any> {
+  const cleaned: Record<string, any> = {};
+  for (const [key, val] of Object.entries(payload)) {
+    if (!IMAGE_FIELDS.has(key)) cleaned[key] = val;
+  }
+  return cleaned;
+}
+
 function toSheetRow(obj: Record<string, any>, columns: string[]): string[] {
   return columns.map(col => {
     const val = obj[col];
@@ -193,7 +203,6 @@ export const sheetsBackend = {
     const stored = localStorage.getItem('farmhand_user');
     const current = stored ? JSON.parse(stored) : {};
     const merged = { ...current, ...updates };
-    await scriptPost({ action: 'update', entity: 'user', id, ...merged });
     localStorage.setItem('farmhand_user', JSON.stringify(merged));
     return merged as User;
   },
@@ -225,13 +234,13 @@ export const sheetsBackend = {
   async addCrop(crop: Omit<Crop, 'id' | 'userId'>): Promise<Crop> {
     const newCrop: Crop = { ...crop, id: Date.now().toString(), userId: currentUserId() };
     const payload = Object.fromEntries(CROPS_COLS.map(col => [col, col === 'history_json' ? JSON.stringify(newCrop.history) : (newCrop as Record<string, any>)[col] || '']));
-    await scriptPost({ action: 'append', entity: 'crop', ...payload });
+    await scriptPost({ action: 'append', entity: 'crop', ...stripImages(payload) });
     return newCrop;
   },
 
   async updateCrop(updated: Crop): Promise<Crop> {
     const payload = Object.fromEntries(CROPS_COLS.map(col => [col, col === 'history_json' ? JSON.stringify(updated.history) : (updated as Record<string, any>)[col] || '']));
-    await scriptPost({ action: 'update', entity: 'crop', ...payload });
+    await scriptPost({ action: 'update', entity: 'crop', ...stripImages(payload) });
     return updated;
   },
 
@@ -249,13 +258,13 @@ export const sheetsBackend = {
   async addAnimal(animal: Omit<Animal, 'id' | 'userId'>): Promise<Animal> {
     const newAnimal: Animal = { ...animal, id: Date.now().toString(), userId: currentUserId() };
     const payload = Object.fromEntries(ANIMALS_COLS.map(col => [col, col === 'medicalHistory_json' ? JSON.stringify(newAnimal.medicalHistory) : (newAnimal as Record<string, any>)[col] || '']));
-    await scriptPost({ action: 'append', entity: 'animal', ...payload });
+    await scriptPost({ action: 'append', entity: 'animal', ...stripImages(payload) });
     return newAnimal;
   },
 
   async updateAnimal(updated: Animal): Promise<Animal> {
     const payload = Object.fromEntries(ANIMALS_COLS.map(col => [col, col === 'medicalHistory_json' ? JSON.stringify(updated.medicalHistory) : (updated as Record<string, any>)[col] || '']));
-    await scriptPost({ action: 'update', entity: 'animal', ...payload });
+    await scriptPost({ action: 'update', entity: 'animal', ...stripImages(payload) });
     return updated;
   },
 
@@ -273,13 +282,13 @@ export const sheetsBackend = {
   async addFarmhand(farmhand: Omit<Farmhand, 'id' | 'userId'>): Promise<Farmhand> {
     const newHand: Farmhand = { ...farmhand, id: Date.now().toString(), userId: currentUserId() };
     const payload = Object.fromEntries(FARMHANDS_COLS.map(col => [col, (newHand as Record<string, any>)[col] || '']));
-    await scriptPost({ action: 'append', entity: 'farmhand', ...payload });
+    await scriptPost({ action: 'append', entity: 'farmhand', ...stripImages(payload) });
     return newHand;
   },
 
   async updateFarmhand(updated: Farmhand): Promise<Farmhand> {
     const payload = Object.fromEntries(FARMHANDS_COLS.map(col => [col, (updated as Record<string, any>)[col] || '']));
-    await scriptPost({ action: 'update', entity: 'farmhand', ...payload });
+    await scriptPost({ action: 'update', entity: 'farmhand', ...stripImages(payload) });
     return updated;
   },
 
@@ -297,7 +306,7 @@ export const sheetsBackend = {
   async addScoutRecord(record: Omit<ScoutRecord, 'id' | 'userId'>): Promise<ScoutRecord> {
     const newRecord: ScoutRecord = { ...record, id: Date.now().toString(), userId: currentUserId() };
     const payload = Object.fromEntries(SCOUT_COLS.map(col => [col, col === 'result_json' ? JSON.stringify(newRecord.result) : (newRecord as Record<string, any>)[col] || '']));
-    await scriptPost({ action: 'append', entity: 'scout', ...payload });
+    await scriptPost({ action: 'append', entity: 'scout', ...stripImages(payload) });
     return newRecord;
   },
 
