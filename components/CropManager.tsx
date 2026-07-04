@@ -13,6 +13,7 @@ export const CropManager: React.FC = () => {
   const [editForm, setEditForm] = useState<Crop | null>(null);
 
   const [showAddModal, setShowAddModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [newCrop, setNewCrop] = useState<Partial<Crop>>({
       name: '',
       variety: '',
@@ -106,6 +107,7 @@ export const CropManager: React.FC = () => {
          finalHarvestDate = d.toISOString().split('T')[0];
     }
     
+    setSubmitting(true);
     try {
         await backend.addCrop({
           name: newCrop.name,
@@ -143,6 +145,8 @@ export const CropManager: React.FC = () => {
     } catch (e) {
         console.error("Create crop failed", e);
         alert("Failed to create crop. Storage might be full.");
+    } finally {
+        setSubmitting(false);
     }
   };
   
@@ -652,10 +656,10 @@ export const CropManager: React.FC = () => {
                         <button 
                             type="button"
                             onClick={handleCreateCrop}
-                            disabled={!newCrop.name}
+                            disabled={!newCrop.name || submitting}
                             className="px-6 py-2.5 bg-green-600 rounded-xl text-sm font-bold text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg transition-all"
                         >
-                            Create Field
+                            {submitting ? 'Creating...' : 'Create Field'}
                         </button>
                     </div>
                 </div>

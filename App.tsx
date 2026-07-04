@@ -66,8 +66,8 @@ const AuthenticatedLayout: React.FC = () => {
             );
             if (!res.ok) throw new Error('Nominatim error');
             const data = await res.json();
-            const city = data.address?.city || data.address?.town || data.address?.village || data.address?.county;
-            setLocation(city ? `${city}, WA` : `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`);
+            const city = data.address?.city || data.address?.town || data.address?.village;
+            setLocation(city ? `${city}, WA` : 'Sequim, WA');
           } catch {
             setLocation('Sequim, WA');
           }

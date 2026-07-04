@@ -176,7 +176,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
       </header>
       
       {/* Farm Status Cards */}
-      <div className="grid grid-cols-2 gap-4 md:gap-6">
+      <div className="grid grid-cols-3 gap-4 md:gap-6">
           <div 
             onClick={() => onNavigate(Page.CROPS)}
             className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:scale-105 hover:border-green-200 dark:hover:border-green-700 transition-all cursor-pointer group"

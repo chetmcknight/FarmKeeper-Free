@@ -36,7 +36,36 @@ async function scriptPost(body: Record<string, any>): Promise<any> {
   const { scriptUrl } = getConfig();
   if (!scriptUrl) throw new Error('Google Sheets sync not configured. Set VITE_GS_SCRIPT_URL.');
 
-  // Use GET with query params to avoid CORS issues with Apps Script
+  // Use POST with JSON body for reliable data transfer
+  const url = scriptUrl + '?_=' + Date.now();
+
+  const res = await fetch(url, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+
+  // With no-cors, response is opaque — we can't read headers or body.
+  // If no-cors fails, try GET with query params as fallback.
+  if (res.type === 'opaque') {
+    return await scriptPostGetFallback(body);
+  }
+
+  const ct = res.headers.get('content-type') || '';
+  if (ct.includes('json')) {
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Google Sheets sync error');
+    return data;
+  }
+
+  // If not JSON, try GET fallback
+  return await scriptPostGetFallback(body);
+}
+
+// Fallback: send data via GET query params (works even with CORS restrictions)
+async function scriptPostGetFallback(body: Record<string, any>): Promise<any> {
+  const { scriptUrl } = getConfig();
   const params = new URLSearchParams();
   for (const [key, val] of Object.entries(body)) {
     params.set(key, typeof val === 'object' ? JSON.stringify(val) : String(val));
@@ -44,14 +73,27 @@ async function scriptPost(body: Record<string, any>): Promise<any> {
   const url = scriptUrl + '?' + params.toString();
 
   const res = await fetch(url);
+  const text = await res.text();
   const ct = res.headers.get('content-type') || '';
-  if (!ct.includes('json')) {
-    const text = await res.text();
-    throw new Error('Sync server returned an error. Check that your Apps Script is deployed and set to "Anyone" access.');
+
+  if (ct.includes('json')) {
+    try {
+      const data = JSON.parse(text);
+      if (!data.success) throw new Error(data.error || 'Google Sheets sync error');
+      return data;
+    } catch (e) {
+      throw new Error('Invalid JSON response from sync server');
+    }
   }
-  const data = await res.json();
-  if (!data.success) throw new Error(data.error || 'Google Sheets sync error');
-  return data;
+
+  // Try to parse as JSON anyway — some servers return json without proper content-type
+  try {
+    const data = JSON.parse(text);
+    if (data.success) return data;
+    throw new Error(data.error || 'Google Sheets sync error');
+  } catch {
+    throw new Error('Sync server returned non-JSON. Check deployment and sheet access.');
+  }
 }
 
 const USERS_COLS = ['id', 'email', 'name', 'imageUrl'];
@@ -223,7 +265,7 @@ export const sheetsBackend = {
   },
 
   async addCrop(crop: Omit<Crop, 'id' | 'userId'>): Promise<Crop> {
-    const newCrop: Crop = { ...crop, id: Date.now().toString(), userId: '' };
+    const newCrop: Crop = { ...crop, id: (crop as any).id || Date.now().toString(), userId: '' };
     const payload = Object.fromEntries(CROPS_COLS.map(col => [col, col === 'history_json' ? JSON.stringify(newCrop.history) : (newCrop as Record<string, any>)[col] || '']));
     await scriptPost({ action: 'append', entity: 'crop', ...stripImages(payload) });
     return newCrop;
@@ -246,7 +288,7 @@ export const sheetsBackend = {
   },
 
   async addAnimal(animal: Omit<Animal, 'id' | 'userId'>): Promise<Animal> {
-    const newAnimal: Animal = { ...animal, id: Date.now().toString(), userId: '' };
+    const newAnimal: Animal = { ...animal, id: (animal as any).id || Date.now().toString(), userId: '' };
     const payload = Object.fromEntries(ANIMALS_COLS.map(col => [col, col === 'medicalHistory_json' ? JSON.stringify(newAnimal.medicalHistory) : (newAnimal as Record<string, any>)[col] || '']));
     await scriptPost({ action: 'append', entity: 'animal', ...stripImages(payload) });
     return newAnimal;
@@ -269,7 +311,7 @@ export const sheetsBackend = {
   },
 
   async addFarmhand(farmhand: Omit<Farmhand, 'id' | 'userId'>): Promise<Farmhand> {
-    const newHand: Farmhand = { ...farmhand, id: Date.now().toString(), userId: '' };
+    const newHand: Farmhand = { ...farmhand, id: (farmhand as any).id || Date.now().toString(), userId: '' };
     const payload = Object.fromEntries(FARMHANDS_COLS.map(col => [col, (newHand as Record<string, any>)[col] || '']));
     await scriptPost({ action: 'append', entity: 'farmhand', ...stripImages(payload) });
     return newHand;
@@ -292,7 +334,7 @@ export const sheetsBackend = {
   },
 
   async addScoutRecord(record: Omit<ScoutRecord, 'id' | 'userId'>): Promise<ScoutRecord> {
-    const newRecord: ScoutRecord = { ...record, id: Date.now().toString(), userId: '' };
+    const newRecord: ScoutRecord = { ...record, id: (record as any).id || Date.now().toString(), userId: '' };
     const payload = Object.fromEntries(SCOUT_COLS.map(col => [col, col === 'result_json' ? JSON.stringify(newRecord.result) : (newRecord as Record<string, any>)[col] || '']));
     await scriptPost({ action: 'append', entity: 'scout', ...stripImages(payload) });
     return newRecord;

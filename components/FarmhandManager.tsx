@@ -13,6 +13,7 @@ export const FarmhandManager: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   // Form State
   const [form, setForm] = useState<Partial<Farmhand>>({
@@ -119,6 +120,7 @@ export const FarmhandManager: React.FC = () => {
       }
 
       try {
+          setSubmitting(true);
           await backend.addFarmhand(form as any);
           setShowAddModal(false);
           resetForm();
@@ -129,6 +131,8 @@ export const FarmhandManager: React.FC = () => {
           } else {
               alert("Failed to save farmhand.");
           }
+      } finally {
+          setSubmitting(false);
       }
   };
 
@@ -594,9 +598,10 @@ export const FarmhandManager: React.FC = () => {
                         <button 
                             type="button"
                             onClick={handleSubmit}
-                            className="px-6 py-2.5 bg-green-600 rounded-xl text-sm font-bold text-white hover:bg-green-700 shadow-md hover:shadow-lg transition-all"
+                            disabled={!form.name || submitting}
+                            className="px-6 py-2.5 bg-green-600 rounded-xl text-sm font-bold text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg transition-all"
                         >
-                            {isEditing ? 'Save Changes' : 'Add Farmhand'}
+                            {submitting ? 'Adding...' : (isEditing ? 'Save Changes' : 'Add Farmhand')}
                         </button>
                     </div>
                 </div>
