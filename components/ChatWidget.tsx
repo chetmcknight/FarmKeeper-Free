@@ -159,10 +159,9 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ isHidden = false }) => {
     }
   };
 
-  // Hidden on mobile (hidden), visible on md screens (md:flex), hidden when isHidden prop is true
   if (isHidden) return null;
   return (
-    <div className="hidden md:flex fixed bottom-10 right-6 z-50 flex-col items-end pointer-events-none font-sans">
+    <div className="flex fixed bottom-20 md:bottom-10 right-6 z-50 flex-col items-end pointer-events-none font-sans">
       {/* Chat Window */}
       <div 
         className={`pointer-events-auto bg-white w-80 sm:w-96 rounded-2xl shadow-2xl border border-green-100 flex flex-col transition-all duration-300 ease-in-out transform origin-bottom-right mb-10 mr-2 overflow-hidden

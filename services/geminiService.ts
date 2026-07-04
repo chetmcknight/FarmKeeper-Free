@@ -1,6 +1,7 @@
 import { DiagnosisResult } from "../types";
 // @ts-ignore
 import { GoogleGenAI, Type } from "@google/genai";
+import knowledgeBase from '../knowledge/chatbot-knowledge.md?raw';
 
 // Lazily load @google/genai (now installed locally)
 let _aiClient: any = null;
@@ -135,8 +136,12 @@ export const getFarmingAdvice = async (
   try {
     let systemInstruction = "You are FarmKeeper, an expert agricultural and livestock professional. Provide concise, practical, and scientific advice to farmers regarding crops, animal husbandry, veterinary health, and farm management. If looking up weather or market prices, use the Google Search tool.";
     
+    if (knowledgeBase) {
+        systemInstruction += `\n\n## KNOWLEDGE BASE\nUse the following curated knowledge to inform your answers:\n${knowledgeBase}`;
+    }
+
     if (farmContext) {
-        systemInstruction += `\n\nCURRENT FARM DATA:\nThe user has the following crops and livestock on their farm. Use this information to provide personalized advice:\n${farmContext}`;
+        systemInstruction += `\n\n## CURRENT FARM DATA\nThe user has the following crops and livestock on their farm. Use this information to provide personalized advice:\n${farmContext}`;
     }
 
     const ai = await getAI();
