@@ -58,8 +58,19 @@ const AuthenticatedLayout: React.FC = () => {
     // Basic Geolocation for Dashboard
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLocation(`${position.coords.latitude.toFixed(2)}, ${position.coords.longitude.toFixed(2)}`);
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          try {
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`
+            );
+            const data = await res.json();
+            const city = data.address?.city || data.address?.town || data.address?.village || data.address?.county;
+            const state = data.address?.state;
+            setLocation(city && state ? `${city}, ${state}` : `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`);
+          } catch {
+            setLocation(`${latitude.toFixed(2)}, ${longitude.toFixed(2)}`);
+          }
         },
         (error) => {
           // Silently fall back to default location
