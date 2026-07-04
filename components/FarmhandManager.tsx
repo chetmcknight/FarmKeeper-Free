@@ -217,7 +217,7 @@ export const FarmhandManager: React.FC = () => {
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
-                                    <span>🧑‍🌾</span>
+                                    <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                                 )}
 
                                 {isEditing && (
@@ -411,7 +411,7 @@ export const FarmhandManager: React.FC = () => {
                             {hand.imageUrl ? (
                                 <img src={hand.imageUrl} className="w-full h-full object-cover" alt={hand.name} />
                             ) : (
-                                <span>🧑‍🌾</span>
+                                <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                             )}
                         </div>
                     </div>
@@ -442,7 +442,7 @@ export const FarmhandManager: React.FC = () => {
 
         {hands.length === 0 && (
              <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-200 mt-6">
-                <div className="text-6xl mb-4 grayscale opacity-50">👥</div>
+                <div className="mb-4 grayscale opacity-50"><svg className="w-16 h-16 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" /></svg></div>
                 <h3 className="text-xl font-bold text-gray-900">No farmhands added</h3>
                 <p className="text-gray-500 mb-6 max-w-sm mx-auto">Add team members to keep track of your local workforce contacts.</p>
                 <button 

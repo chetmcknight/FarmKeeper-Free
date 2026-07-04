@@ -1,38 +1,32 @@
-# Use Node 18
-FROM node:18-alpine
+# Build stage
+FROM node:18-alpine AS build
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files
 COPY package*.json ./
+RUN npm ci
 
-# Install dependencies
-RUN npm install
-
-# Copy source code
 COPY . .
 
-# Build args (all VITE_* vars must be passed at build time)
 ARG VITE_API_KEY
 ARG VITE_GS_SHEET_ID
 ARG VITE_GS_API_KEY
 ARG VITE_GS_SCRIPT_URL
 
-# Set env vars for build time (Vite needs these)
 ENV VITE_API_KEY=$VITE_API_KEY
 ENV VITE_GS_SHEET_ID=$VITE_GS_SHEET_ID
 ENV VITE_GS_API_KEY=$VITE_GS_API_KEY
 ENV VITE_GS_SCRIPT_URL=$VITE_GS_SCRIPT_URL
 
-# Build the app
 RUN npm run build
 
-# Install serve for static files
-RUN npm install -g serve
+# Production stage with nginx
+FROM nginx:alpine
 
-# Expose port
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+COPY --from=build /app/dist /usr/share/nginx/html
+
 EXPOSE 8080
 
-# Start command
-CMD ["serve", "-s", "dist", "-l", "8080"]
+CMD ["nginx", "-g", "daemon off;"]

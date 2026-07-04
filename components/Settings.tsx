@@ -94,7 +94,7 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
 
   const handleDeleteAccount = async () => {
     if (deleteInput === 'DELETE') {
-      await deleteAccount();
+        await deleteAccount();
     } else {
         alert("Incorrect confirmation text.");
     }
@@ -137,7 +137,7 @@ export const Settings: React.FC<SettingsProps> = ({ toggleDarkMode, isDarkMode }
                                 {imageUrl ? (
                                     <img src={imageUrl} alt="Profile" className="w-full h-full object-cover" />
                                 ) : (
-                                    <span className="text-3xl">🧑‍🌾</span>
+                                    <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                                 )}
                                 
                                 {savingProfile && (

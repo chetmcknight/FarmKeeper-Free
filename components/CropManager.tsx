@@ -257,7 +257,7 @@ export const CropManager: React.FC = () => {
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
-                                    <span>🌽</span>
+                                     <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
                                 )}
 
                                 {isEditing && (
@@ -270,8 +270,8 @@ export const CropManager: React.FC = () => {
                                 )}
                             </div>
 
-                            <input type="file" ref={editFileInputRef} className="hidden" accept="image/png, image/jpeg, image/jpg"  onChange={(e) => handleImageUpload(e, 'imageUrl', true)} />
-                            <input type="file" ref={editCoverInputRef} className="hidden" accept="image/png, image/jpeg, image/jpg"  onChange={(e) => handleImageUpload(e, 'coverUrl', true)} />
+                            <input type="file" ref={editFileInputRef} className="hidden" accept="image/png, image/jpeg"  onChange={(e) => handleImageUpload(e, 'imageUrl', true)} />
+                            <input type="file" ref={editCoverInputRef} className="hidden" accept="image/png, image/jpeg"  onChange={(e) => handleImageUpload(e, 'coverUrl', true)} />
                             
                             {isEditing ? (
                                 <input 
@@ -411,12 +411,12 @@ export const CropManager: React.FC = () => {
                                                 <div className="mt-3 flex flex-wrap gap-2 text-xs">
                                                     {record.product && (
                                                         <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-gray-200 text-gray-700 font-medium shadow-sm">
-                                                            📦 {record.product} {record.quantity && `(${record.quantity})`}
+                                                             <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg> {record.product} {record.quantity && `(${record.quantity})`}
                                                         </span>
                                                     )}
                                                     {record.technician && (
                                                         <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-gray-200 text-gray-700 font-medium shadow-sm">
-                                                            👤 {record.technician}
+                                                             <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg> {record.technician}
                                                         </span>
                                                     )}
                                                 </div>
@@ -487,8 +487,8 @@ export const CropManager: React.FC = () => {
                             {crop.imageUrl ? (
                                 <img src={crop.imageUrl} className="w-full h-full object-cover" alt="Profile" />
                             ) : (
-                                <span>🌽</span>
-                            )}
+                                 <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                             )}
                         </div>
                     </div>
 
@@ -518,7 +518,7 @@ export const CropManager: React.FC = () => {
 
         {crops.length === 0 && (
             <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-200 mt-6">
-                <div className="text-6xl mb-4 grayscale opacity-50">🌽</div>
+                <div className="mb-4 grayscale opacity-50"><svg className="w-16 h-16 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg></div>
                 <h3 className="text-xl font-bold text-gray-900">No crops tracked</h3>
                 <p className="text-gray-500 mb-6 max-w-sm mx-auto">Add a field to start monitoring growth cycles and operations.</p>
                 <button 
@@ -581,8 +581,8 @@ export const CropManager: React.FC = () => {
                                 </div>
                             </div>
 
-                            <input type="file" ref={fileInputRef} className="hidden" accept="image/png, image/jpeg, image/jpg"  onChange={(e) => handleImageUpload(e, 'imageUrl')} />
-                            <input type="file" ref={coverInputRef} className="hidden" accept="image/png, image/jpeg, image/jpg"  onChange={(e) => handleImageUpload(e, 'coverUrl')} />
+                            <input type="file" ref={fileInputRef} className="hidden" accept="image/png, image/jpeg"  onChange={(e) => handleImageUpload(e, 'imageUrl')} />
+                            <input type="file" ref={coverInputRef} className="hidden" accept="image/png, image/jpeg"  onChange={(e) => handleImageUpload(e, 'coverUrl')} />
                         </div>
 
                         <div className="grid grid-cols-2 gap-5">

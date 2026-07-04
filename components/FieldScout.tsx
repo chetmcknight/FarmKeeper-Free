@@ -198,7 +198,7 @@ export const FieldScout: React.FC = () => {
                type="file" 
                ref={fileInputRef} 
                className="hidden" 
-               accept="image/png, image/jpeg, image/jpg" 
+               accept="image/png, image/jpeg" 
                capture="environment"
                onChange={handleImageUpload} 
             />

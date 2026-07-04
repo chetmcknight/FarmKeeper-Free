@@ -257,20 +257,9 @@ export const AnimalManager: React.FC = () => {
   };
 
   const getAnimalIcon = (type: string) => {
-      switch (type) {
-          case 'Cattle': return '🐄';
-          case 'Pig': return '🐖';
-          case 'Chicken': return '🐓';
-          case 'Sheep': return '🐑';
-          case 'Goat': return '🐐';
-          case 'Horse': return '🐎';
-          case 'Dog': return '🐕';
-          case 'Llama': return '🦙';
-          case 'Donkey': return '🫏';
-          case 'Cat': 
-          case 'Kitten': return '🐈';
-          default: return '🐾';
-      }
+      return (
+        <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+      );
   };
 
   const getStatusColor = (status: Animal['status']) => {
@@ -818,7 +807,7 @@ export const AnimalManager: React.FC = () => {
 
       {animals.length === 0 && (
           <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-200 mt-6">
-              <div className="text-6xl mb-4 grayscale opacity-50">🐄</div>
+              <div className="mb-4 grayscale opacity-50"><svg className="w-16 h-16 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg></div>
               <h3 className="text-xl font-bold text-gray-900">No animals yet</h3>
               <p className="text-gray-500 mb-6 max-w-sm mx-auto">Add your first animal to start tracking health records and care history.</p>
               <button 
@@ -838,7 +827,7 @@ export const AnimalManager: React.FC = () => {
                          onClick={() => setShowAddModal(false)}
                          className="absolute top-4 right-4 p-2 rounded-full bg-white/40 backdrop-blur-md border border-white/50 shadow-sm hover:bg-white/60 text-gray-600 transition-all z-10"
                      >
-                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L6 6l12 12" /></svg>
+                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                      </button>
 
                     <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">

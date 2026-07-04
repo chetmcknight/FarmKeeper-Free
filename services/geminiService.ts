@@ -1,5 +1,4 @@
 import { DiagnosisResult } from "../types";
-// @ts-ignore
 import { GoogleGenAI, Type } from "@google/genai";
 import knowledgeBase from '../knowledge/chatbot-knowledge.md?raw';
 
