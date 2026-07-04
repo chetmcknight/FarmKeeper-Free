@@ -263,7 +263,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
         </div>
 
         {/* Animal Expert Insight */}
-      <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 min-h-[200px]">
+      <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:border-blue-200 dark:hover:border-blue-700 transition-all duration-300 min-h-[200px]">
         <div className="flex items-center gap-3 mb-6">
             <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg text-xl">
                 🐐
@@ -327,13 +327,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
        </div>
 
         {/* Expert Insight / Daily Tip */}
-      <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 min-h-[200px]">
+      <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:border-indigo-200 dark:hover:border-indigo-700 transition-all duration-300 min-h-[200px]">
         <div className="flex items-center gap-3 mb-6">
             <div className="bg-indigo-100 dark:bg-indigo-900/30 p-2 rounded-lg text-xl">
                 🌽
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white">Expert Insight of the Day — Crops</h3>
-            <button onClick={refreshTip} disabled={loadingTip} className="ml-auto p-2.5 rounded-xl text-gray-400 hover:text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-all duration-200 disabled:opacity-50 active:scale-90" title="Refresh">
+            <button onClick={refreshTip} disabled={loadingTip} className="ml-auto p-2.5 rounded-xl text-gray-400 hover:text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all duration-200 disabled:opacity-50 active:scale-90" title="Refresh">
                 <svg className={`w-5 h-5 ${loadingTip ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
             </button>
         </div>
