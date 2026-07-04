@@ -235,48 +235,4 @@ function isSheetsConfigured() {
 
 const sheetsConfigured = isSheetsConfigured();
 
-// Wrap sheets backend: localStorage first (instant), then background-sync to sheets.
-function sheetsWithFallback(): typeof localBackend {
-  const proxy = {} as typeof localBackend;
-  const authMethods = new Set(['login', 'signup', 'getCurrentUser', 'logout', 'deleteAccount', 'updatePassword']);
-  const createMethods = new Set(['addCrop', 'addAnimal', 'addFarmhand', 'addScoutRecord']);
-  const readKeyMap: Record<string, string> = {
-    getCrops: KEYS.CROPS,
-    getAnimals: KEYS.ANIMALS,
-    getFarmhands: KEYS.FARMHANDS,
-    getScoutHistory: KEYS.SCOUT_HISTORY,
-  };
-
-  for (const key of Object.keys(localBackend) as (keyof typeof localBackend)[]) {
-    proxy[key] = async (...args: any[]) => {
-      if (authMethods.has(key as string)) {
-        return await (sheetsBackend as any)[key](...args);
-      }
-
-      try {
-        const result = await (localBackend as any)[key](...args);
-
-        // Background sync: for creates, pass the local result (with generated id);
-        // otherwise pass through original args
-        const syncArgs = createMethods.has(key as string) ? [result] : args;
-        (sheetsBackend as any)[key](...syncArgs).then((sheetsResult: any) => {
-          // Cache fresh sheets data back to localStorage for reads
-          const sheetsKey = readKeyMap[key as string];
-          if (sheetsKey && sheetsResult && Array.isArray(sheetsResult) && sheetsResult.length > 0) {
-            try { localStorage.setItem(sheetsKey, JSON.stringify(sheetsResult)); } catch {}
-          }
-        }).catch((e: any) => {
-          console.warn(`Sheets background sync "${String(key)}" failed:`, e?.message || e);
-        });
-
-        return result;
-      } catch (localError) {
-        console.warn(`LocalStorage "${String(key)}" failed, trying sheets:`, localError);
-        return await (sheetsBackend as any)[key](...args);
-      }
-    };
-  }
-  return proxy;
-}
-
-export const backend = sheetsConfigured ? sheetsWithFallback() : localBackend;
+export const backend = sheetsConfigured ? (sheetsBackend as typeof localBackend) : localBackend;
