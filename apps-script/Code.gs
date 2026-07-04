@@ -1,4 +1,5 @@
 const SHEET_ID = '1aBaMvRAzlAmhbjNHNq6lQsNtKSKHV3KFvVrtmyz8188';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2uukyw_lYIoYcaP5ylNIAp2y0ReogtbL13gPaHeP0vTI-XpxL-YQJcCAOdTkw4PRG0w/exec';
 
 function handleRequest(e) {
   try {
@@ -73,6 +74,15 @@ function handleRequest(e) {
           if (isRowMatch(rows[i], id)) {
             sheet.deleteRow(i + 1);
           }
+        }
+        result = { success: true };
+        break;
+      }
+
+      case 'clear': {
+        const numRows = rows.length;
+        if (numRows > 1) {
+          sheet.deleteRows(2, numRows - 1);
         }
         result = { success: true };
         break;

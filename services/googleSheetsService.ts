@@ -365,4 +365,8 @@ export const sheetsBackend = {
     }
     return entries.join('\n\n');
   },
+
+  async clearEntity(entity: string): Promise<void> {
+    await scriptPost({ action: 'clear', entity });
+  },
 };
