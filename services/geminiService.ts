@@ -285,14 +285,21 @@ export const getDailyTip = async () => {
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
-      contents: `Provide a "dailyTip" which is a useful, practical, and scientific piece of advice for farmers regarding crops for the current season.
+      contents: `Provide a "dailyTip" which is a useful, practical, and scientific piece of advice for farmers regarding crops for at this time of year.
       You MUST respond ONLY with a JSON object in this exact format, no other text:
       { "title": "Short Title", "content": "1-2 sentences", "category": "Crops" }`,
       config: {
         responseMimeType: "application/json",
       },
     });
-    const data = JSON.parse(response.text || "{}");
+    const text = response.text || "";
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      return null;
+    }
+    if (!data.title || !data.content) return null;
     return {
         ...data,
         source: "AI Generated",
