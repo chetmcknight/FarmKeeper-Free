@@ -55,27 +55,25 @@ const AuthenticatedLayout: React.FC = () => {
   };
 
   useEffect(() => {
-    // Basic Geolocation for Dashboard
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords;
           try {
             const res = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`,
+              { headers: { 'User-Agent': 'FarmKeeper-Free/1.0' } }
             );
+            if (!res.ok) throw new Error('Nominatim error');
             const data = await res.json();
-            const city = data.address?.city || data.address?.town || data.address?.village;
-            setLocation(city || `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`);
+            const city = data.address?.city || data.address?.town || data.address?.village || data.address?.county;
+            setLocation(city ? `${city}, WA` : `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`);
           } catch {
-            setLocation(`${latitude.toFixed(2)}, ${longitude.toFixed(2)}`);
+            setLocation('Sequim, WA');
           }
         },
-        (error) => {
-          // Silently fall back to default location
-          setLocation('Sequim, WA');
-        },
-        { enableHighAccuracy: false, timeout: 5000 }
+        () => setLocation('Sequim, WA'),
+        { enableHighAccuracy: false, timeout: 10000 }
       );
     } else {
       setLocation('Sequim, WA');

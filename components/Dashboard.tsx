@@ -47,19 +47,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
     cropsTotal: 0, 
     cropsAttention: 0,
     animalsTotal: 0,
-    animalsAttention: 0
+    animalsAttention: 0,
+    farmhandsTotal: 0
   });
 
   useEffect(() => {
     const loadStats = async () => {
         try {
-            const crops = await backend.getCrops();
-            const animals = await backend.getAnimals();
+            const [crops, animals, farmhands] = await Promise.all([
+                backend.getCrops(),
+                backend.getAnimals(),
+                backend.getFarmhands()
+            ]);
             setStats({
                 cropsTotal: crops.length,
                 cropsAttention: crops.filter(c => c.status === 'Needs Attention').length,
                 animalsTotal: animals.length,
-                animalsAttention: animals.filter(a => ['Sick', 'Vet Check Required'].includes(a.status)).length
+                animalsAttention: animals.filter(a => ['Sick', 'Vet Check Required'].includes(a.status)).length,
+                farmhandsTotal: farmhands.length
             });
         } catch (e) {
             console.error("Failed to load stats", e);
@@ -171,7 +176,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
       </header>
       
       {/* Farm Status Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 gap-4 md:gap-6">
           <div 
             onClick={() => onNavigate(Page.CROPS)}
             className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:scale-105 hover:border-green-200 dark:hover:border-green-700 transition-all cursor-pointer group"
@@ -184,20 +189,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
                   </div>
               </div>
           </div>
-          <div 
-            onClick={() => onNavigate(Page.CROPS)}
-            className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:scale-105 hover:border-yellow-200 dark:hover:border-yellow-700 transition-all cursor-pointer group"
-          >
-              <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/40 dark:to-yellow-800/40 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform"><svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg></div>
-                  <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors">Crop Alerts</p>
-                      <h4 className={`text-2xl font-bold ${stats.cropsAttention > 0 ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-900 dark:text-white'}`}>
-                          {stats.cropsAttention}
-                      </h4>
-                  </div>
-              </div>
-          </div>
+          
           <div 
             onClick={() => onNavigate(Page.ANIMALS)}
             className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:scale-105 hover:border-blue-200 dark:hover:border-blue-700 transition-all cursor-pointer group"
@@ -205,22 +197,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
               <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-800/40 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform"><svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg></div>
                   <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Livestock</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Animals</p>
                       <h4 className="text-2xl font-bold text-gray-900 dark:text-white">{stats.animalsTotal}</h4>
                   </div>
               </div>
           </div>
           <div 
-            onClick={() => onNavigate(Page.ANIMALS)}
-            className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:scale-105 hover:border-red-200 dark:hover:border-red-700 transition-all cursor-pointer group"
+            onClick={() => onNavigate(Page.FARMHANDS)}
+            className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:scale-105 hover:border-purple-200 dark:hover:border-purple-700 transition-all cursor-pointer group"
           >
               <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/40 dark:to-red-800/40 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform"><svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg></div>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/40 dark:to-purple-800/40 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform"><svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg></div>
                   <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">Vet Alerts</p>
-                      <h4 className={`text-2xl font-bold ${stats.animalsAttention > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>
-                          {stats.animalsAttention}
-                      </h4>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">Farmhands</p>
+                      <h4 className="text-2xl font-bold text-gray-900 dark:text-white">{stats.farmhandsTotal}</h4>
                   </div>
               </div>
           </div>
