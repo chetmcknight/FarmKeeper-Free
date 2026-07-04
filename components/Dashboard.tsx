@@ -111,14 +111,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
   }, [location]);
 
   const refreshTip = () => {
-    setLoadingTip(true);
+    setTipData(null);
     getDailyTip()
       .then(data => {
         setTipData(data);
-        setLoadingTip(false);
       })
       .catch(() => {
-        setLoadingTip(false);
+        console.error("Crops refresh failed");
       });
   };
 
@@ -338,62 +337,48 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
                 🌽
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white">Expert Insight of the Day — Crops</h3>
-            <button onClick={refreshTip} disabled={loadingTip} className="ml-auto p-2.5 rounded-xl text-gray-400 hover:text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all duration-200 disabled:opacity-50 active:scale-90" title="Refresh">
-                <svg className={`w-5 h-5 ${loadingTip ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            <button onClick={refreshTip} className="ml-auto p-2.5 rounded-xl text-gray-400 hover:text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all duration-200 active:scale-90" title="Refresh">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
             </button>
         </div>
 
-        {loadingTip ? (
-             <div className="animate-pulse space-y-4 max-w-2xl">
-                <div className="h-6 w-32 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
-                <div className="h-8 w-3/4 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-                <div className="space-y-2">
-                    <div className="h-4 w-full bg-gray-100 dark:bg-gray-700 rounded"></div>
-                    <div className="h-4 w-5/6 bg-gray-100 dark:bg-gray-700 rounded"></div>
-                </div>
-            </div>
-        ) : (
-             <div className="flex flex-col md:flex-row gap-8 items-center animate-fade-in">
-                 <div className="flex-1">
-                     {tipData ? (
-                         <div className="space-y-4">
-                            <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/50">
-                                {tipData.category || 'Farming Tip'}
-                            </span>
-                            <h4 className="text-2xl font-extrabold text-gray-900 dark:text-white leading-tight">
-                                {tipData.title}
-                            </h4>
-                            <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-                                {tipData.content}
-                            </p>
-                            {(tipData.source || tipData.sourceUrl) && (
-                                <div className="mt-4 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 pt-3">
-                                    Source: {tipData.sourceUrl ? (
-                                        <a href={tipData.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:underline">{tipData.source}</a>
-                                    ) : (
-                                        <span>{tipData.source}</span>
-                                    )}
-                                </div>
-                            )}
-                         </div>
-                     ) : (
-                         <div className="space-y-4">
-                            <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/50">
-                                General Tip
-                            </span>
-                            <h4 className="text-2xl font-extrabold text-gray-900 dark:text-white leading-tight">
-                                Monitor Soil Moisture Levels
-                            </h4>
-                            <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-                                Consistent soil moisture monitoring is crucial during early crop stages. Use tensiometers or simple hand-feel tests to ensure roots are establishing well without waterlogging.
-                            </p>
-                         </div>
-                     )}
-                 </div>
-                 
-              </div>
-         )}
-       </div>
+        <div className="animate-fade-in">
+           {tipData ? (
+               <div className="space-y-4">
+                  <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/50">
+                      {tipData.category || 'Farming Tip'}
+                  </span>
+                  <h4 className="text-2xl font-extrabold text-gray-900 dark:text-white leading-tight">
+                      {tipData.title}
+                  </h4>
+                  <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+                      {tipData.content}
+                  </p>
+                  {(tipData.source || tipData.sourceUrl) && (
+                      <div className="mt-4 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 pt-3">
+                          Source: {tipData.sourceUrl ? (
+                              <a href={tipData.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:underline">{tipData.source}</a>
+                          ) : (
+                              <span>{tipData.source}</span>
+                          )}
+                      </div>
+                  )}
+               </div>
+           ) : (
+               <div className="space-y-4">
+                  <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/50">
+                      Loading...
+                  </span>
+                  <h4 className="text-2xl font-extrabold text-gray-900 dark:text-white leading-tight">
+                      Monitor Soil Moisture Levels
+                  </h4>
+                  <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+                      Consistent soil moisture monitoring is crucial during early crop stages. Use tensiometers or simple hand-feel tests to ensure roots are establishing well without waterlogging.
+                  </p>
+               </div>
+           )}
+        </div>
+      </div>
      </div>
     </div>
   );
