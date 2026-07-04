@@ -182,6 +182,11 @@ export const sheetsBackend = {
     const current = stored ? JSON.parse(stored) : {};
     const merged = { ...current, ...updates };
     localStorage.setItem('farmhand_user', JSON.stringify(merged));
+
+    // Sync to sheet
+    const payload = Object.fromEntries(USERS_COLS.map(col => [col, (merged as Record<string, any>)[col] || '']));
+    scriptPost({ action: 'update', entity: 'user', ...payload }).catch(() => {});
+
     return merged as User;
   },
 
