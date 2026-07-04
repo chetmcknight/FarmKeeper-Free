@@ -157,7 +157,7 @@ const AppContent: React.FC = () => {
   }
 
   if (!user) {
-    return <AuthScreen />;
+    return <Suspense fallback={<LoadingSpinner />}><AuthScreen /></Suspense>;
   }
 
   return <AuthenticatedLayout />;

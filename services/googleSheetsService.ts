@@ -8,17 +8,14 @@ function getConfig() {
   let scriptUrl = localStorage.getItem('gs_script_url');
 
   if (!sheetId || !apiKey || !scriptUrl) {
-    try {
-      const env = typeof import.meta !== 'undefined' ? (import.meta as any).env : {};
-      sheetId = sheetId || env.VITE_GS_SHEET_ID || '';
-      apiKey = apiKey || env.VITE_GS_API_KEY || '';
-      scriptUrl = scriptUrl || env.VITE_GS_SCRIPT_URL || '';
-      if (sheetId && apiKey && scriptUrl) {
-        localStorage.setItem('gs_sheet_id', sheetId);
-        localStorage.setItem('gs_api_key', apiKey);
-        localStorage.setItem('gs_script_url', scriptUrl);
-      }
-    } catch {}
+    sheetId = sheetId || import.meta.env.VITE_GS_SHEET_ID || '';
+    apiKey = apiKey || import.meta.env.VITE_GS_API_KEY || '';
+    scriptUrl = scriptUrl || import.meta.env.VITE_GS_SCRIPT_URL || '';
+    if (sheetId && apiKey && scriptUrl) {
+      localStorage.setItem('gs_sheet_id', sheetId);
+      localStorage.setItem('gs_api_key', apiKey);
+      localStorage.setItem('gs_script_url', scriptUrl);
+    }
   }
 
   return { sheetId: sheetId || '', apiKey: apiKey || '', scriptUrl: scriptUrl || '' };

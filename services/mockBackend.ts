@@ -219,21 +219,16 @@ const localBackend = {
 function isSheetsConfigured() {
   if (typeof window === 'undefined') return false;
 
-  // Already in localStorage (set via Settings UI or previous run)
-  if (localStorage.getItem('gs_sheet_id') && localStorage.getItem('gs_api_key') && localStorage.getItem('gs_script_url')) {
+  const sheetId = localStorage.getItem('gs_sheet_id') || import.meta.env.VITE_GS_SHEET_ID || '';
+  const apiKey = localStorage.getItem('gs_api_key') || import.meta.env.VITE_GS_API_KEY || '';
+  const scriptUrl = localStorage.getItem('gs_script_url') || import.meta.env.VITE_GS_SCRIPT_URL || '';
+
+  if (sheetId && apiKey && scriptUrl) {
+    localStorage.setItem('gs_sheet_id', sheetId);
+    localStorage.setItem('gs_api_key', apiKey);
+    localStorage.setItem('gs_script_url', scriptUrl);
     return true;
   }
-
-  // Check env vars embedded at build time
-  try {
-    const env = typeof import.meta !== 'undefined' ? (import.meta as any).env : {};
-    if (env.VITE_GS_SHEET_ID && env.VITE_GS_API_KEY && env.VITE_GS_SCRIPT_URL) {
-      localStorage.setItem('gs_sheet_id', env.VITE_GS_SHEET_ID);
-      localStorage.setItem('gs_api_key', env.VITE_GS_API_KEY);
-      localStorage.setItem('gs_script_url', env.VITE_GS_SCRIPT_URL);
-      return true;
-    }
-  } catch {}
 
   return false;
 }
