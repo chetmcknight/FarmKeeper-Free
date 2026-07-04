@@ -311,7 +311,7 @@ export const AnimalManager: React.FC = () => {
                 <div className="bg-white p-2 rounded-full shadow-sm mr-2 group-hover:bg-green-50 transition-colors">
                     <svg className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                 </div>
-                Back to Livestock
+                Back to Animals
             </button>
 
             <div className="flex flex-col lg:flex-row gap-6">
@@ -747,15 +747,15 @@ export const AnimalManager: React.FC = () => {
     <div className="p-6 md:p-10 animate-fade-in">
        <div className="flex justify-between items-center mb-10">
         <div>
-            <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">My Livestock</h2>
-            <p className="text-gray-500 font-medium mt-1">Manage your herd and health records.</p>
+            <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">My Animals</h2>
+            <p className="text-gray-500 font-medium mt-1">Manage your animals and health records.</p>
         </div>
         <button 
           onClick={() => setShowAddModal(true)}
           className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md hover:shadow-lg flex items-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-          Add Livestock
+          Add Animal
         </button>
       </div>
 

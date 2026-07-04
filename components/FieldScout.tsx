@@ -147,7 +147,7 @@ export const FieldScout: React.FC = () => {
       
       {/* Friendly Header */}
       <div className="text-center mb-10">
-        <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-2">Farm Scout AI</h2>
+        <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-2">AI Scout</h2>
         <p className="text-gray-500 max-w-xl mx-auto">
           Take a photo of your crop or livestock. Our AI will identify the subject, diagnose issues, and suggest treatments instantly.
         </p>
@@ -177,7 +177,7 @@ export const FieldScout: React.FC = () => {
                     <h3 className="text-xl font-bold text-gray-800 mb-2">
                         {isDragging ? 'Drop to Upload' : 'Tap or Drag to Upload Photo'}
                     </h3>
-                    <p className="text-sm text-gray-500 mb-4">Crops & Livestock Supported</p>
+                    <p className="text-sm text-gray-500 mb-4">Crops & Animals Supported</p>
                     <p className="text-xs text-gray-400 font-medium bg-white px-3 py-1 rounded-full border border-gray-100">Accepted formats: PNG, JPG</p>
                 </div>
             ) : (

@@ -200,9 +200,7 @@ export const getWeatherInsight = async (location: string) => {
       contents: `Get the current weather and a brief 3-day farming forecast for ${location}.
       You MUST respond ONLY with a JSON object in this exact format, no other text:
       { "current": "Temperature and condition, e.g. 72°F Partly Cloudy", "forecast": "Brief 3-day farming-relevant forecast summary" }`,
-      config: {
-        tools: [{ googleSearch: {} }],
-      },
+      tools: [{ googleSearch: {} }],
     });
 
     let text = response.text || "";
@@ -240,9 +238,7 @@ export const getMarketPrices = async (commodities: string[], storeName: string =
       contents: `Current price of ${commoditiesList} at ${storeName} in Sequim/Port Angeles WA area.
       You MUST respond ONLY with a JSON array in this exact format, no other text:
       [ { "name": "Item", "price": "$X.XX" } ]`,
-      config: {
-        tools: [{ googleSearch: {} }],
-      },
+      tools: [{ googleSearch: {} }],
     });
     
     let text = response.text || "";
@@ -289,7 +285,7 @@ export const getDailyTip = async () => {
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: `Provide a "dailyTip" which is a useful, practical, and scientific piece of advice for farmers regarding crops or livestock for the current season.
-      Format output as JSON: { "title": "Short Title", "content": "1-2 sentences", "category": "Crops|Livestock|General" }`,
+      Format output as JSON: { "title": "Short Title", "content": "1-2 sentences", "category": "Crops|Animals|General" }`,
       config: {
         responseMimeType: "application/json",
       },
