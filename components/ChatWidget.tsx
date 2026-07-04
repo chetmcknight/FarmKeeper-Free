@@ -264,17 +264,11 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ isHidden = false }) => {
             ) : (
                 // Use a fixed flex container to prevent jitter
                 <div className="flex items-center justify-center w-full h-full">
-                     <svg className="w-8 h-8 md:w-10 md:h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                       <path d="M6 4.5c0-2 12-2 12 0" stroke="currentColor" strokeWidth={1.5} fill="none" strokeLinecap="round" />
-                       <path d="M3 5.5h18" stroke="currentColor" strokeWidth={2} fill="none" strokeLinecap="round" />
-                       <circle cx="12" cy="11" r="4.5" stroke="currentColor" strokeWidth={1.5} fill="none" />
-                       <circle cx="10" cy="10" r=".6" />
-                       <circle cx="14" cy="10" r=".6" />
-                       <path d="M8.5 13.5Q12 17 15.5 13.5" stroke="currentColor" strokeWidth={1.5} fill="none" strokeLinecap="round" />
-                       <circle cx="9" cy="12" r=".8" opacity="0.3" />
-                       <circle cx="15" cy="12" r=".8" opacity="0.3" />
-                       <path d="M8.5 16h7" stroke="currentColor" strokeWidth={1.5} fill="none" strokeLinecap="round" />
-                     </svg>
+                  <img 
+                    src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧑‍🌾</text></svg>" 
+                    alt="Farmer"
+                    className="w-8 h-8 md:w-10 md:h-10 drop-shadow-md"
+                  />
                 </div>
             )}
         </button>
