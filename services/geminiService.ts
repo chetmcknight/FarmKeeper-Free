@@ -8,12 +8,7 @@ let _aiClient: any = null;
 
 const getAI = async () => {
   if (_aiClient) return _aiClient;
-  
-  const apiKey = (typeof process !== 'undefined' && process.env && process.env.API_KEY)
-    || (typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env.VITE_API_KEY);
-  
-  // Initialize client using the installed package
-  _aiClient = new GoogleGenAI({ apiKey });
+  _aiClient = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
   return _aiClient;
 };
 // --- Caching Helpers ---
