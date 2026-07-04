@@ -5,6 +5,21 @@ function handleRequest(e) {
     const data = e.postData ? JSON.parse(e.postData.contents) : e.parameter;
     const { action, entity, ...payload } = data;
 
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+
+    // Actions that don't need an entity/sheet lookup
+    if (action === 'ensureSheet') {
+      const tabName = payload.tabName || 'KnowledgeBase';
+      const existing = ss.getSheetByName(tabName);
+      if (!existing) {
+        const ns = ss.insertSheet(tabName);
+        const headers = ['Topic', 'Content', 'Tags'];
+        ns.getRange(1, 1, 1, headers.length).setValues([headers]);
+        ns.setFrozenRows(1);
+      }
+      return json({ success: true });
+    }
+
     const sheetName = entity === 'user' ? 'Users'
       : entity === 'crop' ? 'Crops'
       : entity === 'animal' ? 'Animals'
@@ -14,7 +29,7 @@ function handleRequest(e) {
 
     if (!sheetName) throw new Error('Unknown entity: ' + entity);
 
-    const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(sheetName);
+    const sheet = ss.getSheetByName(sheetName);
     const rows = sheet.getDataRange().getValues();
     const header = rows[0] || [];
     const isRowMatch = (row, id) => row[0] && row[0].toString() === id;
@@ -63,49 +78,21 @@ function handleRequest(e) {
         break;
       }
 
-      case 'register': {
-        const existing = rows.slice(1).map(r => r[1] || '');
-        if (existing.some(e => e === payload.email)) {
-          throw new Error('Account already exists');
-        }
-        const newRow = header.map(col => payload[col] || '');
-        sheet.appendRow(newRow);
-        result = { success: true, user: payload };
-        break;
-      }
-
-      case 'findUser': {
-        const users = rows.slice(1).map(r => ({
-          id: r[0] || '', email: r[1] || '', name: r[2] || '', imageUrl: r[3] || undefined
-        })).filter(u => u.id);
-        const found = users.find(u => u.email === payload.email);
-        result = found ? { success: true, user: found } : { success: false, error: 'User not found' };
-        break;
-      }
-
-      case 'clearAndWrite': {
-        const dataRows = payload.rows || [];
-        sheet.clearContents();
-        if (dataRows.length > 0) {
-          sheet.getRange(1, 1, dataRows.length, dataRows[0].length).setValues(dataRows);
-        }
-        result = { success: true };
-        break;
-      }
-
       default:
         throw new Error('Unknown action: ' + action);
     }
 
-    return ContentService
-      .createTextOutput(JSON.stringify(result))
-      .setMimeType(ContentService.MimeType.JSON);
+    return json(result);
 
   } catch (err) {
-    return ContentService
-      .createTextOutput(JSON.stringify({ success: false, error: err.message }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return json({ success: false, error: err.message });
   }
+}
+
+function json(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 function doPost(e) {

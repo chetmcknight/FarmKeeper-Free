@@ -1,5 +1,6 @@
 import { DiagnosisResult } from "../types";
 import { GoogleGenAI, Type } from "@google/genai";
+import { sheetsBackend } from './googleSheetsService';
 import knowledgeBase from '../knowledge/chatbot-knowledge.md?raw';
 
 // Lazily load @google/genai (now installed locally)
@@ -130,8 +131,17 @@ export const getFarmingAdvice = async (
   try {
     let systemInstruction = "You are FarmKeeper, an expert agricultural and livestock professional. Provide concise, practical, and scientific advice to farmers regarding crops, animal husbandry, veterinary health, and farm management. If looking up weather or market prices, use the Google Search tool.";
     
-    if (knowledgeBase) {
+    try {
+      const sheetKnowledge = await sheetsBackend.getKnowledgeBase();
+      if (sheetKnowledge) {
+        systemInstruction += `\n\n## KNOWLEDGE BASE\nUse the following curated knowledge to inform your answers:\n${sheetKnowledge}`;
+      } else if (knowledgeBase) {
         systemInstruction += `\n\n## KNOWLEDGE BASE\nUse the following curated knowledge to inform your answers:\n${knowledgeBase}`;
+      }
+    } catch {
+      if (knowledgeBase) {
+        systemInstruction += `\n\n## KNOWLEDGE BASE\nUse the following curated knowledge to inform your answers:\n${knowledgeBase}`;
+      }
     }
 
     if (farmContext) {

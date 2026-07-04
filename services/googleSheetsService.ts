@@ -65,6 +65,7 @@ const CROPS_RANGE = 'Crops!A:Z';
 const ANIMALS_RANGE = 'Animals!A:Z';
 const FARMHANDS_RANGE = 'Farmhands!A:Z';
 const SCOUT_RANGE = 'ScoutHistory!A:Z';
+const KNOWLEDGE_RANGE = 'KnowledgeBase!A:C';
 
 function cropFromRow(row: string[]): Crop | null {
   const id = row[0] || '';
@@ -299,5 +300,27 @@ export const sheetsBackend = {
 
   async deleteScoutRecord(id: string): Promise<void> {
     await scriptPost({ action: 'delete', entity: 'scout', id });
+  },
+
+  // Knowledge Base
+  async getKnowledgeBase(): Promise<string> {
+    const rows = await readRange(KNOWLEDGE_RANGE);
+    if (rows.length < 2) return '';
+    const header = rows[0];
+    const topicIdx = header.findIndex(h => h.toLowerCase().includes('topic') || h.toLowerCase().includes('title'));
+    const contentIdx = header.findIndex(h => h.toLowerCase().includes('content') || h.toLowerCase().includes('answer'));
+    const tagsIdx = header.findIndex(h => h.toLowerCase().includes('tag') || h.toLowerCase().includes('category'));
+
+    const entries: string[] = [];
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      const topic = (topicIdx >= 0 ? row[topicIdx] : row[0] || '').trim();
+      const content = (contentIdx >= 0 ? row[contentIdx] : row[1] || '').trim();
+      const tags = tagsIdx >= 0 ? row[tagsIdx]?.trim() : '';
+      if (!topic && !content) continue;
+      const tagStr = tags ? ` (${tags})` : '';
+      entries.push(`### ${topic}${tagStr}\n${content}`);
+    }
+    return entries.join('\n\n');
   },
 };
