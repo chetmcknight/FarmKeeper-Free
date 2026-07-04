@@ -110,11 +110,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
     return () => { mounted = false; };
   }, [location]);
 
-  const refreshTip = async () => {
+  const refreshTip = () => {
     setLoadingTip(true);
-    const data = await getDailyTip();
-    setTipData(data);
-    setLoadingTip(false);
+    getDailyTip()
+      .then(data => {
+        setTipData(data);
+        setLoadingTip(false);
+      })
+      .catch(() => {
+        setLoadingTip(false);
+      });
   };
 
   const refreshAnimalTip = async () => {
