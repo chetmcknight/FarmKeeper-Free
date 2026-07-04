@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getWeatherInsight, getMarketPrices, getDailyTip } from '../services/geminiService';
+import { getWeatherInsight, getMarketPrices, getDailyTip, getAnimalTip } from '../services/geminiService';
 import { backend } from '../services/mockBackend';
 import { Page } from '../types';
 import { useAuth } from '../context/AuthContext';
@@ -31,11 +31,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
   const [weatherData, setWeatherData] = useState<any>(null);
   const [marketData, setMarketData] = useState<any[]>([]);
   const [tipData, setTipData] = useState<any>(null);
+  const [animalTipData, setAnimalTipData] = useState<any>(null);
 
   // Loading States
   const [loadingWeather, setLoadingWeather] = useState(true);
   const [loadingMarkets, setLoadingMarkets] = useState(true);
   const [loadingTip, setLoadingTip] = useState(true);
+  const [loadingAnimalTip, setLoadingAnimalTip] = useState(true);
 
   const [selectedCommodities, setSelectedCommodities] = useState<string[]>([
     "Oats", "Alfalfa Hay", "Straw", "Chicken Feed"
@@ -89,18 +91,38 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
             }
         });
 
-        // Fetch Tip
+        // Fetch Tips
         getDailyTip().then(data => {
             if(mounted) {
                 setTipData(data);
                 setLoadingTip(false);
             }
         });
+        getAnimalTip().then(data => {
+            if(mounted) {
+                setAnimalTipData(data);
+                setLoadingAnimalTip(false);
+            }
+        });
     };
 
     fetchGeneral();
     return () => { mounted = false; };
-  }, [location]); // Re-run if location changes
+  }, [location]);
+
+  const refreshTip = async () => {
+    setLoadingTip(true);
+    const data = await getDailyTip();
+    setTipData(data);
+    setLoadingTip(false);
+  };
+
+  const refreshAnimalTip = async () => {
+    setLoadingAnimalTip(true);
+    const data = await getAnimalTip();
+    setAnimalTipData(data);
+    setLoadingAnimalTip(false);
+  }; // Re-run if location changes
 
   // Fetch Markets (Whenever commodities or store change)
   useEffect(() => {
@@ -182,7 +204,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
             className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:scale-105 hover:border-blue-200 dark:hover:border-blue-700 transition-all cursor-pointer group"
           >
               <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-800/40 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform"><svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg></div>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-800/40 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform">🐐</div>
                   <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Animals</p>
                       <h4 className="text-2xl font-bold text-gray-900 dark:text-white">{stats.animalsTotal}</h4>
@@ -195,7 +217,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
             className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:scale-105 hover:border-green-200 dark:hover:border-green-700 transition-all cursor-pointer group"
           >
               <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/40 dark:to-green-800/40 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform"><svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg></div>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/40 dark:to-green-800/40 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform">🌽</div>
                   <div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">Crops</p>
                       <h4 className="text-2xl font-bold text-gray-900 dark:text-white">{stats.cropsTotal}</h4>
@@ -207,7 +229,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
             className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:scale-105 hover:border-purple-200 dark:hover:border-purple-700 transition-all cursor-pointer group"
           >
               <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/40 dark:to-purple-800/40 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform"><svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg></div>
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/40 dark:to-purple-800/40 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform">🧑‍🌾</div>
                   <div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">Farmhands</p>
                       <h4 className="text-2xl font-bold text-gray-900 dark:text-white">{stats.farmhandsTotal}</h4>
@@ -240,13 +262,80 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
           )}
         </div>
 
+        {/* Animal Expert Insight */}
+      <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 min-h-[200px]">
+        <div className="flex items-center gap-3 mb-6">
+            <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg text-xl">
+                🐐
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Expert Insight of the Day — Animals</h3>
+            <button onClick={refreshAnimalTip} disabled={loadingAnimalTip} className="ml-auto p-2.5 rounded-xl text-gray-400 hover:text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all duration-200 disabled:opacity-50 active:scale-90" title="Refresh">
+                <svg className={`w-5 h-5 ${loadingAnimalTip ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            </button>
+        </div>
+
+        {loadingAnimalTip ? (
+             <div className="animate-pulse space-y-4 max-w-2xl">
+                <div className="h-6 w-32 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                <div className="h-8 w-3/4 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                <div className="space-y-2">
+                    <div className="h-4 w-full bg-gray-100 dark:bg-gray-700 rounded"></div>
+                    <div className="h-4 w-5/6 bg-gray-100 dark:bg-gray-700 rounded"></div>
+                </div>
+            </div>
+        ) : (
+             <div className="flex flex-col md:flex-row gap-8 items-center animate-fade-in">
+                 <div className="flex-1">
+                     {animalTipData ? (
+                         <div className="space-y-4">
+                            <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900/50">
+                                {animalTipData.category || 'Animal Tip'}
+                            </span>
+                            <h4 className="text-2xl font-extrabold text-gray-900 dark:text-white leading-tight">
+                                {animalTipData.title}
+                            </h4>
+                            <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+                                {animalTipData.content}
+                            </p>
+                            {(animalTipData.source || animalTipData.sourceUrl) && (
+                                <div className="mt-4 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 pt-3">
+                                    Source: {animalTipData.sourceUrl ? (
+                                        <a href={animalTipData.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">{animalTipData.source}</a>
+                                    ) : (
+                                        <span>{animalTipData.source}</span>
+                                    )}
+                                </div>
+                            )}
+                         </div>
+                     ) : (
+                         <div className="space-y-4">
+                            <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900/50">
+                                Animal Tip
+                            </span>
+                            <h4 className="text-2xl font-extrabold text-gray-900 dark:text-white leading-tight">
+                                Check Water Supply
+                            </h4>
+                            <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+                                Ensure all livestock have access to clean, fresh water. During hot weather, check troughs twice daily and clean them regularly to prevent algae buildup.
+                            </p>
+                         </div>
+                     )}
+                 </div>
+                 
+              </div>
+         )}
+       </div>
+
         {/* Expert Insight / Daily Tip */}
       <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 min-h-[200px]">
         <div className="flex items-center gap-3 mb-6">
-            <div className="bg-indigo-100 dark:bg-indigo-900/30 p-2 rounded-lg text-indigo-600 dark:text-indigo-400">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+            <div className="bg-indigo-100 dark:bg-indigo-900/30 p-2 rounded-lg text-xl">
+                🌽
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Expert Insight of the Day</h3>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Expert Insight of the Day — Crops</h3>
+            <button onClick={refreshTip} disabled={loadingTip} className="ml-auto p-2.5 rounded-xl text-gray-400 hover:text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-all duration-200 disabled:opacity-50 active:scale-90" title="Refresh">
+                <svg className={`w-5 h-5 ${loadingTip ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            </button>
         </div>
 
         {loadingTip ? (
@@ -272,9 +361,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
                             <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
                                 {tipData.content}
                             </p>
-                            {tipData.source && (
+                            {(tipData.source || tipData.sourceUrl) && (
                                 <div className="mt-4 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 pt-3">
-                                    Source: <a href={tipData.sourceUrl || '#'} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:underline">{tipData.source}</a>
+                                    Source: {tipData.sourceUrl ? (
+                                        <a href={tipData.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:underline">{tipData.source}</a>
+                                    ) : (
+                                        <span>{tipData.source}</span>
+                                    )}
                                 </div>
                             )}
                          </div>
@@ -293,14 +386,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
                      )}
                  </div>
                  
-                 {/* Decorative Illustration/Icon */}
-                  <div className="hidden md:flex flex-shrink-0 w-48 h-48 bg-gray-50 dark:bg-gray-700/50 rounded-full items-center justify-center text-8xl border-4 border-white dark:border-gray-600 shadow-lg">
-                     <svg className="w-24 h-24 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
-                  </div>
-             </div>
-        )}
-      </div>
-    </div>
+              </div>
+         )}
+       </div>
+     </div>
     </div>
   );
 };

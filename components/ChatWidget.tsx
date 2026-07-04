@@ -265,7 +265,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ isHidden = false }) => {
                 // Use a fixed flex container to prevent jitter
                 <div className="flex items-center justify-center w-full h-full">
                   <img 
-                    src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧑‍🌾</text></svg>" 
+                    src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>" 
                     alt="Farmer"
                     className="w-12 h-12 md:w-14 md:h-14 -m-1 drop-shadow-md"
                   />

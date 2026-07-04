@@ -11,6 +11,7 @@ const getAI = async () => {
   _aiClient = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
   return _aiClient;
 };
+
 // --- Caching Helpers ---
 const CACHE_PREFIX = 'farmkeeper_cache_';
 const CACHE_DURATION = 1000 * 60 * 60; // 1 hour default
@@ -284,8 +285,9 @@ export const getDailyTip = async () => {
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
-      contents: `Provide a "dailyTip" which is a useful, practical, and scientific piece of advice for farmers regarding crops or livestock for the current season.
-      Format output as JSON: { "title": "Short Title", "content": "1-2 sentences", "category": "Crops|Animals|General" }`,
+      contents: `Provide a "dailyTip" which is a useful, practical, and scientific piece of advice for farmers regarding crops for the current season.
+      You MUST respond ONLY with a JSON object in this exact format, no other text:
+      { "title": "Short Title", "content": "1-2 sentences", "category": "Crops" }`,
       config: {
         responseMimeType: "application/json",
       },
@@ -293,11 +295,36 @@ export const getDailyTip = async () => {
     const data = JSON.parse(response.text || "{}");
     return {
         ...data,
-        source: "Agriculture.com",
-        sourceUrl: "https://www.agriculture.com/"
+        source: "AI Generated",
+        sourceUrl: ""
     };
   } catch (error) {
     console.error("Tip error:", error);
+    return null;
+  }
+};
+
+export const getAnimalTip = async () => {
+  try {
+    const ai = await getAI();
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: `Provide a "dailyAnimalTip" which is a useful, practical, and scientific piece of advice for farmers specifically about livestock and animal husbandry for the current season.
+      You MUST respond ONLY with a JSON object in this exact format, no other text:
+      { "title": "Short Title", "content": "1-2 sentences", "category": "Animals" }`,
+      config: {
+        responseMimeType: "application/json",
+      },
+    });
+    const data = JSON.parse(response.text || "{}");
+    return {
+        ...data,
+        source: "AI Generated",
+        sourceUrl: ""
+    };
+  } catch (error) {
+    console.error("Animal tip error:", error);
     return null;
   }
 };
