@@ -65,9 +65,8 @@ const AuthenticatedLayout: React.FC = () => {
               `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`
             );
             const data = await res.json();
-            const city = data.address?.city || data.address?.town || data.address?.village || data.address?.county;
-            const state = data.address?.state;
-            setLocation(city && state ? `${city}, ${state}` : `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`);
+            const city = data.address?.city || data.address?.town || data.address?.village;
+            setLocation(city || `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`);
           } catch {
             setLocation(`${latitude.toFixed(2)}, ${longitude.toFixed(2)}`);
           }

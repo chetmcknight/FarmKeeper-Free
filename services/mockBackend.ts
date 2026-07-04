@@ -235,4 +235,25 @@ function isSheetsConfigured() {
 
 const sheetsConfigured = isSheetsConfigured();
 
-export const backend = sheetsConfigured ? sheetsBackend : localBackend;
+// Wrap sheets backend with localStorage fallback so the app stays usable
+// when Google Sheets API is unreachable.
+function sheetsWithFallback(): typeof localBackend {
+  const proxy = {} as typeof localBackend;
+  const skipFallback = new Set(['login', 'signup', 'getCurrentUser', 'logout', 'deleteAccount', 'updatePassword']);
+  for (const key of Object.keys(localBackend) as (keyof typeof localBackend)[]) {
+    proxy[key] = async (...args: any[]) => {
+      if (skipFallback.has(key as string)) {
+        return await (sheetsBackend as any)[key](...args);
+      }
+      try {
+        return await (sheetsBackend as any)[key](...args);
+      } catch (e) {
+        console.warn(`Sheets "${String(key)}" failed, using localStorage:`, e);
+        return await (localBackend as any)[key](...args);
+      }
+    };
+  }
+  return proxy;
+}
+
+export const backend = sheetsConfigured ? sheetsWithFallback() : localBackend;

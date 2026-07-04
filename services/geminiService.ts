@@ -145,8 +145,8 @@ export const getFarmingAdvice = async (
       model: "gemini-2.5-flash",
       config: {
         tools: [{ googleSearch: {} }],
-        systemInstruction: systemInstruction,
       },
+      systemInstruction: systemInstruction,
       history: history,
     });
 
