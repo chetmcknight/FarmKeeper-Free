@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Portal } from './Portal';
 import { Farmhand } from '../types';
 import { backend } from '../services/mockBackend';
 import { compressImage } from '../utils/imageUtils';
@@ -447,10 +448,11 @@ export const FarmhandManager: React.FC = () => {
 
         {/* Modal */}
         {showAddModal && (
-            <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-start justify-center z-50 p-4 pt-24 md:pt-36">
+            <Portal><div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-start justify-center z-50 p-4 pt-24 md:pt-36">
                 <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] m-4 flex flex-col relative">
                     {/* Glass Morphism Close */}
                     <button 
+                        type="button"
                         onClick={() => setShowAddModal(false)}
                         className="absolute top-4 right-4 p-2 rounded-full bg-white/40 backdrop-blur-md border border-white/50 shadow-sm hover:bg-white/60 text-gray-600 transition-all z-10"
                     >
@@ -575,12 +577,14 @@ export const FarmhandManager: React.FC = () => {
 
                     <div className="px-8 py-6 bg-gray-50 flex justify-end gap-3 border-t border-gray-100 mt-auto">
                         <button 
+                            type="button"
                             onClick={() => setShowAddModal(false)}
                             className="px-6 py-2.5 border border-gray-300 rounded-xl text-sm font-bold text-gray-700 hover:bg-white transition-colors"
                         >
                             Cancel
                         </button>
                         <button 
+                            type="button"
                             onClick={handleSubmit}
                             className="px-6 py-2.5 bg-green-600 rounded-xl text-sm font-bold text-white hover:bg-green-700 shadow-md hover:shadow-lg transition-all"
                         >
@@ -588,9 +592,9 @@ export const FarmhandManager: React.FC = () => {
                         </button>
                     </div>
                 </div>
-            </div>
-        )}
-        
+                </div></Portal>
+            )}
+            
     </div>
   );
 };

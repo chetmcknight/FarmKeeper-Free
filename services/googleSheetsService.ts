@@ -58,10 +58,10 @@ async function scriptPost(body: Record<string, any>): Promise<any> {
 }
 
 const USERS_COLS = ['id', 'email', 'name', 'imageUrl'];
-const CROPS_COLS = ['id', 'userId', 'name', 'variety', 'plantedDate', 'harvestDate', 'status', 'area', 'imageUrl', 'coverUrl', 'history_json'];
-const ANIMALS_COLS = ['id', 'userId', 'name', 'type', 'breed', 'birthDate', 'deathDate', 'status', 'weight', 'gender', 'imageUrl', 'coverUrl', 'medicalHistory_json'];
-const FARMHANDS_COLS = ['id', 'userId', 'name', 'role', 'phone', 'email', 'status', 'notes', 'startDate', 'imageUrl', 'coverUrl'];
-const SCOUT_COLS = ['id', 'userId', 'date', 'imageBase64', 'result_json'];
+const CROPS_COLS = ['id', 'name', 'variety', 'plantedDate', 'harvestDate', 'status', 'area', 'imageUrl', 'coverUrl', 'history_json'];
+const ANIMALS_COLS = ['id', 'name', 'type', 'breed', 'birthDate', 'deathDate', 'status', 'weight', 'gender', 'imageUrl', 'coverUrl', 'medicalHistory_json'];
+const FARMHANDS_COLS = ['id', 'name', 'role', 'phone', 'email', 'status', 'notes', 'startDate', 'imageUrl', 'coverUrl'];
+const SCOUT_COLS = ['id', 'date', 'imageBase64', 'result_json'];
 
 const USERS_RANGE = 'Users!A:Z';
 const CROPS_RANGE = 'Crops!A:Z';
@@ -74,16 +74,16 @@ function cropFromRow(row: string[]): Crop | null {
   if (!id) return null;
   return {
     id,
-    userId: row[1] || '',
-    name: row[2] || '',
-    variety: row[3] || '',
-    plantedDate: row[4] || '',
-    harvestDate: row[5] || '',
-    status: (row[6] || 'Healthy') as Crop['status'],
-    area: row[7] || '',
-    imageUrl: row[8] || undefined,
-    coverUrl: row[9] || undefined,
-    history: row[10] ? JSON.parse(row[10]) : [],
+    userId: '',
+    name: row[1] || '',
+    variety: row[2] || '',
+    plantedDate: row[3] || '',
+    harvestDate: row[4] || '',
+    status: (row[5] || 'Healthy') as Crop['status'],
+    area: row[6] || '',
+    imageUrl: row[7] || undefined,
+    coverUrl: row[8] || undefined,
+    history: row[9] ? JSON.parse(row[9]) : [],
   };
 }
 
@@ -92,18 +92,18 @@ function animalFromRow(row: string[]): Animal | null {
   if (!id) return null;
   return {
     id,
-    userId: row[1] || '',
-    name: row[2] || '',
-    type: row[3] || '',
-    breed: row[4] || '',
-    birthDate: row[5] || '',
-    deathDate: row[6] || undefined,
-    status: (row[7] || 'Healthy') as Animal['status'],
-    weight: row[8] || '',
-    gender: (row[9] || 'Female') as 'Male' | 'Female',
-    imageUrl: row[10] || undefined,
-    coverUrl: row[11] || undefined,
-    medicalHistory: row[12] ? JSON.parse(row[12]) : [],
+    userId: '',
+    name: row[1] || '',
+    type: row[2] || '',
+    breed: row[3] || '',
+    birthDate: row[4] || '',
+    deathDate: row[5] || undefined,
+    status: (row[6] || 'Healthy') as Animal['status'],
+    weight: row[7] || '',
+    gender: (row[8] || 'Female') as 'Male' | 'Female',
+    imageUrl: row[9] || undefined,
+    coverUrl: row[10] || undefined,
+    medicalHistory: row[11] ? JSON.parse(row[11]) : [],
   };
 }
 
@@ -112,16 +112,16 @@ function farmhandFromRow(row: string[]): Farmhand | null {
   if (!id) return null;
   return {
     id,
-    userId: row[1] || '',
-    name: row[2] || '',
-    role: row[3] || '',
-    phone: row[4] || '',
-    email: row[5] || '',
-    status: (row[6] || 'Active') as Farmhand['status'],
-    notes: row[7] || '',
-    startDate: row[8] || '',
-    imageUrl: row[9] || undefined,
-    coverUrl: row[10] || undefined,
+    userId: '',
+    name: row[1] || '',
+    role: row[2] || '',
+    phone: row[3] || '',
+    email: row[4] || '',
+    status: (row[5] || 'Active') as Farmhand['status'],
+    notes: row[6] || '',
+    startDate: row[7] || '',
+    imageUrl: row[8] || undefined,
+    coverUrl: row[9] || undefined,
   };
 }
 
@@ -130,10 +130,10 @@ function scoutFromRow(row: string[]): ScoutRecord | null {
   if (!id) return null;
   return {
     id,
-    userId: row[1] || '',
-    date: parseInt(row[2] || '0', 10),
-    imageBase64: row[3] || '',
-    result: row[4] ? JSON.parse(row[4]) : { diseaseName: '', confidence: '', description: '', treatment: [] },
+    userId: '',
+    date: parseInt(row[1] || '0', 10),
+    imageBase64: row[2] || '',
+    result: row[3] ? JSON.parse(row[3]) : { diseaseName: '', confidence: '', description: '', treatment: [] },
   };
 }
 
@@ -165,12 +165,6 @@ function userFromRow(row: string[]): User | null {
     name: row[2] || '',
     imageUrl: row[3] || undefined,
   };
-}
-
-function currentUserId(): string {
-  const stored = localStorage.getItem('farmhand_user');
-  if (!stored) return '';
-  try { return JSON.parse(stored).id || ''; } catch { return ''; }
 }
 
 export const sheetsBackend = {
@@ -226,13 +220,12 @@ export const sheetsBackend = {
 
   // Crops
   async getCrops(): Promise<Crop[]> {
-    const uid = currentUserId();
     const rows = await readRange(CROPS_RANGE);
-    return rows.slice(1).map(cropFromRow).filter((c): c is Crop => c !== null && (!c.userId || c.userId === uid));
+    return rows.slice(1).map(cropFromRow).filter((c): c is Crop => c !== null);
   },
 
   async addCrop(crop: Omit<Crop, 'id' | 'userId'>): Promise<Crop> {
-    const newCrop: Crop = { ...crop, id: Date.now().toString(), userId: currentUserId() };
+    const newCrop: Crop = { ...crop, id: Date.now().toString(), userId: '' };
     const payload = Object.fromEntries(CROPS_COLS.map(col => [col, col === 'history_json' ? JSON.stringify(newCrop.history) : (newCrop as Record<string, any>)[col] || '']));
     await scriptPost({ action: 'append', entity: 'crop', ...stripImages(payload) });
     return newCrop;
@@ -250,13 +243,12 @@ export const sheetsBackend = {
 
   // Animals
   async getAnimals(): Promise<Animal[]> {
-    const uid = currentUserId();
     const rows = await readRange(ANIMALS_RANGE);
-    return rows.slice(1).map(animalFromRow).filter((a): a is Animal => a !== null && (!a.userId || a.userId === uid));
+    return rows.slice(1).map(animalFromRow).filter((a): a is Animal => a !== null);
   },
 
   async addAnimal(animal: Omit<Animal, 'id' | 'userId'>): Promise<Animal> {
-    const newAnimal: Animal = { ...animal, id: Date.now().toString(), userId: currentUserId() };
+    const newAnimal: Animal = { ...animal, id: Date.now().toString(), userId: '' };
     const payload = Object.fromEntries(ANIMALS_COLS.map(col => [col, col === 'medicalHistory_json' ? JSON.stringify(newAnimal.medicalHistory) : (newAnimal as Record<string, any>)[col] || '']));
     await scriptPost({ action: 'append', entity: 'animal', ...stripImages(payload) });
     return newAnimal;
@@ -274,13 +266,12 @@ export const sheetsBackend = {
 
   // Farmhands
   async getFarmhands(): Promise<Farmhand[]> {
-    const uid = currentUserId();
     const rows = await readRange(FARMHANDS_RANGE);
-    return rows.slice(1).map(farmhandFromRow).filter((f): f is Farmhand => f !== null && (!f.userId || f.userId === uid));
+    return rows.slice(1).map(farmhandFromRow).filter((f): f is Farmhand => f !== null);
   },
 
   async addFarmhand(farmhand: Omit<Farmhand, 'id' | 'userId'>): Promise<Farmhand> {
-    const newHand: Farmhand = { ...farmhand, id: Date.now().toString(), userId: currentUserId() };
+    const newHand: Farmhand = { ...farmhand, id: Date.now().toString(), userId: '' };
     const payload = Object.fromEntries(FARMHANDS_COLS.map(col => [col, (newHand as Record<string, any>)[col] || '']));
     await scriptPost({ action: 'append', entity: 'farmhand', ...stripImages(payload) });
     return newHand;
@@ -298,13 +289,12 @@ export const sheetsBackend = {
 
   // Scout
   async getScoutHistory(): Promise<ScoutRecord[]> {
-    const uid = currentUserId();
     const rows = await readRange(SCOUT_RANGE);
-    return rows.slice(1).map(scoutFromRow).filter((s): s is ScoutRecord => s !== null && (!s.userId || s.userId === uid));
+    return rows.slice(1).map(scoutFromRow).filter((s): s is ScoutRecord => s !== null);
   },
 
   async addScoutRecord(record: Omit<ScoutRecord, 'id' | 'userId'>): Promise<ScoutRecord> {
-    const newRecord: ScoutRecord = { ...record, id: Date.now().toString(), userId: currentUserId() };
+    const newRecord: ScoutRecord = { ...record, id: Date.now().toString(), userId: '' };
     const payload = Object.fromEntries(SCOUT_COLS.map(col => [col, col === 'result_json' ? JSON.stringify(newRecord.result) : (newRecord as Record<string, any>)[col] || '']));
     await scriptPost({ action: 'append', entity: 'scout', ...stripImages(payload) });
     return newRecord;

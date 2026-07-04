@@ -119,7 +119,7 @@ const AuthenticatedLayout: React.FC = () => {
         toggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
           {/* Added pb-20 for mobile nav clearance */}
-          <main className="flex-1 overflow-y-auto no-scrollbar pb-24 md:pb-0 md:p-6 relative">
+          <main className="flex-1 overflow-y-auto no-scrollbar pb-24 md:pb-0 md:p-6">
             <div className="max-w-7xl mx-auto h-full">
                <Suspense fallback={<LoadingSpinner />}>
                  {renderPage()}
