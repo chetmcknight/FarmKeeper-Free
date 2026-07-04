@@ -23,3 +23,10 @@
 ### 2024-07-04 — Initial knowledge base
 - Created the knowledge base file.
 - Added general farm location and climate notes.
+
+
+
+-   ### 2026-07-04 — Goats
+  - I have 4 Nigerian Dwarf goats. Dior, Kili, Nori, and Frodo. Nori is the only female. I got them from Jackie at Narnia Farms.
+
+
