@@ -274,10 +274,6 @@ export const getMarketPrices = async (commodities: string[], storeName: string =
 };
 
 export const getDailyTip = async () => {
-  const cacheKey = `daily_tip_${new Date().toISOString().split('T')[0]}`; // One tip per day
-  const cached = getCachedData(cacheKey);
-  if (cached) return cached;
-
   try {
     const ai = await getAI();
 
@@ -290,13 +286,11 @@ export const getDailyTip = async () => {
       },
     });
     const data = JSON.parse(response.text || "{}");
-    const result = {
+    return {
         ...data,
         source: "Agriculture.com",
         sourceUrl: "https://www.agriculture.com/"
     };
-    setCachedData(cacheKey, result);
-    return result;
   } catch (error) {
     console.error("Tip error:", error);
     return null;
