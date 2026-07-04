@@ -51,16 +51,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
   });
 
   useEffect(() => {
-    // Load local farm stats
     const loadStats = async () => {
-        const crops = await backend.getCrops();
-        const animals = await backend.getAnimals();
-        setStats({
-            cropsTotal: crops.length,
-            cropsAttention: crops.filter(c => c.status === 'Needs Attention').length,
-            animalsTotal: animals.length,
-            animalsAttention: animals.filter(a => ['Sick', 'Vet Check Required'].includes(a.status)).length
-        });
+        try {
+            const crops = await backend.getCrops();
+            const animals = await backend.getAnimals();
+            setStats({
+                cropsTotal: crops.length,
+                cropsAttention: crops.filter(c => c.status === 'Needs Attention').length,
+                animalsTotal: animals.length,
+                animalsAttention: animals.filter(a => ['Sick', 'Vet Check Required'].includes(a.status)).length
+            });
+        } catch (e) {
+            console.error("Failed to load stats", e);
+        }
     };
     loadStats();
   }, []);
@@ -148,7 +151,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
               </div>
               <div className="text-right">
-                <p className="text-sm font-bold text-gray-800 dark:text-gray-200">Sequim, WA</p>
+                <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{location}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">{new Date().toLocaleDateString(undefined, {weekday: 'long', month: 'short', day: 'numeric'})}</p>
               </div>
             </div>

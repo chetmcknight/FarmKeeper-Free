@@ -149,10 +149,14 @@ export const CropManager: React.FC = () => {
   const handleDeleteCrop = async (e: React.MouseEvent, id: string, name: string) => {
     e.stopPropagation();
     if (window.confirm(`Are you sure you want to delete ${name}?`)) {
-      await backend.deleteCrop(id);
-      loadCrops();
-      if (selectedCrop?.id === id) {
-        setSelectedCrop(null);
+      try {
+        await backend.deleteCrop(id);
+        await loadCrops();
+        if (selectedCrop?.id === id) {
+          setSelectedCrop(null);
+        }
+      } catch (e) {
+        alert("Failed to delete crop.");
       }
     }
   };

@@ -73,9 +73,13 @@ export const FarmhandManager: React.FC = () => {
   const handleDelete = async (e: React.MouseEvent, id: string, name: string) => {
       e.stopPropagation();
       if(window.confirm(`Remove ${name} from farmhands?`)) {
-          await backend.deleteFarmhand(id);
-          loadHands();
-          if (selectedHand?.id === id) setSelectedHand(null);
+          try {
+            await backend.deleteFarmhand(id);
+            await loadHands();
+            if (selectedHand?.id === id) setSelectedHand(null);
+          } catch (e) {
+            alert("Failed to delete farmhand.");
+          }
       }
   };
 
@@ -87,8 +91,12 @@ export const FarmhandManager: React.FC = () => {
           setSelectedHand(updated);
           setIsEditing(false);
           loadHands();
-      } catch (e) {
-          alert("Failed to update farmhand");
+      } catch (e: any) {
+          if (e.name === 'QuotaExceededError' || e.code === 22 || e.message?.includes('quota')) {
+              alert("Storage full! Please delete old records or remove large images.");
+          } else {
+              alert("Failed to update farmhand.");
+          }
       }
   };
 
@@ -116,7 +124,7 @@ export const FarmhandManager: React.FC = () => {
           resetForm();
           loadHands();
       } catch (e: any) {
-          if (e.name === 'QuotaExceededError' || e.message?.includes('QuotaExceededError')) {
+          if (e.name === 'QuotaExceededError' || e.code === 22 || e.message?.includes('quota')) {
               alert("Storage full! Please delete old records or remove large images.");
           } else {
               alert("Failed to save farmhand.");

@@ -20,15 +20,15 @@ const CACHE_PREFIX = 'farmkeeper_cache_';
 const CACHE_DURATION = 1000 * 60 * 60; // 1 hour default
 
 const getCachedData = (key: string) => {
-  const cached = localStorage.getItem(CACHE_PREFIX + key);
-  if (!cached) return null;
   try {
+    const cached = localStorage.getItem(CACHE_PREFIX + key);
+    if (!cached) return null;
     const { timestamp, data } = JSON.parse(cached);
     if (Date.now() - timestamp < CACHE_DURATION) {
       return data;
     }
   } catch (e) {
-    return null;
+    // localStorage unavailable (private browsing, mobile restrictions, etc.)
   }
   return null;
 };
