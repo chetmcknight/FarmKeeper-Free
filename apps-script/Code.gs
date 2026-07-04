@@ -1,5 +1,19 @@
 const SHEET_ID = '1aBaMvRAzlAmhbjNHNq6lQsNtKSKHV3KFvVrtmyz8188';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2uukyw_lYIoYcaP5ylNIAp2y0ReogtbL13gPaHeP0vTI-XpxL-YQJcCAOdTkw4PRG0w/exec';
+const FOLDER_ID = '1M8Xl81IV9EqfqeF5WSX4S3KT6McDaEnB';
+
+function saveBase64ToDrive(base64, fileName) {
+  if (!base64 || !base64.startsWith('data:')) return base64;
+  const parts = base64.split(',');
+  const mimeMatch = parts[0].match(/data:(.*?);/);
+  const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+  const rawData = Utilities.base64Decode(parts[1] || parts[0]);
+  const blob = Utilities.newBlob(rawData, mimeType, fileName);
+  const folder = DriveApp.getFolderById(FOLDER_ID);
+  const file = folder.createFile(blob);
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return file.getUrl();
+}
 
 function handleRequest(e) {
   try {
@@ -39,8 +53,14 @@ function handleRequest(e) {
     switch (action) {
       case 'append': {
         const newRow = header.map(col => {
-          const val = payload[col];
-          return val !== undefined && val !== null ? (typeof val === 'object' ? JSON.stringify(val) : String(val)) : '';
+          let val = payload[col];
+          if (val === undefined || val === null) return '';
+          // Upload base64 images to Drive
+          if ((col === 'imageUrl' || col === 'coverUrl' || col === 'imageBase64') && typeof val === 'string' && val.startsWith('data:')) {
+            const ext = col === 'imageBase64' ? 'png' : 'jpg';
+            val = saveBase64ToDrive(val, entity + '_' + (payload.id || Date.now()) + '_' + col + '.' + ext);
+          }
+          return typeof val === 'object' ? JSON.stringify(val) : String(val);
         });
         sheet.appendRow(newRow);
         result = { success: true };
@@ -54,7 +74,12 @@ function handleRequest(e) {
           if (isRowMatch(rows[i], id)) {
             header.forEach((col, j) => {
               if (col && payload[col] !== undefined) {
-                const val = payload[col];
+                let val = payload[col];
+                // Upload base64 images to Drive
+                if ((col === 'imageUrl' || col === 'coverUrl' || col === 'imageBase64') && typeof val === 'string' && val.startsWith('data:')) {
+                  const ext = col === 'imageBase64' ? 'png' : 'jpg';
+                  val = saveBase64ToDrive(val, entity + '_' + id + '_' + col + '.' + ext);
+                }
                 sheet.getRange(i + 1, j + 1).setValue(
                   typeof val === 'object' ? JSON.stringify(val) : String(val)
                 );
