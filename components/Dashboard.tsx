@@ -120,10 +120,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
 
   const tipIndexRef = useRef(0);
   const animalTipIndexRef = useRef(0);
+  const [, forceUpdate] = useState(0);
 
   const refreshTip = () => {
     tipIndexRef.current = (tipIndexRef.current + 1) % CROP_TIPS.length;
-    setTipData(CROP_TIPS[tipIndexRef.current]);
+    setTipData({ ...CROP_TIPS[tipIndexRef.current] });
+    forceUpdate(n => n + 1);
     getDailyTip().then(data => {
       if (data && data.title && data.content) {
         setTipData(data);
@@ -133,7 +135,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
 
   const refreshAnimalTip = () => {
     animalTipIndexRef.current = (animalTipIndexRef.current + 1) % ANIMAL_TIPS.length;
-    setAnimalTipData(ANIMAL_TIPS[animalTipIndexRef.current]);
+    setAnimalTipData({ ...ANIMAL_TIPS[animalTipIndexRef.current] });
+    forceUpdate(n => n + 1);
     getAnimalTip().then(data => {
       if (data && data.title && data.content) {
         setAnimalTipData(data);
