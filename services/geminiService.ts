@@ -293,6 +293,7 @@ export const getDailyTip = async () => {
       },
     });
     const data = JSON.parse(response.text || "{}");
+    if (!data.title || !data.content) return null;
     return {
         ...data,
         source: "AI Generated",
@@ -318,6 +319,7 @@ export const getAnimalTip = async () => {
       },
     });
     const data = JSON.parse(response.text || "{}");
+    if (!data.title || !data.content) return null;
     return {
         ...data,
         source: "AI Generated",

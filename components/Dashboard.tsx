@@ -24,20 +24,34 @@ const STORE_OPTIONS = [
     { label: "Tractor Supply", value: "Tractor Supply Co." }
 ];
 
+const CROP_TIPS = [
+    { title: "Monitor Soil Moisture Levels", content: "Consistent soil moisture monitoring is crucial during early crop stages. Use tensiometers or simple hand-feel tests to ensure roots are establishing well without waterlogging.", category: "Crops" },
+    { title: "Check for Nutrient Deficiencies", content: "Regular scouting for nitrogen, phosphorus, and potassium deficiencies can prevent yield loss. Look for yellowing lower leaves or stunted growth.", category: "Crops" },
+    { title: "Time Your Irrigation", content: "Early morning irrigation reduces water loss from evaporation and helps prevent fungal diseases by allowing foliage to dry during the day.", category: "Crops" },
+    { title: "Scout for Pests Weekly", content: "Regular field scouting helps catch pest outbreaks early. Check under leaves and along stems for eggs, larvae, or feeding damage.", category: "Crops" },
+    { title: "Test Soil pH", content: "Most crops prefer a soil pH of 6.0-7.0. Test your soil annually and amend with lime or sulfur as needed to maintain optimal growing conditions.", category: "Crops" },
+];
+
+const ANIMAL_TIPS = [
+    { title: "Check Water Supply", content: "Ensure all livestock have access to clean, fresh water. During hot weather, check troughs twice daily and clean them regularly to prevent algae buildup.", category: "Animals" },
+    { title: "Inspect Hooves Regularly", content: "Regular hoof trimming and inspection prevents lameness and infections. Schedule hoof care every 6-8 weeks for optimal herd mobility.", category: "Animals" },
+    { title: "Monitor Feed Quality", content: "Check hay and grain for mold, dust, or spoilage before feeding. Poor quality feed can lead to digestive issues and reduced production.", category: "Animals" },
+    { title: "Vaccination Schedule", content: "Keep detailed records of herd vaccinations. Work with your veterinarian to ensure all animals are up-to-date on regional disease prevention.", category: "Animals" },
+    { title: "Watch for Heat Stress", content: "Provide shade and adequate ventilation during hot weather. Signs of heat stress include panting, drooling, and reduced feed intake.", category: "Animals" },
+];
+
 export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, toggleDarkMode, isDarkMode }) => {
   const { user } = useAuth();
   
   // Data States
   const [weatherData, setWeatherData] = useState<any>(null);
   const [marketData, setMarketData] = useState<any[]>([]);
-  const [tipData, setTipData] = useState<any>(null);
-  const [animalTipData, setAnimalTipData] = useState<any>(null);
+  const [tipData, setTipData] = useState<any>(CROP_TIPS[0]);
+  const [animalTipData, setAnimalTipData] = useState<any>(ANIMAL_TIPS[0]);
 
   // Loading States
   const [loadingWeather, setLoadingWeather] = useState(true);
   const [loadingMarkets, setLoadingMarkets] = useState(true);
-  const [loadingTip, setLoadingTip] = useState(true);
-  const [loadingAnimalTip, setLoadingAnimalTip] = useState(true);
 
   const [selectedCommodities, setSelectedCommodities] = useState<string[]>([
     "Oats", "Alfalfa Hay", "Straw", "Chicken Feed"
@@ -75,15 +89,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
     loadStats();
   }, []);
 
-  // Fetch Weather & Tip (Once on mount or location change)
   useEffect(() => {
     let mounted = true;
     
     const fetchGeneral = async () => {
         setLoadingWeather(true);
-        setLoadingTip(true);
 
-        // Fetch Weather
         getWeatherInsight(location).then(data => {
             if(mounted) {
                 setWeatherData(data);
@@ -91,17 +102,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
             }
         });
 
-        // Fetch Tips
         getDailyTip().then(data => {
-            if(mounted) {
+            if(mounted && data && data.title && data.content) {
                 setTipData(data);
-                setLoadingTip(false);
             }
         });
         getAnimalTip().then(data => {
-            if(mounted) {
+            if(mounted && data && data.title && data.content) {
                 setAnimalTipData(data);
-                setLoadingAnimalTip(false);
             }
         });
     };
@@ -110,26 +118,35 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
     return () => { mounted = false; };
   }, [location]);
 
-  const refreshTip = async () => {
-    setLoadingTip(true);
-    try {
-      const data = await getDailyTip();
-      setTipData(data);
-    } catch (e) {
-      console.error("Crops refresh caught:", e);
-    } finally {
-      setLoadingTip(false);
-    }
+  const [tipIndex, setTipIndex] = useState(0);
+  const [animalTipIndex, setAnimalTipIndex] = useState(0);
+
+  const refreshTip = () => {
+    setTipIndex(prev => {
+      const next = (prev + 1) % CROP_TIPS.length;
+      setTipData(CROP_TIPS[next]);
+      return next;
+    });
+    getDailyTip().then(data => {
+      if (data && data.title && data.content) {
+        setTipData(data);
+      }
+    });
   };
 
-  const refreshAnimalTip = async () => {
-    setLoadingAnimalTip(true);
-    const data = await getAnimalTip();
-    setAnimalTipData(data);
-    setLoadingAnimalTip(false);
-  }; // Re-run if location changes
+  const refreshAnimalTip = () => {
+    setAnimalTipIndex(prev => {
+      const next = (prev + 1) % ANIMAL_TIPS.length;
+      setAnimalTipData(ANIMAL_TIPS[next]);
+      return next;
+    });
+    getAnimalTip().then(data => {
+      if (data && data.title && data.content) {
+        setAnimalTipData(data);
+      }
+    });
+  };
 
-  // Fetch Markets (Whenever commodities or store change)
   useEffect(() => {
       let mounted = true;
       const fetchMarkets = async () => {
@@ -176,7 +193,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
           )}
         </div>
         
-        {/* Location & Theme Toggle Container */}
         <div className="flex items-center gap-3">
             <div className="flex items-center gap-3 bg-white dark:bg-gray-800 px-4 py-2 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 w-fit">
               <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded-lg text-green-700 dark:text-green-400">
@@ -274,62 +290,28 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
                 🐐
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white">Expert Insight of the Day — Animals</h3>
-            <button onClick={refreshAnimalTip} disabled={loadingAnimalTip} className="ml-auto text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 hover:underline transition-colors disabled:opacity-50" title="Another Tip">
+            <button onClick={refreshAnimalTip} className="ml-auto px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg font-semibold text-sm hover:bg-blue-200 dark:hover:bg-blue-800/40 transition-colors" title="Another Tip">
                 Another Tip &rarr;
             </button>
         </div>
 
-        {loadingAnimalTip ? (
-             <div className="animate-pulse space-y-4 max-w-2xl">
-                <div className="h-6 w-32 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
-                <div className="h-8 w-3/4 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-                <div className="space-y-2">
-                    <div className="h-4 w-full bg-gray-100 dark:bg-gray-700 rounded"></div>
-                    <div className="h-4 w-5/6 bg-gray-100 dark:bg-gray-700 rounded"></div>
-                </div>
+        <div className="animate-fade-in">
+            <div className="space-y-4">
+               <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900/50">
+                   {animalTipData.category || 'Animal Tip'}
+               </span>
+               <h4 className="text-2xl font-extrabold text-gray-900 dark:text-white leading-tight">
+                   {animalTipData.title}
+               </h4>
+               <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+                   {animalTipData.content}
+               </p>
+               <div className="mt-4 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 pt-3">
+                   Source: AI Generated
+               </div>
             </div>
-        ) : (
-             <div className="flex flex-col md:flex-row gap-8 items-center animate-fade-in">
-                 <div className="flex-1">
-                     {animalTipData ? (
-                         <div className="space-y-4">
-                            <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900/50">
-                                {animalTipData.category || 'Animal Tip'}
-                            </span>
-                            <h4 className="text-2xl font-extrabold text-gray-900 dark:text-white leading-tight">
-                                {animalTipData.title}
-                            </h4>
-                            <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-                                {animalTipData.content}
-                            </p>
-                            {(animalTipData.source || animalTipData.sourceUrl) && (
-                                <div className="mt-4 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 pt-3">
-                                    Source: {animalTipData.sourceUrl ? (
-                                        <a href={animalTipData.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">{animalTipData.source}</a>
-                                    ) : (
-                                        <span>{animalTipData.source}</span>
-                                    )}
-                                </div>
-                            )}
-                         </div>
-                     ) : (
-                         <div className="space-y-4">
-                            <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900/50">
-                                Animal Tip
-                            </span>
-                            <h4 className="text-2xl font-extrabold text-gray-900 dark:text-white leading-tight">
-                                Check Water Supply
-                            </h4>
-                            <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-                                Ensure all livestock have access to clean, fresh water. During hot weather, check troughs twice daily and clean them regularly to prevent algae buildup.
-                            </p>
-                         </div>
-                     )}
-                 </div>
-                 
-              </div>
-         )}
-       </div>
+        </div>
+      </div>
 
         {/* Expert Insight / Daily Tip */}
       <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:border-indigo-200 dark:hover:border-indigo-700 transition-all duration-300 min-h-[200px]">
@@ -338,61 +320,27 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
                 🌽
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white">Expert Insight of the Day — Crops</h3>
-            <button onClick={refreshTip} disabled={loadingTip} className="ml-auto text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 hover:underline transition-colors disabled:opacity-50" title="Another Tip">
+            <button onClick={refreshTip} className="ml-auto px-4 py-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-lg font-semibold text-sm hover:bg-indigo-200 dark:hover:bg-indigo-800/40 transition-colors" title="Another Tip">
                 Another Tip &rarr;
             </button>
         </div>
 
-        {loadingTip ? (
-             <div className="animate-pulse space-y-4 max-w-2xl">
-                <div className="h-6 w-32 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
-                <div className="h-8 w-3/4 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-                <div className="space-y-2">
-                    <div className="h-4 w-full bg-gray-100 dark:bg-gray-700 rounded"></div>
-                    <div className="h-4 w-5/6 bg-gray-100 dark:bg-gray-700 rounded"></div>
-                </div>
+        <div className="animate-fade-in">
+            <div className="space-y-4">
+               <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/50">
+                   {tipData.category || 'Farming Tip'}
+               </span>
+               <h4 className="text-2xl font-extrabold text-gray-900 dark:text-white leading-tight">
+                   {tipData.title}
+               </h4>
+               <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+                   {tipData.content}
+               </p>
+               <div className="mt-4 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 pt-3">
+                   Source: AI Generated
+               </div>
             </div>
-        ) : (
-             <div className="flex flex-col md:flex-row gap-8 items-center animate-fade-in">
-                 <div className="flex-1">
-                     {tipData ? (
-                         <div className="space-y-4">
-                            <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/50">
-                                {tipData.category || 'Farming Tip'}
-                            </span>
-                            <h4 className="text-2xl font-extrabold text-gray-900 dark:text-white leading-tight">
-                                {tipData.title}
-                            </h4>
-                            <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-                                {tipData.content}
-                            </p>
-                            {(tipData.source || tipData.sourceUrl) && (
-                                <div className="mt-4 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 pt-3">
-                                    Source: {tipData.sourceUrl ? (
-                                        <a href={tipData.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:underline">{tipData.source}</a>
-                                    ) : (
-                                        <span>{tipData.source}</span>
-                                    )}
-                                </div>
-                            )}
-                         </div>
-                     ) : (
-                         <div className="space-y-4">
-                            <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/50">
-                                General Tip
-                            </span>
-                            <h4 className="text-2xl font-extrabold text-gray-900 dark:text-white leading-tight">
-                                Monitor Soil Moisture Levels
-                            </h4>
-                            <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-                                Consistent soil moisture monitoring is crucial during early crop stages. Use tensiometers or simple hand-feel tests to ensure roots are establishing well without waterlogging.
-                            </p>
-                         </div>
-                     )}
-                 </div>
-                 
-              </div>
-         )}
+        </div>
       </div>
      </div>
     </div>
