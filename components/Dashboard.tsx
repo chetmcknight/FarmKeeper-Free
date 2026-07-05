@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { getWeatherInsight, getMarketPrices, getDailyTip, getAnimalTip } from '../services/geminiService';
 import { backend } from '../services/mockBackend';
 import { Page } from '../types';
@@ -118,15 +118,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
     return () => { mounted = false; };
   }, [location]);
 
-  const [tipIndex, setTipIndex] = useState(0);
-  const [animalTipIndex, setAnimalTipIndex] = useState(0);
+  const tipIndexRef = useRef(0);
+  const animalTipIndexRef = useRef(0);
 
   const refreshTip = () => {
-    setTipIndex(prev => {
-      const next = (prev + 1) % CROP_TIPS.length;
-      setTipData(CROP_TIPS[next]);
-      return next;
-    });
+    tipIndexRef.current = (tipIndexRef.current + 1) % CROP_TIPS.length;
+    setTipData(CROP_TIPS[tipIndexRef.current]);
     getDailyTip().then(data => {
       if (data && data.title && data.content) {
         setTipData(data);
@@ -135,11 +132,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
   };
 
   const refreshAnimalTip = () => {
-    setAnimalTipIndex(prev => {
-      const next = (prev + 1) % ANIMAL_TIPS.length;
-      setAnimalTipData(ANIMAL_TIPS[next]);
-      return next;
-    });
+    animalTipIndexRef.current = (animalTipIndexRef.current + 1) % ANIMAL_TIPS.length;
+    setAnimalTipData(ANIMAL_TIPS[animalTipIndexRef.current]);
     getAnimalTip().then(data => {
       if (data && data.title && data.content) {
         setAnimalTipData(data);
