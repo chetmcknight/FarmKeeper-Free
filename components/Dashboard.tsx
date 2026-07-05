@@ -112,9 +112,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
 
   const refreshTip = async () => {
     setLoadingTip(true);
-    const data = await getDailyTip();
-    setTipData(data);
-    setLoadingTip(false);
+    try {
+      const data = await getDailyTip();
+      setTipData(data);
+    } catch (e) {
+      console.error("Crops refresh caught:", e);
+    } finally {
+      setLoadingTip(false);
+    }
   };
 
   const refreshAnimalTip = async () => {
