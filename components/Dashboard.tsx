@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { getWeatherInsight, getMarketPrices, getDailyTip, getAnimalTip } from '../services/geminiService';
+import React, { useEffect, useState } from 'react';
+import { getWeatherInsight, getMarketPrices } from '../services/geminiService';
 import { backend } from '../services/mockBackend';
 import { Page } from '../types';
 import { useAuth } from '../context/AuthContext';
@@ -24,32 +24,12 @@ const STORE_OPTIONS = [
     { label: "Tractor Supply", value: "Tractor Supply Co." }
 ];
 
-const CROP_TIPS = [
-    { title: "Monitor Soil Moisture Levels", content: "Consistent soil moisture monitoring is crucial during early crop stages. Use tensiometers or simple hand-feel tests to ensure roots are establishing well without waterlogging.", category: "Crops" },
-    { title: "Check for Nutrient Deficiencies", content: "Regular scouting for nitrogen, phosphorus, and potassium deficiencies can prevent yield loss. Look for yellowing lower leaves or stunted growth.", category: "Crops" },
-    { title: "Time Your Irrigation", content: "Early morning irrigation reduces water loss from evaporation and helps prevent fungal diseases by allowing foliage to dry during the day.", category: "Crops" },
-    { title: "Scout for Pests Weekly", content: "Regular field scouting helps catch pest outbreaks early. Check under leaves and along stems for eggs, larvae, or feeding damage.", category: "Crops" },
-    { title: "Test Soil pH", content: "Most crops prefer a soil pH of 6.0-7.0. Test your soil annually and amend with lime or sulfur as needed to maintain optimal growing conditions.", category: "Crops" },
-];
-
-const ANIMAL_TIPS = [
-    { title: "Check Water Supply", content: "Ensure all livestock have access to clean, fresh water. During hot weather, check troughs twice daily and clean them regularly to prevent algae buildup.", category: "Animals" },
-    { title: "Inspect Hooves Regularly", content: "Regular hoof trimming and inspection prevents lameness and infections. Schedule hoof care every 6-8 weeks for optimal herd mobility.", category: "Animals" },
-    { title: "Monitor Feed Quality", content: "Check hay and grain for mold, dust, or spoilage before feeding. Poor quality feed can lead to digestive issues and reduced production.", category: "Animals" },
-    { title: "Vaccination Schedule", content: "Keep detailed records of herd vaccinations. Work with your veterinarian to ensure all animals are up-to-date on regional disease prevention.", category: "Animals" },
-    { title: "Watch for Heat Stress", content: "Provide shade and adequate ventilation during hot weather. Signs of heat stress include panting, drooling, and reduced feed intake.", category: "Animals" },
-];
-
 export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, toggleDarkMode, isDarkMode }) => {
   const { user } = useAuth();
   
-  // Data States
   const [weatherData, setWeatherData] = useState<any>(null);
   const [marketData, setMarketData] = useState<any[]>([]);
-  const [tipData, setTipData] = useState<any>(CROP_TIPS[0]);
-  const [animalTipData, setAnimalTipData] = useState<any>(ANIMAL_TIPS[0]);
 
-  // Loading States
   const [loadingWeather, setLoadingWeather] = useState(true);
   const [loadingMarkets, setLoadingMarkets] = useState(true);
 
@@ -58,7 +38,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
   ]);
   const [selectedStore, setSelectedStore] = useState<string>(STORE_OPTIONS[0].value);
   
-  // Farm Stats
   const [stats, setStats] = useState({ 
     cropsTotal: 0, 
     cropsAttention: 0,
@@ -101,48 +80,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
                 setLoadingWeather(false);
             }
         });
-
-        getDailyTip().then(data => {
-            if(mounted && data && data.title && data.content) {
-                setTipData(data);
-            }
-        });
-        getAnimalTip().then(data => {
-            if(mounted && data && data.title && data.content) {
-                setAnimalTipData(data);
-            }
-        });
     };
 
     fetchGeneral();
     return () => { mounted = false; };
   }, [location]);
-
-  const tipIndexRef = useRef(0);
-  const animalTipIndexRef = useRef(0);
-  const [, forceUpdate] = useState(0);
-
-  const refreshTip = () => {
-    tipIndexRef.current = (tipIndexRef.current + 1) % CROP_TIPS.length;
-    setTipData({ ...CROP_TIPS[tipIndexRef.current] });
-    forceUpdate(n => n + 1);
-    getDailyTip().then(data => {
-      if (data && data.title && data.content) {
-        setTipData(data);
-      }
-    });
-  };
-
-  const refreshAnimalTip = () => {
-    animalTipIndexRef.current = (animalTipIndexRef.current + 1) % ANIMAL_TIPS.length;
-    setAnimalTipData({ ...ANIMAL_TIPS[animalTipIndexRef.current] });
-    forceUpdate(n => n + 1);
-    getAnimalTip().then(data => {
-      if (data && data.title && data.content) {
-        setAnimalTipData(data);
-      }
-    });
-  };
 
   useEffect(() => {
       let mounted = true;
@@ -279,66 +221,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ location, onNavigate, togg
             </div>
           )}
         </div>
-
-        {/* Animal Expert Insight */}
-      <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:border-blue-200 dark:hover:border-blue-700 transition-all duration-300 min-h-[200px]">
-        <div className="flex items-center gap-3 mb-6">
-            <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg text-xl">
-                🐐
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Expert Insight of the Day — Animals</h3>
-            <button onClick={refreshAnimalTip} className="ml-auto px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg font-semibold text-sm hover:bg-blue-200 dark:hover:bg-blue-800/40 transition-colors" title="Another Tip">
-                Another Tip &rarr;
-            </button>
-        </div>
-
-        <div className="animate-fade-in">
-            <div className="space-y-4">
-               <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900/50">
-                   {animalTipData.category || 'Animal Tip'}
-               </span>
-               <h4 className="text-2xl font-extrabold text-gray-900 dark:text-white leading-tight">
-                   {animalTipData.title}
-               </h4>
-               <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-                   {animalTipData.content}
-               </p>
-               <div className="mt-4 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 pt-3">
-                   Source: AI Generated
-               </div>
-            </div>
-        </div>
-      </div>
-
-        {/* Expert Insight / Daily Tip */}
-      <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:border-indigo-200 dark:hover:border-indigo-700 transition-all duration-300 min-h-[200px]">
-        <div className="flex items-center gap-3 mb-6">
-            <div className="bg-indigo-100 dark:bg-indigo-900/30 p-2 rounded-lg text-xl">
-                🌽
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Expert Insight of the Day — Crops</h3>
-            <button onClick={refreshTip} className="ml-auto px-4 py-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-lg font-semibold text-sm hover:bg-indigo-200 dark:hover:bg-indigo-800/40 transition-colors" title="Another Tip">
-                Another Tip &rarr;
-            </button>
-        </div>
-
-        <div className="animate-fade-in">
-            <div className="space-y-4">
-               <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/50">
-                   {tipData.category || 'Farming Tip'}
-               </span>
-               <h4 className="text-2xl font-extrabold text-gray-900 dark:text-white leading-tight">
-                   {tipData.title}
-               </h4>
-               <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-                   {tipData.content}
-               </p>
-               <div className="mt-4 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 pt-3">
-                   Source: AI Generated
-               </div>
-            </div>
-        </div>
-      </div>
      </div>
     </div>
   );
